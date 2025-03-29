@@ -1,4 +1,5 @@
 import { Schema, model } from "mongoose";
+import { AddressDtoType } from "../../../dto/profiles/address.dto";
 const AddressSchema = new Schema(
   {
     userId: { type: String, ref: "users", required: true, unique: true },
@@ -11,5 +12,5 @@ const AddressSchema = new Schema(
   { timestamps: true }
 );
 
-const Address = model("addresses", AddressSchema);
+const Address = model<AddressDtoType>("addresses", AddressSchema);
 export default Address;

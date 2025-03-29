@@ -1,4 +1,5 @@
 import { Schema, model } from "mongoose";
+import { EducationDtoType } from "../../../dto/profiles/education.dto";
 const EducationSchema = new Schema(
   {
     userId: { type: String, ref: "users", required: true, unique: true },
@@ -13,5 +14,5 @@ const EducationSchema = new Schema(
   { timestamps: true }
 );
 
-const Education = model("educations", EducationSchema);
+const Education = model<EducationDtoType>("educations", EducationSchema);
 export default Education;
