@@ -1,2 +1,2 @@
-# jobi
-jobi It is an online freelancing platform where employers connect with freelancers to collaborate remotely.
+# E-Commerce-V3
+E-Commerce Project by using node.js and express

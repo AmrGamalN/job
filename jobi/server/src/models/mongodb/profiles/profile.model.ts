@@ -1,10 +1,12 @@
 import { Schema, model } from "mongoose";
+import { ProfileDtoType } from "../../../dto/profiles/profile.dto";
+import { string } from "zod";
 
 const ProfileSchema = new Schema(
   {
     userId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
+      type: String,
+      ref: "users",
       required: true,
       unique: true,
     },
@@ -13,15 +15,19 @@ const ProfileSchema = new Schema(
     jobDescription: { type: String, default: "" },
     jobLocation: { type: String, default: "" },
     jobCompany: { type: String, default: "" },
-    jobType: { type: String, enum: ["full-time", "part-time", "freelance"] },
+    jobType: {
+      type: String,
+      enum: ["full-time", "part-time", "freelance", ""],
+      default: "",
+    },
     projectPreference: {
       type: String,
-      enum: ["Long-term", "Short-term", "both"],
+      enum: ["Long-term", "Short-term", "both", ""],
       default: "",
     },
     experienceLevel: {
       type: String,
-      enum: ["entry-level", "Intermediate", "expert"],
+      enum: ["entry-level", "Intermediate", "expert", ""],
       default: "",
     },
     categories: { type: [String], default: [] },
@@ -29,11 +35,15 @@ const ProfileSchema = new Schema(
     languages: [
       {
         language: { type: String, required: true },
-        proficiency: { type: String, required: true },
+        proficiency: {
+          enum: ["beginner", "intermediate", "advanced"],
+        },
       },
     ],
+    profileLink: { type: String, unique: true, default: "" },
   },
   { timestamps: true }
 );
 
-export default model("Profile", ProfileSchema);
+const Profile = model<ProfileDtoType>("Profile", ProfileSchema);
+export default Profile;

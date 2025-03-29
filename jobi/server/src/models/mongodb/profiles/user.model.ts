@@ -1,28 +1,30 @@
 import { Schema, model } from "mongoose";
+import { UserDtoType } from "../../../dto/profiles/user.dto";
 
 const UserSchema = new Schema(
   {
-    userId: { type: String, required: true, unique: true },
+    userId: { type: String, ref: "users", required: true, unique: true },
+    userName: { type: String, required: true, unique: true },
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     profileImage: { type: String, default: "" },
     coverImage: { type: String, default: "" },
     account: {
       type: String,
-      enum: ["company", "freelance", "school"],
-      default: "client",
+      enum: ["user", "admin", "manager"],
+      default: "user",
     },
     linkedIn: { type: String, default: "" },
     github: { type: String, default: "" },
     website: { type: String, default: "" },
     visibility: {
       type: String,
-      enum: ["public", "private"],
-      default: "only_jobi_user",
+      enum: ["connection", "public", "private"],
+      default: "connection",
     },
-    profileLink: { type: String, unique: true, default: "" },
   },
   { timestamps: true }
 );
 
-export default model("User", UserSchema);
+const User = model<UserDtoType>("users", UserSchema);
+export default User;

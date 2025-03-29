@@ -1,7 +1,7 @@
 import { Schema, model } from "mongoose";
 const AddressSchema = new Schema(
   {
-    userId: { type: String, ref: "Users", required: true, unique: true },
+    userId: { type: String, ref: "users", required: true, unique: true },
     country: { type: String, required: true },
     city: { type: String, required: true },
     state: { type: String, required: true },
@@ -11,5 +11,5 @@ const AddressSchema = new Schema(
   { timestamps: true }
 );
 
-const Address = model("Address", AddressSchema);
+const Address = model("addresses", AddressSchema);
 export default Address;
