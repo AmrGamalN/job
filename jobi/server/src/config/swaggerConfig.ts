@@ -2,13 +2,13 @@ const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "jobi",
+      title: "job",
       version: "1.0.0",
-      description: "API documentation for the jobi",
+      description: "API documentation for the job",
     },
     servers: [
       {
-        url: "http://localhost:8080/api",
+        url: "http://localhost:8080/graphql",
       },
     ],
   },

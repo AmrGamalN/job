@@ -1,11 +1,12 @@
 import { Schema, model } from "mongoose";
+import { OtpDtoType } from "../../../dto/security/otp.dto";
 
-// opt schema
+// Opt schema
 const otpSchema: Schema = new Schema({
-  userId: { type: String, required: true },
   email: { type: String, required: true },
-  otp: { type: String, required: true },
+  token: { type: String, required: true },
   expiresAt: { type: Date, required: true, index: { expires: 0 } },
 });
 
-export const Otp = model("otps", otpSchema);
+const Otp = model<OtpDtoType>("otps", otpSchema);
+export default Otp;
