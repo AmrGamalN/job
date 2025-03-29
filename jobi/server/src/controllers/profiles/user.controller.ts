@@ -27,7 +27,7 @@ class UserController {
   ): Promise<responseHandler> {
     const userId = args.userId ? args.userId : context.req.curUser?.userId;
     const result = await this.userService.getUser(userId, info);
-    if (!result.success || !result) return result;
+    if (!result.success) return result;
     return result;
   }
 
