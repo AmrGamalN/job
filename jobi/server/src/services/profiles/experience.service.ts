@@ -27,7 +27,7 @@ class ExperienceService {
     ): Promise<responseHandler> => {
       const parseSafe = validateAndFormatData(ExperienceData, ExperienceAddDto);
       if (!parseSafe.success) return parseSafe;
-      await Experience.create({ ...ExperienceData });
+      await Experience.create({ userId, ...ExperienceData });
       return {
         ...parseSafe,
         message: "Add experience successfully",
