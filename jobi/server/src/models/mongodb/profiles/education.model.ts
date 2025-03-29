@@ -13,5 +13,5 @@ const EducationSchema = new Schema(
   { timestamps: true }
 );
 
-const Education = model("education", EducationSchema);
+const Education = model("educations", EducationSchema);
 export default Education;
