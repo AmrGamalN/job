@@ -13,21 +13,33 @@ const commonMiddlewares = [
   asyncHandler(tokenMiddleware.authorizationMiddleware(role)),
 ];
 
+<<<<<<< HEAD
 // Add address
+=======
+// Add user
+>>>>>>> 29b8f4664265e0eee83a43ea35bc726ca7eebe56
 router.post(
   "/add",
   ...commonMiddlewares,
   asyncHandler(controller.addAddress.bind(controller))
 );
 
+<<<<<<< HEAD
 // Get address
+=======
+// Get user
+>>>>>>> 29b8f4664265e0eee83a43ea35bc726ca7eebe56
 router.get(
   "/get/:userId",
   ...commonMiddlewares,
   asyncHandler(controller.getAddress.bind(controller))
 );
 
+<<<<<<< HEAD
 // Update address
+=======
+// Update user
+>>>>>>> 29b8f4664265e0eee83a43ea35bc726ca7eebe56
 router.put(
   "/update/:userId",
   ...commonMiddlewares,
