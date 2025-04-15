@@ -18,14 +18,14 @@ export const validateSecurityStatus = [
     .withMessage("User id is required")
     .matches(/^[a-zA-Z0-9]{28}$/)
     .withMessage("Invalid user id"),
-  
+
   check("block")
     .trim()
     .isBoolean()
     .withMessage("isAccountBlocked failed must be boolean")
     .toBoolean()
     .optional(),
-  
+
   check("delete")
     .trim()
     .isBoolean()
@@ -48,8 +48,12 @@ export const validateSecurityEmail = [
 ];
 
 export const validateSecurityUpdatePass = [
-  check("password")
+  check("oldPassword").trim().notEmpty().withMessage("oldPassword is required"),
+
+  check("newPassword")
     .trim()
+    .notEmpty()
+    .withMessage("newPassword is required")
     .isStrongPassword({
       minLength: 10,
       minLowercase: 1,

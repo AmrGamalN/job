@@ -1,6 +1,8 @@
 import { z } from "zod";
+import { ObjectId } from "mongodb";
 
 export const ExperienceDto = z.object({
+  _id: z.union([z.string(), z.instanceof(ObjectId)]),
   userId: z.string().min(1, "User ID is required"),
   companyName: z
     .string()

@@ -1,27 +1,35 @@
 import { check } from "express-validator";
 
-export const validateUserAdd = [
+const validateUser = (isOptional: boolean = false) => [
   check("firstName")
+    .if(() => !isOptional)
+    .bail()
     .isString()
     .trim()
     .notEmpty()
     .withMessage("FirstName is required")
-    .isLength({ min: 1, max: 25 })
+    .isLength({ min: 1, max: 20 })
     .withMessage("FirstName must be between 1 to 20 char")
     .matches(/^[a-zA-Z ]+$/)
-    .withMessage("FirstName must be only char"),
+    .withMessage("FirstName must be only char")
+    .optional({ nullable: true }),
 
   check("lastName")
+    .if(() => !isOptional)
+    .bail()
     .isString()
     .trim()
     .notEmpty()
-    .withMessage("FirstName is required")
-    .isLength({ min: 1, max: 25 })
-    .withMessage("FirstName must be between 1 to 20 char")
+    .withMessage("lastName is required")
+    .isLength({ min: 1, max: 20 })
+    .withMessage("lastName must be between 1 to 20 char")
     .matches(/^[a-zA-Z ]+$/)
-    .withMessage("FirstName must be only char"),
+    .withMessage("lastName must be only char")
+    .optional({ nullable: true }),
 
   check("visibility")
+    .if(() => !isOptional)
+    .bail()
     .isString()
     .trim()
     .notEmpty()
@@ -29,18 +37,36 @@ export const validateUserAdd = [
     .isIn(["connection", "public", "private"])
     .withMessage(
       "Visibility must be one of the value  `connection`, `public`, `private` "
-    ),
+    )
+    .optional({ nullable: true }),
 
-  check("profileImage")
-    .optional()
+  check("profileImage").trim().isObject().optional(),
+
+  check("profileImage.*.imageUrl").trim().isURL().isString(),
+
+  check("profileImage.*.imageKey").trim().isString(),
+
+  check("coverImage").trim().isObject().optional(),
+
+  check("coverImage.*.imageUrl").trim().isURL().isString(),
+
+  check("coverImage.*.imageKey").trim().isString(),
+
+  check("linkedIn")
+    .optional({ nullable: true })
     .isURL()
-    .withMessage("Invalid profile image URL"),
+    .withMessage("Invalid linkedIn URL"),
 
-  check("coverImage").optional().isURL().withMessage("Invalid cover image URL"),
+  check("github")
+    .optional({ nullable: true })
+    .isURL()
+    .withMessage("Invalid github URL"),
 
-  check("linkedIn").optional().isURL().withMessage("Invalid linkedIn URL"),
-
-  check("github").optional().isURL().withMessage("Invalid github URL"),
-
-  check("website").optional().isURL().withMessage("Invalid website URL"),
+  check("website")
+    .optional({ nullable: true })
+    .isURL()
+    .withMessage("Invalid website URL"),
 ];
+
+export const validateUserUpdate = validateUser(true);
+export const validateUserAdd = validateUser(false);

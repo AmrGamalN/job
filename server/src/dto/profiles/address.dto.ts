@@ -1,5 +1,8 @@
 import { z } from "zod";
+import { ObjectId } from "mongodb";
+
 export const AddressDto = z.object({
+  _id: z.union([z.string(), z.instanceof(ObjectId)]),
   userId: z.string().min(1, "User ID is required"),
   country: z.string().min(1, "Country is required"),
   city: z.string().min(1, "City is required"),

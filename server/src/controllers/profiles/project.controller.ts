@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import ProjectService from "../../services/profiles/project.service";
+import { handleApiResponse } from "../../utils/responseHandler";
 
 class ProjectController {
   private static instance: ProjectController;
@@ -18,8 +19,7 @@ class ProjectController {
   async addProject(req: Request, res: Response): Promise<Response> {
     const userId = req.curUser?.userId;
     const result = await this.projectService.addProject(req.body, userId);
-    if (!result.success) return res.status(result.status!).json(result);
-    return res.status(result.status!).json(result);
+    return handleApiResponse(res, result);
   }
 
   // Get project
@@ -27,24 +27,21 @@ class ProjectController {
     const projectId = req.params.projectId;
     const userId = req.curUser?.userId;
     const result = await this.projectService.getProject(projectId, userId);
-    if (!result.success) return res.status(result.status!).json(result);
-    return res.status(result.status!).json(result);
+    return handleApiResponse(res, result);
   }
 
   // Get all project
   async getAllProjects(req: Request, res: Response): Promise<Response> {
     const userId = req.curUser?.userId;
     const result = await this.projectService.getAllProjects(userId);
-    if (!result.success) return res.status(result.status!).json(result);
-    return res.status(result.status!).json(result);
+    return handleApiResponse(res, result);
   }
 
   // Update project
   async updateProject(req: Request, res: Response): Promise<Response> {
     const projectId = req.params.projectId;
     const result = await this.projectService.updateProject(req.body, projectId);
-    if (!result.success) return res.status(result.status!).json(result);
-    return res.status(result.status!).json(result);
+    return handleApiResponse(res, result);
   }
 }
 

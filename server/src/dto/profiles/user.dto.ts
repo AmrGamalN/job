@@ -5,11 +5,18 @@ export const UserDto = z
   .object({
     _id: z.union([z.string(), z.instanceof(ObjectId)]),
     userId: z.string(),
+    prefixS3: z.string().default(""),
     userName: z.string(),
     firstName: z.string(),
     lastName: z.string(),
-    profileImage: z.string(),
-    coverImage: z.string(),
+    profileImage: z.object({
+      imageUrl: z.string(),
+      imageKey: z.string(),
+    }),
+    coverImage: z.object({
+      imageUrl: z.string(),
+      imageKey: z.string(),
+    }),
     account: z.enum(["user", "admin", "manager"]).default("user"),
     visibility: z
       .enum(["connection", "public", "private"])

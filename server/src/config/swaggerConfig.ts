@@ -8,11 +8,18 @@ const swaggerOptions = {
     },
     servers: [
       {
+        url: "http://localhost:8080/api/v1",
+      },
+      {
         url: "http://localhost:8080/graphql",
       },
     ],
   },
-  apis: ["./src/routes/*.ts"],
+  apis: [
+    "./src/routes/*.ts",
+    "./src/routes/profiles/*.ts",
+    "./src/routes/auth/*.ts",
+  ]
 };
 
 export default swaggerOptions;

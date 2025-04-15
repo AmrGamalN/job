@@ -79,7 +79,7 @@ class LoginController {
     await auth.revokeRefreshTokens(req.curUser.userId);
     this.loginService.updateUserStatus(req.curUser.userId, "inactive");
     return res.status(200).json({
-      message: "Logged out successfully, clear access token from frontend.",
+      message: "Logged out successfully",
     });
   }
 

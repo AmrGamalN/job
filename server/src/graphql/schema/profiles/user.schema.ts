@@ -1,11 +1,17 @@
 export const userTypeDefs = `
+
+type Image  {
+  imageUrl: String!
+  imageKey: String!
+}
+
 type user {
   _id:ID
   userId: String!
   firstName: String
   lastName: String
-  profileImage: String
-  coverImage: String
+  profileImage: Image
+  coverImage: Image
   account: String
   linkedIn: String
   github: String

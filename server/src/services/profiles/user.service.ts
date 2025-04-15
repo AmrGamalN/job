@@ -23,7 +23,7 @@ class UserService {
   updateUser = warpAsync(
     async (
       UserData: UserUpdateDtoType,
-      userId: string
+      query: object,
     ): Promise<responseHandler> => {
       if (Object.keys(UserData).length === 0) {
         return {
@@ -37,7 +37,7 @@ class UserService {
       if (!parseSafe.success) return parseSafe;
 
       const updateUser = await User.findOneAndUpdate(
-        { userId },
+        query,
         {
           $set: {
             ...UserData,

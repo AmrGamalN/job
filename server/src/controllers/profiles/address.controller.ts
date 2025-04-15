@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import AddressService from "../../services/profiles/address.service";
+import { handleApiResponse } from "../../utils/responseHandler";
 
 class AddressController {
   private static instance: AddressController;
@@ -18,24 +19,25 @@ class AddressController {
   async addAddress(req: Request, res: Response): Promise<Response> {
     const userId = req.curUser?.userId;
     const result = await this.addressService.addAddress(req.body, userId);
-    if (!result.success) return res.status(result.status!).json(result);
-    return res.status(result.status!).json(result);
+    return handleApiResponse(res, result);
   }
 
   // Get address
   async getAddress(req: Request, res: Response): Promise<Response> {
-    const userId = req.params.userId ? req.params.userId : req.curUser?.userId;
-    const result = await this.addressService.getAddress(userId);
-    if (!result.success) return res.status(result.status!).json(result);
-    return res.status(result.status!).json(result);
+    const query = req.params.addressId
+      ? { _id: req.params.addressId }
+      : { userId: req.curUser?.userId };
+    const result = await this.addressService.getAddress(query);
+    return handleApiResponse(res, result);
   }
 
   // Update address
   async updateAddress(req: Request, res: Response): Promise<Response> {
-    const userId = req.params.userId ? req.params.userId : req.curUser?.userId;
-    const result = await this.addressService.updateAddress(req.body, userId);
-    if (!result.success) return res.status(result.status!).json(result);
-    return res.status(result.status!).json(result);
+    const query = req.params.addressId
+      ? { _id: req.params.addressId }
+      : { userId: req.curUser?.userId };
+    const result = await this.addressService.updateAddress(req.body, query);
+    return handleApiResponse(res, result);
   }
 }
 

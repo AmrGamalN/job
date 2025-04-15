@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 import { encryptToken, decryptToken } from "../utils/encryptionToken";
+import { CustomError } from "../utils/CustomError";
 dotenv.config();
 
 declare module "express-serve-static-core" {
@@ -26,12 +27,10 @@ class TokenMiddleware {
       return async (req: Request, res: Response, next: NextFunction) => {
         const userRole = req.curUser?.role;
         if (!userRole) {
-          res.status(401).json({ error: "unauthorized: No user role found" });
-          return;
+          throw new CustomError("unauthorized: No user role found", false, 401);
         }
         if (!role.includes(userRole)) {
-          res.status(403).json({ error: "Forbidden: Access denied" });
-          return;
+          throw new CustomError("unauthorized: Access denied", false, 403);
         }
         return next();
       };
@@ -50,10 +49,9 @@ class TokenMiddleware {
   ): Promise<Response | void> {
     const accessToken = req.cookies?.accessToken;
     const refreshToken = req.cookies?.refreshToken;
+
     if (!refreshToken) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized: No refresh token." });
+      throw new CustomError("Unauthorized: No refresh token", false, 401);
     }
 
     if (accessToken) {
@@ -62,45 +60,38 @@ class TokenMiddleware {
         req.curUser = decoded;
         return next();
       } catch (err) {
-        return res
-          .status(403)
-          .json({ message: "Unauthorized: No access token." });
+        throw new CustomError("Unauthorized: Invalid access token", false, 403);
       }
-    }
+    } else {
+      try {
+        const decoded = jwt.verify(
+          decryptToken(refreshToken),
+          String(process.env.REFRESH_TOKEN_SECRET)
+        );
 
-    // Access token is missing or invalid — verify refresh token
-    try {
-      const decoded = jwt.verify(
-        decryptToken(refreshToken),
-        String(process.env.REFRESH_TOKEN_SECRET)
-      );
+        if (typeof decoded !== "object" || decoded === null) {
+          throw new CustomError("Unauthorized: No refresh token", false, 401);
+        }
 
-      if (typeof decoded !== "object" || decoded === null) {
-        return res
-          .status(403)
-          .json({ message: "Invalid or expired refresh token." });
+        const { iat, exp, ...payload } = decoded;
+        const newAccessToken = jwt.sign(
+          payload,
+          String(process.env.ACCESS_TOKEN_SECRET),
+          { expiresIn: "30m" }
+        );
+
+        res.cookie("accessToken", encryptToken(newAccessToken), {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+          maxAge: 60 * 60 * 1000,
+        });
+
+        req.curUser = decoded;
+        return next();
+      } catch (err) {
+        throw new CustomError("Invalid or expired refresh token", false, 401);
       }
-      const { iat, exp, ...payload } = decoded;
-      const newAccessToken = jwt.sign(
-        payload,
-        String(process.env.ACCESS_TOKEN_SECRET),
-        { expiresIn: "30m" }
-      );
-
-      // Set the new access token as an httpOnly cookie
-      res.cookie("accessToken", encryptToken(newAccessToken), {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 60 * 60 * 1000,
-      });
-
-      req.curUser = decoded;
-      return next();
-    } catch (err) {
-      return res
-        .status(403)
-        .json({ message: "Invalid or expired refresh token." });
     }
   }
 }

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import SecurityService from "../../services/profiles/security.service";
 import { GraphQLResolveInfo } from "graphql";
 import { responseHandler } from "../../utils/responseHandler";
+import { handleApiResponse } from "../../utils/responseHandler";
 
 class SecurityController {
   private static instance: SecurityController;
@@ -49,15 +50,13 @@ class SecurityController {
   async updateSecurity(req: Request, res: Response): Promise<Response> {
     const userId = req.params.userId ? req.params.userId : req.curUser?.userId;
     const result = await this.SecurityService.updateSecurity(req.body, userId);
-    if (!result.success) return res.status(result.status!).json(result);
-    return res.status(200).json(result);
+    return handleApiResponse(res, result);
   }
 
   // Count security
   async countSecurity(req: Request, res: Response): Promise<Response> {
     const result = await this.SecurityService.countSecurity();
-    if (!result.success) return res.status(result.status!).json(result);
-    return res.status(200).json(result);
+    return handleApiResponse(res, result);
   }
 
   // Delete & block
@@ -75,18 +74,16 @@ class SecurityController {
   // Reset password
   async resetPassword(req: Request, res: Response): Promise<Response> {
     const result = await this.SecurityService.resetPassword(req.body.email);
-    if (!result.success) return res.status(result.status!).json(result);
-    return res.status(200).json(result);
+    return handleApiResponse(res, result);
   }
 
   // Update password
   async updatePassword(req: Request, res: Response): Promise<Response> {
     const result = await this.SecurityService.updatePassword(
       req.curUser.userId,
-      req.body.password
+      req.body
     );
-    if (!result.success) return res.status(result.status!).json(result);
-    return res.status(200).json(result);
+    return handleApiResponse(res, result);
   }
 
   // Send verification again
@@ -94,8 +91,7 @@ class SecurityController {
     const result = await this.SecurityService.sendVerificationEmail(
       req.body.email
     );
-    if (!result.success) return res.status(result.status!).json(result);
-    return res.status(200).json(result);
+    return handleApiResponse(res, result);
   }
 
   // Generate two factor authentication
@@ -115,8 +111,7 @@ class SecurityController {
       req.curUser.userId,
       req.body.twoFactorCode
     );
-    if (!result.success) return res.status(result.status!).json(result);
-    return res.status(200).json(result);
+    return handleApiResponse(res, result);
   }
 }
 

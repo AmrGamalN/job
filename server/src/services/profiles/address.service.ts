@@ -41,7 +41,7 @@ class AddressService {
         };
       }
 
-      await Address.create({ ...AddressData });
+      await Address.create({ ...AddressData,userId });
       return {
         ...parseSafe,
         message: "Add address successfully",
@@ -53,13 +53,13 @@ class AddressService {
   updateAddress = warpAsync(
     async (
       AddressData: AddressUpdateDtoType,
-      addressId: string
+      query: object
     ): Promise<responseHandler> => {
       const parseSafe = validateAndFormatData(AddressData, AddressUpdateDto);
       if (!parseSafe.success) return parseSafe;
 
       const updateAddress = await Address.findOneAndUpdate(
-        { addressId },
+        query,
         {
           $set: {
             ...AddressData,
@@ -89,9 +89,8 @@ class AddressService {
 
   // Get address
   getAddress = warpAsync(
-    async (addressId: string): Promise<responseHandler> => {
-      const getAddress = await Address.findOne({ _id: addressId }).lean();
-
+    async (query: object): Promise<responseHandler> => {
+      const getAddress = await Address.findOne(query).lean();
       if (!getAddress) {
         return {
           success: false,
@@ -102,7 +101,6 @@ class AddressService {
 
       const parseSafeAddress = validateAndFormatData(getAddress, AddressDto);
       if (!parseSafeAddress.success) return parseSafeAddress;
-
       return {
         message: "Get address successfully",
         ...parseSafeAddress,

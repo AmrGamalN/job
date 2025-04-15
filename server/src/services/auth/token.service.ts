@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { UserSecurityDtoType } from "../../dto/profiles/security.dto";
 import User from "../../models/mongodb/profiles/user.model";
+import Profile from "../../models/mongodb/profiles/profile.model";
 dotenv.config();
 
 class TokenService {
@@ -45,14 +46,24 @@ class TokenService {
   // Generate temporarily token when login with two factor authentication
   generateTokens = warpAsync(
     async (userSecurity: UserSecurityDtoType): Promise<responseHandler> => {
-      const user = await User.findOne({ userId: userSecurity.userId });
+      const user = await User.findOne({ userId: userSecurity.userId }).lean().select({
+        firstName: 1,
+        lastName: 1,
+        userName: 1,
+        profileImage: 1,
+      });
+      const profile = await Profile.findOne({ userId: userSecurity.userId }).lean().select({
+        profileLink: 1,
+      });
       const payload = {
         userId: userSecurity.userId,
         email: userSecurity.email,
+        userName: user?.userName,
+        profileLink: profile?.profileLink,
         phoneNumber: userSecurity.phoneNumber,
         role: userSecurity.role,
         name: user?.firstName?.concat(String(user?.lastName)),
-        profileImage: user?.profileImage,
+        profileImage: user?.profileImage?.imageUrl,
         dateToJoin: userSecurity.dateToJoin,
         lastSeen: new Date().toISOString(),
         sign_up: userSecurity.sign_up_provider,

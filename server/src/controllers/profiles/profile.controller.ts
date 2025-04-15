@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import ProfileService from "../../services/profiles/profile.service";
 import { GraphQLResolveInfo } from "graphql";
 import { responseHandler } from "../../utils/responseHandler";
+import { handleApiResponse } from "../../utils/responseHandler";
 
 class ProfileController {
   private static instance: ProfileController;
@@ -48,17 +49,20 @@ class ProfileController {
 
   // Get profile by link and using rst api
   async getProfileByLink(req: Request, res: Response): Promise<Response> {
-    const result = await this.profileService.getProfileByLink(req.originalUrl);
-    if (!result.success) return res.status(result.status!).json(result);
-    return res.status(200).json(result);
+    const query = req.params.profileId
+      ? { profileLink: process.env.BACKEND_URL +req.originalUrl }
+      : { profileLink: req.curUser?.profileLink };
+    const result = await this.profileService.getProfileByLink(query);
+    return handleApiResponse(res, result);
   }
 
   // Update profile by rest api
   async updateProfile(req: Request, res: Response): Promise<Response> {
-    const userId = req.params.userId ? req.params.userId : req.curUser?.userId;
-    const result = await this.profileService.updateProfile(req.body, userId);
-    if (!result.success) return res.status(result.status!).json(result);
-    return res.status(200).json(result);
+    const query = req.params.profileId
+      ? { _id: req.params.profileId }
+      : { userId: req.curUser?.userId };
+    const result = await this.profileService.updateProfile(req.body, query);
+    return handleApiResponse(res, result);
   }
 }
 

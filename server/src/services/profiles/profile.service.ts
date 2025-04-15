@@ -23,7 +23,7 @@ class ProfileService {
   updateProfile = warpAsync(
     async (
       profileData: ProfileUpdateDtoType,
-      userId: string
+      query: object
     ): Promise<responseHandler> => {
       if (Object.keys(profileData).length === 0) {
         return {
@@ -37,7 +37,7 @@ class ProfileService {
       if (!parseSafe.success) return parseSafe;
 
       const updateProfile = await Profile.findOneAndUpdate(
-        { userId },
+        query,
         {
           $set: {
             ...profileData,
@@ -67,11 +67,8 @@ class ProfileService {
 
   // Get profile model by using GraphQl to select any field is need
   getProfileByLink = warpAsync(
-    async (link: string): Promise<responseHandler> => {
-      const getProfile = await Profile.findOne({
-        profileLink: process.env.BACKEND_URL + link,
-      }).lean();
-
+    async (query: object): Promise<responseHandler> => {
+      const getProfile = await Profile.findOne(query).lean();
       if (!getProfile) {
         return {
           success: false,

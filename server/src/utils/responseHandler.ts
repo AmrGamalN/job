@@ -1,3 +1,4 @@
+import { Response } from "express";
 export interface responseHandler {
   success: boolean;
   status?: number;
@@ -10,3 +11,8 @@ export interface responseHandler {
   tempToken?: string;
   userId?: string;
 }
+
+export const handleApiResponse = (res: Response, response: responseHandler) => {
+  if (!response.success) return res.status(response.status!).json(response);
+  return res.status(response.status!).json(response);
+};
