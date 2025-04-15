@@ -83,7 +83,7 @@ class SecurityController {
   async updatePassword(req: Request, res: Response): Promise<Response> {
     const result = await this.SecurityService.updatePassword(
       req.curUser.userId,
-      req.body.password
+      req.body
     );
     if (!result.success) return res.status(result.status!).json(result);
     return res.status(200).json(result);

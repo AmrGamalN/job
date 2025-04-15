@@ -4,7 +4,7 @@ import { asyncHandler } from "../../middleware/handleError";
 import TokenMiddleware from "../../middleware/token.middleware";
 const tokenMiddleware = TokenMiddleware.getInstance();
 const controller = EducationController.getInstance();
-const role = ["user", "admin", "manager"];
+import {role} from "../../utils/role";
 const router = express.Router();
 
 const commonMiddlewares = [

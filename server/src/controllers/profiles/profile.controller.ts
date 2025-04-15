@@ -48,15 +48,20 @@ class ProfileController {
 
   // Get profile by link and using rst api
   async getProfileByLink(req: Request, res: Response): Promise<Response> {
-    const result = await this.profileService.getProfileByLink(req.originalUrl);
+    const query = req.params.profileId
+      ? { profileLink: process.env.BACKEND_URL +req.originalUrl }
+      : { profileLink: req.curUser?.profileLink };
+    const result = await this.profileService.getProfileByLink(query);
     if (!result.success) return res.status(result.status!).json(result);
     return res.status(200).json(result);
   }
 
   // Update profile by rest api
   async updateProfile(req: Request, res: Response): Promise<Response> {
-    const userId = req.params.userId ? req.params.userId : req.curUser?.userId;
-    const result = await this.profileService.updateProfile(req.body, userId);
+    const query = req.params.profileId
+      ? { _id: req.params.profileId }
+      : { userId: req.curUser?.userId };
+    const result = await this.profileService.updateProfile(req.body, query);
     if (!result.success) return res.status(result.status!).json(result);
     return res.status(200).json(result);
   }

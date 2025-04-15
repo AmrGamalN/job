@@ -2,7 +2,7 @@ export const profileTypeDefs = `
 
 type Language {
   language: String
-  proficiency: String
+  level: String
 }
 
 type Profile {

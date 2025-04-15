@@ -92,10 +92,8 @@ export const validateProfileUpdate = [
     .notEmpty()
     .withMessage("Each language must be a non-empty string"),
 
-  check("languages.*.proficiency")
+  check("languages.*.level")
     .trim()
     .isIn(["beginner", "intermediate", "advanced"])
-    .withMessage(
-      "Proficiency must be 'beginner', 'intermediate', or 'advanced'"
-    ),
+    .withMessage("level must be 'beginner', 'intermediate', or 'advanced'"),
 ];

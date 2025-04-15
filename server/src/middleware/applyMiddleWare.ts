@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import { GraphQLResolveInfo } from "graphql";
-import { promisify } from "util";
 type Middleware = (
   req: Request,
   res: Response,

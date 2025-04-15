@@ -14,6 +14,7 @@ import { generateVerificationToken } from "../../utils/generateCode";
 import Otp from "../../models/mongodb/profiles/otp.model";
 import speakeasy from "speakeasy";
 import QRCode from "qrcode";
+import bcrypt from "bcrypt";
 const graphqlFields = require("graphql-fields");
 
 class SecurityService {
@@ -237,17 +238,42 @@ class SecurityService {
   });
 
   updatePassword = warpAsync(
-    async (userId: string, newPassword: string): Promise<responseHandler> => {
-      const updatedUser = await auth.updateUser(userId, {
-        password: newPassword,
-      });
-      if (!updatedUser) {
+    async (userId: string, body: any): Promise<responseHandler> => {
+      const getUser = await Security.findOne({ userId })
+        .lean()
+        .select({ password: 1 });
+
+      if (!getUser) {
         return {
           success: false,
           status: 404,
           message: "User not found",
         };
       }
+      const compare = await bcrypt.compare(
+        body.oldPassword,
+        getUser?.password!
+      );
+      if (compare) {
+        return {
+          success: false,
+          status: 400,
+          message: "New password must be different from the old password",
+        };
+      }
+
+      await Promise.all([
+        auth.updateUser(userId, {
+          password: body.newPassword,
+        }),
+        Security.updateOne(
+          { userId },
+          {
+            password: await bcrypt.hash(body.newPassword, 10),
+          }
+        ),
+      ]);
+
       return {
         success: true,
         status: 200,

@@ -1,6 +1,5 @@
 import { Schema, model } from "mongoose";
 import { ProfileDtoType } from "../../../dto/profiles/profile.dto";
-import { string } from "zod";
 
 const ProfileSchema = new Schema(
   {
@@ -35,8 +34,10 @@ const ProfileSchema = new Schema(
     languages: [
       {
         language: { type: String, required: true },
-        proficiency: {
-          enum: ["beginner", "intermediate", "advanced"],
+        level: {
+          type:String,
+          enum: ["beginner", "intermediate", "advanced","fluent"],
+          default:"fluent"
         },
       },
     ],

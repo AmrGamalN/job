@@ -48,8 +48,8 @@ class UserController {
 
   // Update user by rest api
   async updateUser(req: Request, res: Response): Promise<Response> {
-    const userId = req.params.userId ? req.params.userId : req.curUser?.userId;
-    const result = await this.userService.updateUser(req.body, userId);
+    const query = req.params.userId ? {_id:req.params.userId} : {userId:req.curUser?.userId};
+    const result = await this.userService.updateUser(req.body, query);
     if (!result.success) return res.status(result.status!).json(result);
     return res.status(200).json(result);
   }

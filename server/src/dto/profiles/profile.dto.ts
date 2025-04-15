@@ -21,7 +21,7 @@ export const profileDto = z
       .array(
         z.object({
           language: z.string(),
-          proficiency: z.string(),
+          level: z.enum(["beginner", "intermediate", "advanced", "fluent"]).default("fluent"),
         })
       )
       .default([]),

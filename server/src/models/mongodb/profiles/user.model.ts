@@ -7,8 +7,22 @@ const UserSchema = new Schema(
     userName: { type: String, required: true, unique: true },
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
-    profileImage: { type: String, default: "" },
-    coverImage: { type: String, default: "" },
+    profileImage: {
+      imageUrl: {
+      type: String,
+      default: ""
+    },
+    imageKey: {
+      type: String,
+      default: "" }},
+    coverImage: {
+      imageUrl: {
+      type: String,
+      default: ""
+    },
+    imageKey: {
+      type: String,
+      default: "" }},
     prefixS3: { type: String, default: "" },
     account: {
       type: String,
