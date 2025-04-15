@@ -122,6 +122,7 @@ router.get(
   asyncHandler(controller.getAddress.bind(controller))
 );
 
+
 /**
  * @swagger
  * /address/update/{userId}:
