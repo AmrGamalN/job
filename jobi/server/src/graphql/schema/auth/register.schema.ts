@@ -10,14 +10,14 @@ type RegisterResponse {
 
 input RegisterData {
     email: String!
-    mobile: String!
+    phoneNumber: String!
     password: String!
     confirmPassword: String!
     firstName: String!
     lastName: String!
-    profileImage: String
-    coverImage: String
     visibility: String
+    gender: String!
+    terms: Boolean!
 }
 
 type Query {

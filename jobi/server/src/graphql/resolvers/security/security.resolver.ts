@@ -1,5 +1,5 @@
 import { IResolvers } from "@graphql-tools/utils";
-import UserController from "../../../controllers/security/security.controller";
+import UserController from "../../../controllers/profiles/security.controller";
 import { applyMiddleware } from "../../../middleware/applyMiddleWare";
 import { asyncHandler } from "../../../middleware/handleError";
 import { expressValidator } from "../../../middleware/validatorMiddleware";

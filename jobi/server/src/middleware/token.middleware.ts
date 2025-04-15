@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
+import { encryptToken, decryptToken } from "../utils/encryptionToken";
 dotenv.config();
 
 declare module "express-serve-static-core" {
@@ -19,31 +20,6 @@ class TokenMiddleware {
     return TokenMiddleware.Instance;
   }
 
-  // Verify access token middleware
-  async accessTokenMiddleware(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      res.status(401).json({ message: "unauthorized: No token provided." });
-      return;
-    }
-
-    const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, String(process.env.ACCESS_TOKEN_SECRET), {
-      algorithms: ["HS256"],
-    });
-    if (!decoded) {
-      res.status(401).json({ message: "Invalid or expired token." });
-      return;
-    }
-
-    req.curUser = decoded;
-    next();
-  }
-
   // Authorization middleware & allow to
   public authorizationMiddleware(role: string[]) {
     try {
@@ -57,7 +33,7 @@ class TokenMiddleware {
           res.status(403).json({ error: "Forbidden: Access denied" });
           return;
         }
-        next();
+        return next();
       };
     } catch (error) {
       throw new Error(
@@ -72,53 +48,60 @@ class TokenMiddleware {
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized: No access token." });
-    }
-
-    const refreshToken = req.cookies?.RefreshToken;
+    const accessToken = req.cookies?.accessToken;
+    const refreshToken = req.cookies?.refreshToken;
     if (!refreshToken) {
       return res
         .status(401)
         .json({ message: "Unauthorized: No refresh token." });
     }
 
-    const accessToken = authHeader.split(" ")[1];
-    jwt.verify(
-      accessToken,
-      String(process.env.ACCESS_TOKEN_SECRET),
-      (err, decoded) => {
-        if (!err) {
-          req.curUser = decoded;
-          return next();
-        }
-
-        jwt.verify(
-          refreshToken,
-          String(process.env.REFRESH_TOKEN_SECRET),
-          (err: any, decoded: any) => {
-            if (err) {
-              return res
-                .status(403)
-                .json({ message: "Invalid refresh token." });
-            }
-
-            const newAccessToken = jwt.sign(
-              { ...decoded },
-              String(process.env.ACCESS_TOKEN_SECRET),
-              { expiresIn: "30m" }
-            );
-
-            res.setHeader("Authorization", `Bearer ${newAccessToken}`);
-            req.curUser = decoded;
-            return next();
-          }
-        );
+    if (accessToken) {
+      try {
+        const decoded = jwt.verify(decryptToken(accessToken), "slat");
+        req.curUser = decoded;
+        return next();
+      } catch (err) {
+        return res
+          .status(403)
+          .json({ message: "Unauthorized: No access token." });
       }
-    );
+    }
+
+    // Access token is missing or invalid — verify refresh token
+    try {
+      const decoded = jwt.verify(
+        decryptToken(refreshToken),
+        String(process.env.REFRESH_TOKEN_SECRET)
+      );
+
+      if (typeof decoded !== "object" || decoded === null) {
+        return res
+          .status(403)
+          .json({ message: "Invalid or expired refresh token." });
+      }
+      const { iat, exp, ...payload } = decoded;
+      const newAccessToken = jwt.sign(
+        payload,
+        String(process.env.ACCESS_TOKEN_SECRET),
+        { expiresIn: "30m" }
+      );
+
+      // Set the new access token as an httpOnly cookie
+      res.cookie("accessToken", encryptToken(newAccessToken), {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 60 * 60 * 1000,
+      });
+
+      req.curUser = decoded;
+      return next();
+    } catch (err) {
+      return res
+        .status(403)
+        .json({ message: "Invalid or expired refresh token." });
+    }
   }
 }
 export default TokenMiddleware;

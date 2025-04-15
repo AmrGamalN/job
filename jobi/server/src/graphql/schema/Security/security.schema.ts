@@ -3,7 +3,7 @@ type Security {
   _id:ID
   userId: String!
   email: String
-  mobile: String
+  phoneNumber: String
   role: String
   status: String
   isEmailVerified: Boolean

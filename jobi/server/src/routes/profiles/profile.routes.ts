@@ -11,7 +11,6 @@ const router = express.Router();
 
 const commonMiddlewares = [
   asyncHandler(tokenMiddleware.refreshTokenMiddleware),
-  asyncHandler(tokenMiddleware.accessTokenMiddleware),
   asyncHandler(tokenMiddleware.authorizationMiddleware(role)),
 ];
 

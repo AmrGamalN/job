@@ -3,36 +3,45 @@ import LoginController from "../../controllers/auth/login.controller";
 import { asyncHandler } from "../../middleware/handleError";
 import TokenMiddleware from "../../middleware/token.middleware";
 import { expressValidator } from "../../middleware/validatorMiddleware";
-import { validateLogin } from "../../validation/auth/login.validator";
-import { validateCode2AF } from "../../validation/security/security.validator";
+import {
+  validateLoginByPhone,
+  validateLoginByEmail,
+} from "../../validation/auth/login.validator";
+import { validateCode2AF } from "../../validation/profiles/security.validator";
 const tokenMiddleware = TokenMiddleware.getInstance();
 const controller = LoginController.getInstance();
-const role = ["client", "freelance", "company", "school", "admin", "manager"];
+const role = [
+  "user",
+  "client",
+  "freelance",
+  "company",
+  "school",
+  "admin",
+  "manager",
+];
 const router = express.Router();
 
-// Login with email and password
+// Login by email
 router.post(
   "/email",
-  asyncHandler(expressValidator(validateLogin)),
+  asyncHandler(expressValidator(validateLoginByEmail)),
   asyncHandler(controller.loginByEmail.bind(controller))
+);
+
+// Login by phone
+router.post(
+  "/phone",
+  asyncHandler(expressValidator(validateLoginByPhone)),
+  asyncHandler(controller.loginByPhone.bind(controller))
 );
 
 // Verify two factor authentication after Login
 router.post(
   "/2fa",
-  asyncHandler(tokenMiddleware.accessTokenMiddleware),
   asyncHandler(tokenMiddleware.authorizationMiddleware(role)),
   asyncHandler(expressValidator(validateCode2AF)),
   asyncHandler(controller.verifyTwoFactorAuthentication.bind(controller))
 );
 
-// Logout
-router.post(
-  "/logout",
-  asyncHandler(tokenMiddleware.accessTokenMiddleware),
-  asyncHandler(tokenMiddleware.refreshTokenMiddleware),
-  asyncHandler(tokenMiddleware.authorizationMiddleware(role)),
-  asyncHandler(controller.logOut.bind(controller))
-);
 
 export default router;

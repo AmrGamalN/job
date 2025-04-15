@@ -9,6 +9,7 @@ const UserSchema = new Schema(
     lastName: { type: String, required: true },
     profileImage: { type: String, default: "" },
     coverImage: { type: String, default: "" },
+    prefixS3: { type: String, default: "" },
     account: {
       type: String,
       enum: ["user", "admin", "manager"],
