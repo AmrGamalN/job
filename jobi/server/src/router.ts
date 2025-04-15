@@ -11,9 +11,6 @@ const router = Router();
 // Health Check
 router.get(
   "/health-check",
-  asyncHandler(tokenMiddleware.accessTokenMiddleware),
-  asyncHandler(tokenMiddleware.refreshTokenMiddleware),
-  asyncHandler(tokenMiddleware.authorizationMiddleware(["admin", "manager"])),
   (req: Request, res: Response) => {
     console.log("Server is running");
     res.send("Server is running");

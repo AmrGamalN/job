@@ -1,5 +1,5 @@
 import express from "express";
-import SecurityController from "../../controllers/security/security.controller";
+import SecurityController from "../../controllers/profiles/security.controller";
 import { expressValidator } from "../../middleware/validatorMiddleware";
 import { asyncHandler } from "../../middleware/handleError";
 import {
@@ -17,7 +17,6 @@ const router = express.Router();
 
 const commonMiddlewares = [
   asyncHandler(tokenMiddleware.refreshTokenMiddleware),
-  asyncHandler(tokenMiddleware.accessTokenMiddleware),
   asyncHandler(tokenMiddleware.authorizationMiddleware(["admin", "manager"])),
 ];
 
@@ -54,7 +53,6 @@ router.post(
 // Update the user's password
 router.post(
   "/update-password",
-  asyncHandler(tokenMiddleware.accessTokenMiddleware),
   asyncHandler(tokenMiddleware.refreshTokenMiddleware),
   asyncHandler(tokenMiddleware.authorizationMiddleware(role)),
   asyncHandler(expressValidator(validateSecurityUpdatePass)),
@@ -71,7 +69,6 @@ router.post(
 // Generating the QR code to 2FA.
 router.post(
   "/generate/2fa",
-  asyncHandler(tokenMiddleware.accessTokenMiddleware),
   asyncHandler(tokenMiddleware.refreshTokenMiddleware),
   asyncHandler(tokenMiddleware.authorizationMiddleware(role)),
   asyncHandler(controller.generateTwoFactorAuth.bind(controller))
@@ -80,7 +77,6 @@ router.post(
 // Endpoint to verify the two-factor authentication (2FA) code after generating the QR code.
 router.post(
   "/confirm/2fa",
-  asyncHandler(tokenMiddleware.accessTokenMiddleware),
   asyncHandler(tokenMiddleware.refreshTokenMiddleware),
   asyncHandler(tokenMiddleware.authorizationMiddleware(role)),
   asyncHandler(expressValidator(validateCode2AF)),

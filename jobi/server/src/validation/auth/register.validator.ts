@@ -25,14 +25,14 @@ export const registerValidator = [
       "Password must be at least 10 characters long, contain at least two uppercase letters, two lowercase letters, two numbers, and two symbols."
     ),
 
-  check("mobile")
+  check("phoneNumber")
     .trim()
     .notEmpty()
-    .withMessage("Mobile is required")
+    .withMessage("Phone number is required")
     .whitelist("+0-9")
     .isMobilePhone("ar-EG")
     .isLength({ min: 13, max: 13 })
-    .withMessage("Mobile number must be 13 digits like +201200512463."),
+    .withMessage("Phone number number must be 13 digits like +201200512463."),
 
   check("firstName")
     .isString()

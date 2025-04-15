@@ -1,12 +1,13 @@
 import { Schema, model } from "mongoose";
-import { UserSecurityDtoType } from "../../../dto/security/security.dto";
+import { UserSecurityDtoType } from "../../../dto/profiles/security.dto";
 import { number } from "zod";
 
 const userSecuritySchema = new Schema(
   {
     userId: { type: String, ref: "users", required: true, unique: true },
     email: { type: String, required: true, unique: true },
-    mobile: { type: String, unique: true, sparse: true },
+    phoneNumber: { type: String, unique: true, sparse: true },
+    password: { type: String, required: true },
     role: {
       type: String,
       // enum: ["client", "freelance", "company", "school", "admin", "manager"],
@@ -22,6 +23,9 @@ const userSecuritySchema = new Schema(
     twoFactorCode: { type: String, default: "" },
     numberLogin: { type: Number, default: 0 },
     lastFailedLoginTime: { type: Date, default: null },
+    sign_up_provider: { type: String, default: "" },
+    sign_in_provider: { type: String, default: "" },
+    terms: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

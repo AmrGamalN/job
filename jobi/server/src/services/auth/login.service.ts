@@ -1,4 +1,4 @@
-import Security from "../../models/mongodb/security/security.model";
+import Security from "../../models/mongodb/profiles/security.model";
 import {
   auth,
   authentication,
@@ -7,9 +7,10 @@ import {
 import { warpAsync } from "../../utils/warpAsync";
 import { responseHandler } from "../../utils/responseHandler";
 import dotenv from "dotenv";
-import { UserSecurityDtoType } from "../../dto/security/security.dto";
+import { UserSecurityDtoType } from "../../dto/profiles/security.dto";
 import TokenService from "../../services/auth/token.service";
 import speakeasy from "speakeasy";
+import bcrypt from "bcrypt";
 dotenv.config();
 
 class LoginService {
@@ -25,52 +26,64 @@ class LoginService {
     return LoginService.instanceService;
   }
 
-  // Login by email
-  loginByEmail = warpAsync(
-    async (email: string, password: string): Promise<responseHandler> => {
-      const isUserExisting = await this.isUserExisting(email);
+  // Login by email or phone
+  Login = warpAsync(
+    async (
+      password: string,
+      email?: string,
+      phoneNumber?: string
+    ): Promise<responseHandler> => {
+      const credential = email
+        ? { email: email }
+        : { phoneNumber: phoneNumber };
+
+      const isUserExisting = await this.isUserExisting(credential);
       if (isUserExisting.success === false) return isUserExisting;
 
-      const userSecurity = await Security.findOne({
-        email: email,
-      }).lean();
+      const userSecurity = await Security.findOne(credential).lean();
       if (!userSecurity) {
-        return { success: false, message: "Account not found" };
+        return { success: false, status: 404, message: "Account not found" };
       }
 
-      // Check user status
       const checkAccountStatus = await this.checkAccountStatusBeforeLogin(
         userSecurity
       );
       if (!checkAccountStatus.success) return checkAccountStatus;
 
-      // Check user attempt failed login
-      const checkAttemptsLogin = await this.checkAttemptsLogin(userSecurity);
+      const checkAttemptsLogin = await this.checkAttemptsLogin(
+        userSecurity,
+        credential
+      );
       if (!checkAttemptsLogin.success) return checkAttemptsLogin;
 
-      // SignIn with email & password
-      const userCredential = await this.signWithPasswordAndEmail(
-        email,
-        password
-      );
-      if (!userCredential.success) return userCredential;
+      let userCredential;
+      if (email) {
+        userCredential = await this.signWithPasswordAndEmail(email, password);
+        if (!userCredential.success) return userCredential;
+      }
 
-      // Check two factor authentication
+      if (phoneNumber) {
+        userCredential = await this.signWithPasswordAndPhone(
+          password,
+          userSecurity.password,
+          phoneNumber
+        );
+        if (!userCredential.success) return userCredential;
+      }
+
       const checkEnable2FA = await this.checkApplyTwoFactorAuth(userSecurity);
       if (checkEnable2FA.success) {
         const tempToken = await this.tokenService.generateTempToken(
-          userSecurity.email,
+          credential,
           userSecurity.role
         );
-
         return {
           ...checkEnable2FA,
-          tempAccessToken: tempToken.tempAccessToken,
+          tempToken: tempToken.tempToken,
           userId: userSecurity.userId,
         };
       }
 
-      // Generate access token and refresh token
       const tokens = await this.tokenService.generateTokens(userSecurity);
       return {
         success: true,
@@ -84,7 +97,11 @@ class LoginService {
   );
 
   updateUserStatus = warpAsync(
-    async (userId: string, status: string): Promise<responseHandler> => {
+    async (
+      userId: string,
+      status: string,
+      sign_in_provider: string
+    ): Promise<responseHandler> => {
       await Security.updateOne(
         {
           userId,
@@ -92,6 +109,7 @@ class LoginService {
         {
           $set: {
             status,
+            sign_in_provider,
           },
         }
       ).lean();
@@ -101,16 +119,27 @@ class LoginService {
 
   // Check user existing
   private isUserExisting = warpAsync(
-    async (email: string): Promise<responseHandler> => {
-      const getUserByEmail = await auth.getUserByEmail(email).catch(() => null);
-      if (!getUserByEmail) {
+    async (credential: any): Promise<responseHandler> => {
+      let getUser;
+      let provider;
+      if (credential.email) {
+        provider = "email or password";
+        getUser = await auth.getUserByEmail(credential.email).catch(() => null);
+      }
+      if (credential.phoneNumber) {
+        provider = "phone or password";
+        getUser = await auth
+          .getUserByPhoneNumber(credential.phoneNumber)
+          .catch(() => null);
+      }
+      if (!getUser) {
         return {
           success: false,
           status: 404,
-          message: "Email not exists, Please check your email or password",
+          message: `User not exists, Please check your ${provider}`,
         };
       }
-      return { success: true };
+      return { success: true, status: 200 };
     }
   );
 
@@ -124,13 +153,14 @@ class LoginService {
           email,
           password
         );
+
         await Security.updateOne(
-          { email },
+          { email: email },
           { $set: { numberLogin: 0, lastFailedLoginTime: null } }
         );
       } catch (error: any) {
         if (error.code === "auth/invalid-credential") {
-          this.trackFailedLoginAttempt(email);
+          this.trackFailedLoginAttempt(email, null);
           return {
             success: false,
             status: 401,
@@ -139,6 +169,30 @@ class LoginService {
         }
       }
       return { success: true, data: userCredential };
+    }
+  );
+
+  // Login with phone and password
+  private signWithPasswordAndPhone = warpAsync(
+    async (
+      plainPassword: string,
+      hashPassword: string,
+      phoneNumber: string
+    ): Promise<responseHandler> => {
+      const comparePass = await bcrypt.compare(plainPassword, hashPassword);
+      if (!comparePass) {
+        this.trackFailedLoginAttempt(null, phoneNumber);
+        return {
+          success: false,
+          status: 401,
+          message: "Invalid phone or password",
+        };
+      }
+      await Security.updateOne(
+        { phoneNumber },
+        { $set: { numberLogin: 0, lastFailedLoginTime: null } }
+      );
+      return { success: true };
     }
   );
 
@@ -225,7 +279,7 @@ class LoginService {
           twoFactorCode: 1,
           email: 1,
           role: 1,
-          mobile: 1,
+          phoneNumber: 1,
           userId: 1,
           dateToJoin: 1,
         })
@@ -262,6 +316,7 @@ class LoginService {
         message: "Login successful",
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
+        userId: userSecurity.userId,
       };
     }
   );

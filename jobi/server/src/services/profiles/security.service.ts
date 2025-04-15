@@ -1,9 +1,9 @@
-import Security from "../../models/mongodb/security/security.model";
+import Security from "../../models/mongodb/profiles/security.model";
 import {
   UserSecurityDto,
   UserSecurityUpdateDto,
   UserSecurityUpdateDtoType,
-} from "../../dto/security/security.dto";
+} from "../../dto/profiles/security.dto";
 import { warpAsync } from "../../utils/warpAsync";
 import { responseHandler } from "../../utils/responseHandler";
 import { validateAndFormatData } from "../../utils/validateAndFormatData";
@@ -11,7 +11,7 @@ import { GraphQLResolveInfo } from "graphql";
 import { auth } from "../../config/firebase";
 import { sendVerificationEmail } from "../../utils/sendEmail";
 import { generateVerificationToken } from "../../utils/generateCode";
-import Otp from "./otp.model";
+import Otp from "../../models/mongodb/profiles/otp.model";
 import speakeasy from "speakeasy";
 import QRCode from "qrcode";
 const graphqlFields = require("graphql-fields");

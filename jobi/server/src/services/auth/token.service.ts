@@ -2,7 +2,7 @@ import { warpAsync } from "../../utils/warpAsync";
 import { responseHandler } from "../../utils/responseHandler";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import { UserSecurityDtoType } from "../../dto/security/security.dto";
+import { UserSecurityDtoType } from "../../dto/profiles/security.dto";
 import User from "../../models/mongodb/profiles/user.model";
 dotenv.config();
 
@@ -22,7 +22,7 @@ class TokenService {
         email: email,
         role: role,
       };
-      const tempAccessToken = jwt.sign(
+      const tempToken = jwt.sign(
         payload,
         String(process.env.ACCESS_TOKEN_SECRET),
         {
@@ -31,14 +31,14 @@ class TokenService {
         }
       );
 
-      if (!tempAccessToken) {
+      if (!tempToken) {
         return {
           success: false,
           status: 400,
           message: "Failed to temp access token",
         };
       }
-      return { success: true, tempAccessToken: tempAccessToken };
+      return { success: true, tempToken: tempToken };
     }
   );
 
@@ -49,12 +49,15 @@ class TokenService {
       const payload = {
         userId: userSecurity.userId,
         email: userSecurity.email,
-        mobile: userSecurity.mobile,
+        phoneNumber: userSecurity.phoneNumber,
         role: userSecurity.role,
         name: user?.firstName?.concat(String(user?.lastName)),
         profileImage: user?.profileImage,
         dateToJoin: userSecurity.dateToJoin,
         lastSeen: new Date().toISOString(),
+        sign_up: userSecurity.sign_up_provider,
+        sign_in: userSecurity.sign_in_provider,
+        emailVerified: userSecurity.isEmailVerified,
       };
 
       const accessToken = jwt.sign(

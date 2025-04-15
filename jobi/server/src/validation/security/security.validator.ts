@@ -2,12 +2,12 @@ import { check } from "express-validator";
 
 export const validateUserSecurityUpdate = [
   // mobile is require when login by phone
-  check("mobile")
+  check("phoneNumber")
     .trim()
     .whitelist("+0-9")
     .isMobilePhone("ar-EG")
     .isLength({ min: 13, max: 13 })
-    .withMessage("Mobile number must be 13 digits like +201200512463.")
+    .withMessage("Phone number number must be 13 digits like +201200512463.")
     .optional(),
 ];
 

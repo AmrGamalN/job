@@ -4,6 +4,7 @@ import {
   getAuth,
   signInWithEmailAndPassword,
   signInWithCustomToken,
+  signInWithPhoneNumber
 } from "firebase/auth";
 import dotenv from "dotenv";
 dotenv.config();
@@ -26,4 +27,5 @@ export {
   authentication,
   signInWithEmailAndPassword,
   signInWithCustomToken,
+  signInWithPhoneNumber
 };

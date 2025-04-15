@@ -5,7 +5,7 @@ const userSecuritySchema = new Schema(
     userId: { type: String, ref: "users", required: true, unique: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    mobile: { type: String, unique: true, sparse: true },
+    phoneNumber: { type: String, unique: true, sparse: true },
     role: {
       type: String,
       enum: ["client", "freelance", "company", "school", "admin", "manager"],

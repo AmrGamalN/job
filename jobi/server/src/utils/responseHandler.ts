@@ -7,6 +7,6 @@ export interface responseHandler {
   count?: number;
   accessToken?: string;
   refreshToken?: string;
-  tempAccessToken?: string;
+  tempToken?: string;
   userId?: string;
 }

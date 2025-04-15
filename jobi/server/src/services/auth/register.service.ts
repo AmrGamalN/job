@@ -1,7 +1,7 @@
 import User from "../../models/mongodb/profiles/user.model";
-import Otp from "../../models/mongodb/security/otp.model";
+import Otp from "../../models/mongodb/profiles/otp.model";
 import Profile from "../../models/mongodb/profiles/profile.model";
-import Security from "../../models/mongodb/security/security.model";
+import Security from "../../models/mongodb/profiles/security.model";
 import { RegisterDtoType, RegisterDto } from "../../dto/auth/register.dto";
 import { validateAndFormatData } from "../../utils/validateAndFormatData";
 import { auth } from "../../config/firebase";
@@ -11,6 +11,8 @@ import { generateVerificationToken } from "../../utils/generateCode";
 import { warpAsync } from "../../utils/warpAsync";
 import { responseHandler } from "../../utils/responseHandler";
 import { generateUniqueProfile } from "../../utils/generateUniqueProfileLink";
+import { v4 as uuidv4 } from "uuid";
+import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -39,7 +41,7 @@ class RegisterService {
 
       const existingUser = await this.isUserExisting(
         userData.email,
-        userData.mobile
+        userData.phoneNumber
       );
       if (!existingUser.success) return existingUser;
 
@@ -182,44 +184,50 @@ class RegisterService {
 
       // Create user in firebase
       const userData = JSON.parse(getUserFromCaching);
-      const createUser = await auth.createUser({
-        email: userData.email,
-        phoneNumber: userData?.mobile,
-        password: userData.password,
-      });
-
-      // Create user in user model
+      const {
+        email,
+        password,
+        phoneNumber,
+        firstName,
+        lastName,
+        gender,
+        terms,
+      } = userData;
+      const [firebaseUser] = await Promise.all([
+        auth.createUser({ email, password, phoneNumber }),
+      ]);
+      const userId = firebaseUser.uid;
+      const prefixS3 = uuidv4();
       const userUnique = await generateUniqueProfile(
         userData.firstName,
         userData.lastName
       );
-      await User.create({
-        userId: createUser.uid,
-        userName: userUnique.userName,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        profileImage: userData.profileImage,
-        coverImage: userData.coverImage,
-        visibility: userData.visibility,
-      });
+      await Promise.all([
+        User.create({
+          prefixS3,
+          userId,
+          firstName,
+          lastName,
+          gender,
+          userName: userUnique.userName,
+        }),
+        Security.create({
+          userId,
+          email,
+          phoneNumber,
+          password: await bcrypt.hash(password, 10),
+          isEmailVerified: true,
+          dateToJoin: Date.now(),
+          terms,
+          sign_up_provider: "email",
+        }),
+        Profile.create({
+          userId,
+          profileLink: userUnique.profileLink,
+        }),
+        redisClient.del(`token: ${token}`),
+      ]);
 
-      // Create user in security model
-      await Security.create({
-        userId: createUser.uid,
-        email: userData.email,
-        mobile: userData?.mobile,
-        isEmailVerified: true,
-        dateToJoin: Date.now(),
-      });
-
-      // Create user in profile model
-      await Profile.create({
-        userId: createUser.uid,
-        profileLink: userUnique.profileLink,
-      });
-
-      // Delete User from caching
-      await redisClient.del(`token: ${token}`);
       return {
         success: true,
         status: 201,

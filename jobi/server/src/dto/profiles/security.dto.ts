@@ -6,7 +6,8 @@ export const UserSecurityDto = z
     _id: z.union([z.string(), z.instanceof(ObjectId)]),
     userId: z.string(),
     email: z.string().email(),
-    mobile: z.string().optional(),
+    phoneNumber: z.string(),
+    password: z.string(),
     role: z.enum(["user", "admin", "manager"]).default("user"),
     status: z.enum(["active", "inactive"]).default("inactive"),
     isEmailVerified: z.boolean().default(false),
@@ -18,21 +19,24 @@ export const UserSecurityDto = z
     numberLogin: z.number().default(0),
     lastFailedLoginTime: z.union([z.date(), z.literal(null)]).optional(),
     dateToJoin: z.union([z.date(), z.literal(null)]),
+    sign_up_provider: z.string().default(""),
+    sign_in_provider: z.string().default(""),
+    terms: z.boolean().default(false),
   })
   .partial();
 
 export const UserSecurityAddDto = UserSecurityDto.pick({
   email: true,
-  mobile: true,
+  phoneNumber: true,
+  terms: true,
+  password: true,
 }).extend({
-  password: z.string(),
   confirmPassword: z.string(),
 });
 
 export const UserSecurityUpdateDto = UserSecurityDto.pick({
-  mobile: true,
-}).extend({
-  password: z.string(),
+  phoneNumber: true,
+  password: true,
 });
 
 export type UserSecurityDtoType = z.infer<typeof UserSecurityDto>;

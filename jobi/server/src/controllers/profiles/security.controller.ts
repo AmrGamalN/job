@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import SecurityService from "../../services/security/security.service";
+import SecurityService from "../../services/profiles/security.service";
 import { GraphQLResolveInfo } from "graphql";
 import { responseHandler } from "../../utils/responseHandler";
 

@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { OtpDtoType } from "../../../dto/security/otp.dto";
+import { OtpDtoType } from "../../../dto/profiles/otp.dto";
 
 // Opt schema
 const otpSchema: Schema = new Schema({
