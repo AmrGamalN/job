@@ -1,7 +1,10 @@
 import express from "express";
 import ProfileController from "../../controllers/profiles/profile.controller";
 import { asyncHandler } from "../../middleware/handleError";
-import { expressValidator } from "../../middleware/validatorMiddleware";
+import {
+  expressValidator,
+  validateParamMiddleware,
+} from "../../middleware/validatorMiddleware";
 import { validateProfileUpdate } from "../../validation/profiles/profile.validator";
 import TokenMiddleware from "../../middleware/token.middleware";
 const tokenMiddleware = TokenMiddleware.getInstance();
@@ -162,7 +165,8 @@ const commonMiddlewares = [
 router.put(
   "/update/:profileId?",
   ...commonMiddlewares,
-  expressValidator(validateProfileUpdate),
+  asyncHandler(validateParamMiddleware()),
+  asyncHandler(expressValidator(validateProfileUpdate)),
   asyncHandler(controller.updateProfile.bind(controller))
 );
 
@@ -205,7 +209,7 @@ router.put(
 router.get(
   "/get/:profileId?",
   ...commonMiddlewares,
-  expressValidator(validateProfileUpdate),
+  asyncHandler(validateParamMiddleware()),
   asyncHandler(controller.getProfileByLink.bind(controller))
 );
 export default router;

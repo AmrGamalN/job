@@ -4,7 +4,15 @@ import { asyncHandler } from "../../middleware/handleError";
 import TokenMiddleware from "../../middleware/token.middleware";
 const tokenMiddleware = TokenMiddleware.getInstance();
 const controller = AddressController.getInstance();
-import {role} from "../../utils/role";
+import { role } from "../../utils/role";
+import {
+  validateAddressUpdate,
+  validateAddressAdd,
+} from "../../validation/profiles/address.validator";
+import {
+  expressValidator,
+  validateParamMiddleware,
+} from "../../middleware/validatorMiddleware";
 const router = express.Router();
 const commonMiddlewares = [
   asyncHandler(tokenMiddleware.refreshTokenMiddleware),
@@ -110,6 +118,7 @@ const commonMiddlewares = [
 router.post(
   "/add",
   ...commonMiddlewares,
+  asyncHandler(expressValidator(validateAddressAdd)),
   asyncHandler(controller.addAddress.bind(controller))
 );
 
@@ -154,6 +163,7 @@ router.post(
 router.get(
   "/get/:addressId?",
   ...commonMiddlewares,
+  asyncHandler(validateParamMiddleware()),
   asyncHandler(controller.getAddress.bind(controller))
 );
 
@@ -210,6 +220,8 @@ router.get(
 router.put(
   "/update/:addressId?",
   ...commonMiddlewares,
+  asyncHandler(validateParamMiddleware()),
+  asyncHandler(expressValidator(validateAddressUpdate)),
   asyncHandler(controller.updateAddress.bind(controller))
 );
 

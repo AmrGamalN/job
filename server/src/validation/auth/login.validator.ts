@@ -1,6 +1,6 @@
 import { check } from "express-validator";
 
-export const validateLoginByEmail = [
+export const validateLoginByEmail =  [
   check("email")
     .trim()
     .notEmpty()
@@ -28,7 +28,7 @@ export const validateLoginByEmail = [
     ),
 ];
 
-export const validateLoginByPhone = [
+export const validateLoginByPhone =  [
   check("phoneNumber")
     .trim()
     .notEmpty()

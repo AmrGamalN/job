@@ -2,7 +2,10 @@ import express from "express";
 import ExperienceController from "../../controllers/profiles/experience.controller";
 import { asyncHandler } from "../../middleware/handleError";
 import TokenMiddleware from "../../middleware/token.middleware";
-import { expressValidator } from "../../middleware/validatorMiddleware";
+import {
+  expressValidator,
+  validateParamMiddleware,
+} from "../../middleware/validatorMiddleware";
 const tokenMiddleware = TokenMiddleware.getInstance();
 const controller = ExperienceController.getInstance();
 const role = ["user", "admin", "manager"];
@@ -106,6 +109,8 @@ const commonMiddlewares = [
  *             properties:
  *               status:
  *                 type: number
+ *               count:
+ *                 type: number
  *               success:
  *                 type: boolean
  *               message:
@@ -186,6 +191,7 @@ router.post(
 router.get(
   "/get/:experienceId?",
   ...commonMiddlewares,
+  asyncHandler(validateParamMiddleware()),
   asyncHandler(controller.getExperience.bind(controller))
 );
 
@@ -265,6 +271,7 @@ router.get(
 router.put(
   "/update/:experienceId?",
   ...commonMiddlewares,
+  asyncHandler(validateParamMiddleware()),
   asyncHandler(expressValidator(validateExperienceUpdate)),
   asyncHandler(controller.updateExperience.bind(controller))
 );
@@ -310,6 +317,7 @@ router.put(
 router.delete(
   "/delete/:experienceId?",
   ...commonMiddlewares,
+  asyncHandler(validateParamMiddleware()),
   asyncHandler(controller.deleteExperience.bind(controller))
 );
 

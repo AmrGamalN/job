@@ -124,6 +124,7 @@ class EducationService {
 
       return {
         message: "Get experience successfully",
+        count: getEducations.length,
         ...parseSafeEducations,
       };
     }

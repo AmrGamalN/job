@@ -2,7 +2,10 @@ import express from "express";
 import EducationController from "../../controllers/profiles/education.controller";
 import { asyncHandler } from "../../middleware/handleError";
 import TokenMiddleware from "../../middleware/token.middleware";
-import { expressValidator } from "../../middleware/validatorMiddleware";
+import {
+  expressValidator,
+  validateParamMiddleware,
+} from "../../middleware/validatorMiddleware";
 import {
   validateEducationUpdate,
   validateEducationAdd,
@@ -11,7 +14,6 @@ const tokenMiddleware = TokenMiddleware.getInstance();
 const controller = EducationController.getInstance();
 import { role } from "../../utils/role";
 const router = express.Router();
-
 const commonMiddlewares = [
   asyncHandler(tokenMiddleware.refreshTokenMiddleware),
   asyncHandler(tokenMiddleware.authorizationMiddleware(role)),
@@ -87,6 +89,8 @@ const commonMiddlewares = [
  *             properties:
  *               status:
  *                 type: number
+ *               count:
+ *                 type: number
  *               success:
  *                 type: boolean
  *               message:
@@ -141,14 +145,14 @@ router.post(
  *         description: Unauthorized
  *       500:
  *         description: Internal Server Error
- * /education/get/{EducationId}:
+ * /education/get/{educationId}:
  *   get:
  *     tags: [Education]
  *     summary: Get education data for a user
  *     description: Retrieve the education record of a specific user by id
  *     parameters:
  *       - in: path
- *         name: EducationId
+ *         name: educationId
  *         required: true
  *         description: Get user education by id
  *         schema:
@@ -164,8 +168,9 @@ router.post(
  *         description: Internal Server Error
  */
 router.get(
-  "/get/:EducationId?",
+  "/get/:educationId?",
   ...commonMiddlewares,
+  asyncHandler(validateParamMiddleware()),
   asyncHandler(controller.getEducation.bind(controller))
 );
 
@@ -214,14 +219,14 @@ router.get(
  *         description: Unauthorized
  *       500:
  *         description: Internal Server Error
- * /education/update/{EducationId}:
+ * /education/update/{educationId}:
  *   put:
  *     tags: [Education]
  *     summary: Update education record
  *     description: Update specific a user's education information by id
  *     parameters:
  *       - in: path
- *         name: EducationId
+ *         name: educationId
  *         required: true
  *         description: The education id of the user to update
  *         schema:
@@ -243,8 +248,9 @@ router.get(
  *         description: Internal Server Error
  */
 router.put(
-  "/update/:EducationId?",
+  "/update/:educationId?",
   ...commonMiddlewares,
+  asyncHandler(validateParamMiddleware()),
   asyncHandler(expressValidator(validateEducationUpdate)),
   asyncHandler(controller.updateEducation.bind(controller))
 );
@@ -265,14 +271,14 @@ router.put(
  *         description: Unauthorized
  *       500:
  *         description: Internal Server Error
- * /education/delete/{EducationId}:
+ * /education/delete/{educationId}:
  *   delete:
  *     tags: [Education]
  *     summary: Delete education record
  *     description: Delete specific a user's education information by id
  *     parameters:
  *       - in: path
- *         name: EducationId
+ *         name: educationId
  *         required: true
  *         description: The education id of the user to delete
  *         schema:
@@ -288,8 +294,9 @@ router.put(
  *         description: Internal Server Error
  */
 router.delete(
-  "/delete/:EducationId?",
+  "/delete/:educationId?",
   ...commonMiddlewares,
+  asyncHandler(validateParamMiddleware()),
   asyncHandler(controller.deleteEducation.bind(controller))
 );
 export default router;

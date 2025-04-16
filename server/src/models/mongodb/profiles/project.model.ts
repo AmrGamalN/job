@@ -1,8 +1,9 @@
 import { Schema, model } from "mongoose";
 import { ProjectDtoType } from "../../../dto/profiles/project.dto";
+import { optional } from "zod";
 const ProjectSchema = new Schema(
   {
-    userId: { type: String, ref: "users", required: true, unique: true },
+    userId: { type: String, ref: "users", required: true },
     projectName: { type: String, required: true },
     companyName: { type: String, required: true },
     description: { type: String, required: true },
@@ -16,6 +17,7 @@ const ProjectSchema = new Schema(
     endDate: { type: Date, required: true },
     projectUrl: { type: String, required: true },
     repositoryUrl: { type: String },
+    attachment: { type: String, optional: true, default: "" },
   },
   { timestamps: true }
 );

@@ -1,6 +1,6 @@
 import { check } from "express-validator";
 
-export const validateProfileUpdate = [
+export const validateProfileUpdate =  [
   check("about")
     .isString()
     .trim()

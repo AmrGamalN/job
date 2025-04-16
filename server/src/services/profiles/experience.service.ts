@@ -122,6 +122,7 @@ class ExperienceService {
 
       return {
         message: "Get experience successfully",
+        count: getExperiences.length,
         ...parseSafeExperiences,
       };
     }
