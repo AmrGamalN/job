@@ -17,15 +17,19 @@ class ExperienceController {
 
   // Add experience
   async addExperience(req: Request, res: Response): Promise<Response> {
-    const userId = req.curUser?.userId;
-    const result = await this.experienceService.addExperience(req.body, userId);
+    const result = await this.experienceService.addExperience(
+      req.body,
+      req.curUser?.userId
+    );
     return handleApiResponse(res, result);
   }
 
   // Get experience
   async getExperience(req: Request, res: Response): Promise<Response> {
-    const userId = req.params.userId ? req.params.userId : req.curUser?.userId;
-    const result = await this.experienceService.getExperience(userId);
+    const query = req.params.experienceId
+      ? { _id: req.params.experienceId }
+      : { userId: req.curUser?.userId };
+    const result = await this.experienceService.getExperience(query);
     return handleApiResponse(res, result);
   }
 
@@ -38,11 +42,22 @@ class ExperienceController {
 
   // Update experience
   async updateExperience(req: Request, res: Response): Promise<Response> {
-    const userId = req.params.userId ? req.params.userId : req.curUser?.userId;
+    const query = req.params.experienceId
+      ? { _id: req.params.experienceId }
+      : { userId: req.curUser?.userId };
     const result = await this.experienceService.updateExperience(
       req.body,
-      userId
+      query
     );
+    return handleApiResponse(res, result);
+  }
+
+  // Delete experience
+  async deleteExperience(req: Request, res: Response): Promise<Response> {
+    const query = req.params.experienceId
+      ? { _id: req.params.experienceId }
+      : { userId: req.curUser?.userId };
+    const result = await this.experienceService.deleteExperience(query);
     return handleApiResponse(res, result);
   }
 }

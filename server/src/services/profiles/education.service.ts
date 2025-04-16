@@ -102,8 +102,8 @@ class EducationService {
 
   deleteEducation = warpAsync(
     async (query: object): Promise<responseHandler> => {
-      const deleteEducation = await Education.findOneAndDelete(query).lean();
-      if (!deleteEducation) {
+      const deleteEducation = await Education.deleteOne(query);
+      if (!deleteEducation.deletedCount) {
         return {
           success: false,
           status: 404,
