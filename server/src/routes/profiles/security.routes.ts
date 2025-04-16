@@ -1,6 +1,9 @@
 import express from "express";
 import SecurityController from "../../controllers/profiles/security.controller";
-import { expressValidator } from "../../middleware/validatorMiddleware";
+import {
+  expressValidator,
+  validateParamFirebaseMiddleware,
+} from "../../middleware/validatorMiddleware";
 import { asyncHandler } from "../../middleware/handleError";
 import {
   validateUserSecurityUpdate,
@@ -14,7 +17,6 @@ const tokenMiddleware = TokenMiddleware.getInstance();
 const controller = SecurityController.getInstance();
 const role = ["admin", "manager"];
 const router = express.Router();
-
 const commonMiddlewares = [
   asyncHandler(tokenMiddleware.refreshTokenMiddleware),
   asyncHandler(tokenMiddleware.authorizationMiddleware(["admin", "manager"])),
@@ -160,6 +162,7 @@ const commonMiddlewares = [
 router.put(
   "/update/:userId",
   ...commonMiddlewares,
+  asyncHandler(validateParamFirebaseMiddleware()),
   asyncHandler(expressValidator(validateUserSecurityUpdate)),
   asyncHandler(controller.updateSecurity.bind(controller))
 );
@@ -245,6 +248,7 @@ router.get(
 router.post(
   "/block-delete/:userId",
   ...commonMiddlewares,
+  asyncHandler(validateParamFirebaseMiddleware()),
   asyncHandler(expressValidator(validateSecurityStatus)),
   asyncHandler(controller.deleteBlockUser.bind(controller))
 );

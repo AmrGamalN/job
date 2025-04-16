@@ -26,8 +26,8 @@ class EducationController {
 
   // Get education
   async getEducation(req: Request, res: Response): Promise<Response> {
-    const query = req.params.EducationId
-      ? { _id: req.params.EducationId }
+    const query = req.params.educationId
+      ? { _id: req.params.educationId }
       : { userId: req.curUser?.userId };
     const result = await this.educationService.getEducation(query);
     return handleApiResponse(res, result);
@@ -42,8 +42,8 @@ class EducationController {
 
   // Update education
   async updateEducation(req: Request, res: Response): Promise<Response> {
-    const query = req.params.EducationId
-      ? { _id: req.params.EducationId }
+    const query = req.params.educationId
+      ? { _id: req.params.educationId }
       : { userId: req.curUser?.userId };
     const result = await this.educationService.updateEducation(req.body, query);
     return handleApiResponse(res, result);
@@ -51,8 +51,8 @@ class EducationController {
 
   // Delete education
   async deleteEducation(req: Request, res: Response): Promise<Response> {
-    const query = req.params.EducationId
-      ? { _id: req.params.EducationId }
+    const query = req.params.educationId
+      ? { _id: req.params.educationId }
       : { userId: req.curUser?.userId };
     const result = await this.educationService.deleteEducation(query);
     return handleApiResponse(res, result);

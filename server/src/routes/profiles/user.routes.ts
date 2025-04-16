@@ -2,7 +2,10 @@ import express from "express";
 import UserController from "../../controllers/profiles/user.controller";
 import { asyncHandler } from "../../middleware/handleError";
 import { validateUserUpdate } from "../../validation/profiles/user.validator";
-import { expressValidator } from "../../middleware/validatorMiddleware";
+import {
+  expressValidator,
+  validateParamFirebaseMiddleware,
+} from "../../middleware/validatorMiddleware";
 import TokenMiddleware from "../../middleware/token.middleware";
 const tokenMiddleware = TokenMiddleware.getInstance();
 const controller = UserController.getInstance();
@@ -230,6 +233,7 @@ const commonMiddlewares = [
 router.put(
   "/update/:userId?",
   ...commonMiddlewares,
+  asyncHandler(validateParamFirebaseMiddleware()),
   asyncHandler(expressValidator(validateUserUpdate)),
   asyncHandler(controller.updateUser.bind(controller))
 );

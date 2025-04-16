@@ -2,8 +2,7 @@ import { IResolvers } from "@graphql-tools/utils";
 import UserController from "../../../controllers/profiles/security.controller";
 import { applyMiddleware } from "../../../middleware/applyMiddleWare";
 import { asyncHandler } from "../../../middleware/handleError";
-import { expressValidator } from "../../../middleware/validatorMiddleware";
-import { validateUserId } from "../../../validation/general";
+import { validateParamMiddleware } from "../../../middleware/validatorMiddleware";
 import TokenMiddleware from "../../../middleware/token.middleware";
 const tokenMiddleware = TokenMiddleware.getInstance();
 const commonMiddlewares = [
@@ -16,7 +15,7 @@ export const SecurityResolver: IResolvers = {
   Query: {
     getSecurity: applyMiddleware(
       asyncHandler(controller.getSecurity.bind(controller)),
-      [...commonMiddlewares, asyncHandler(expressValidator(validateUserId))]
+      [...commonMiddlewares, asyncHandler(validateParamMiddleware())]
     ),
     getAllSecurities: applyMiddleware(
       asyncHandler(controller.getAllSecurities.bind(controller)),
