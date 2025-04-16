@@ -109,6 +109,8 @@ const commonMiddlewares = [
  *             properties:
  *               status:
  *                 type: number
+ *               count:
+ *                 type: number
  *               success:
  *                 type: boolean
  *               message:

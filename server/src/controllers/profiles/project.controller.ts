@@ -17,30 +17,46 @@ class ProjectController {
 
   // Add project
   async addProject(req: Request, res: Response): Promise<Response> {
-    const userId = req.curUser?.userId;
-    const result = await this.projectService.addProject(req.body, userId);
+    const result = await this.projectService.addProject(
+      req.body,
+      req.curUser?.userId
+    );
     return handleApiResponse(res, result);
   }
 
   // Get project
   async getProject(req: Request, res: Response): Promise<Response> {
-    const projectId = req.params.projectId;
-    const userId = req.curUser?.userId;
-    const result = await this.projectService.getProject(projectId, userId);
+    const query = req.params.projectId
+      ? { _id: req.params.projectId }
+      : { userId: req.curUser?.userId };
+    const result = await this.projectService.getProject(query);
     return handleApiResponse(res, result);
   }
 
   // Get all project
   async getAllProjects(req: Request, res: Response): Promise<Response> {
-    const userId = req.curUser?.userId;
-    const result = await this.projectService.getAllProjects(userId);
+    const query = req.params.userId
+      ? { userId: req.params.userId }
+      : { userId: req.curUser?.userId };
+    const result = await this.projectService.getAllProjects(query);
     return handleApiResponse(res, result);
   }
 
   // Update project
   async updateProject(req: Request, res: Response): Promise<Response> {
-    const projectId = req.params.projectId;
-    const result = await this.projectService.updateProject(req.body, projectId);
+    const query = req.params.projectId
+      ? { _id: req.params.projectId }
+      : { userId: req.curUser?.userId };
+    const result = await this.projectService.updateProject(req.body, query);
+    return handleApiResponse(res, result);
+  }
+
+  // Delete project
+  async deleteProject(req: Request, res: Response): Promise<Response> {
+    const query = req.params.projectId
+      ? { _id: req.params.projectId }
+      : { userId: req.curUser?.userId };
+    const result = await this.projectService.deleteProject(query);
     return handleApiResponse(res, result);
   }
 }

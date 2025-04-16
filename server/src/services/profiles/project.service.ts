@@ -39,13 +39,13 @@ class ProjectService {
   updateProject = warpAsync(
     async (
       ProjectData: ProjectUpdateDtoType,
-      projectId: string
+      query: object
     ): Promise<responseHandler> => {
       const parseSafe = validateAndFormatData(ProjectData, ProjectUpdateDto);
       if (!parseSafe.success) return parseSafe;
 
       const updateProject = await Project.findOneAndUpdate(
-        { _id: projectId },
+        query,
         {
           $set: {
             ...ProjectData,
@@ -74,37 +74,29 @@ class ProjectService {
   );
 
   // Get project
-  getProject = warpAsync(
-    async (projectId: string, userId: string): Promise<responseHandler> => {
-      const getProject = await Project.findOne({
-        _id: projectId,
-        userId,
-      }).lean();
-
-      if (!getProject) {
-        return {
-          success: false,
-          status: 404,
-          message: "Project not found",
-        };
-      }
-
-      const parseSafeProject = validateAndFormatData(getProject, ProjectDto);
-      if (!parseSafeProject.success) return parseSafeProject;
-
+  getProject = warpAsync(async (query): Promise<responseHandler> => {
+    const getProject = await Project.findOne(query).lean();
+    if (!getProject) {
       return {
-        message: "Get project successfully",
-        ...parseSafeProject,
+        success: false,
+        status: 404,
+        message: "Project not found",
       };
     }
-  );
+
+    const parseSafeProject = validateAndFormatData(getProject, ProjectDto);
+    if (!parseSafeProject.success) return parseSafeProject;
+
+    return {
+      message: "Get project successfully",
+      ...parseSafeProject,
+    };
+  });
 
   // Get all project
   getAllProjects = warpAsync(
-    async (userId: string): Promise<responseHandler> => {
-      const getProjects = await Project.find({
-        userId,
-      }).lean();
+    async (query: object): Promise<responseHandler> => {
+      const getProjects = await Project.find(query).lean();
 
       if (!getProjects) {
         return {
@@ -123,10 +115,28 @@ class ProjectService {
 
       return {
         message: "Get project successfully",
+        count: getProjects.length,
         ...parseSafeProjects,
       };
     }
   );
+
+  // Delete project
+  deleteProject = warpAsync(async (query: object): Promise<responseHandler> => {
+    const deleteProject = await Project.deleteOne(query);
+    if (!deleteProject.deletedCount) {
+      return {
+        success: false,
+        status: 404,
+        message: "Project not found",
+      };
+    }
+    return {
+      success: true,
+      status: 200,
+      message: "Delete project successfully",
+    };
+  });
 }
 
 export default ProjectService;

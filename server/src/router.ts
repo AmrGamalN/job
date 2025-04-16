@@ -9,6 +9,7 @@ import RegisterRoutes from "./routes/auth/register.routes";
 import EducationRoutes from "./routes/profiles/education.routes";
 import ExperienceRoutes from "./routes/profiles/experience.routes";
 import InterestRoutes from "./routes/profiles/interest.routes";
+import ProjectRoutes from "./routes/profiles/project.routes";
 const router = Router();
 
 // Health Check
@@ -28,4 +29,5 @@ router.use("/register", RegisterRoutes);
 router.use("/education", EducationRoutes);
 router.use("/experience", ExperienceRoutes);
 router.use("/interest", InterestRoutes);
+router.use("/project", ProjectRoutes);
 export default router;

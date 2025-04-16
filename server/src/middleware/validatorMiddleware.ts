@@ -1,4 +1,4 @@
-import { validationResult } from "express-validator";
+import {validationResult } from "express-validator";
 import { Request, Response, NextFunction } from "express";
 
 const validIds = [
@@ -50,10 +50,13 @@ export const expressValidator = (validators: any[]) => {
 export const validateParamMiddleware = () => {
   return async (req: Request, res: Response, next: NextFunction) => {
     for (let paramKey in req?.params) {
-      if (!validIds.includes(paramKey)) {
+      if (
+        !validIds.includes(paramKey) ||
+        !/^[a-zA-Z0-9]{24}$/.test(req.params[paramKey])
+      ) {
         return res.status(400).json({
           success: false,
-          message: `Parameter "${paramKey}" is not allowed`,
+          message: `Parameter "${paramKey}" is not allowed or invalid '${paramKey}'`,
         });
       }
     }
@@ -64,10 +67,13 @@ export const validateParamMiddleware = () => {
 export const validateParamFirebaseMiddleware = () => {
   return async (req: Request, res: Response, next: NextFunction) => {
     for (let paramKey in req?.params) {
-      if (!validIds.includes(paramKey) && paramKey !== "userId") {
+      if (
+        paramKey !== "userId" ||
+        !/^[a-zA-Z0-9]{28}$/.test(req.params[paramKey])
+      ) {
         return res.status(400).json({
           success: false,
-          message: `Parameter "${paramKey}" is not allowed`,
+          message: `Parameter "${paramKey}" is not allowed or invalid '${paramKey}'`,
         });
       }
     }

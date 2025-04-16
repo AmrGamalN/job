@@ -166,7 +166,7 @@ router.put(
   "/update/:profileId?",
   ...commonMiddlewares,
   asyncHandler(validateParamMiddleware()),
-  expressValidator(validateProfileUpdate),
+  asyncHandler(expressValidator(validateProfileUpdate)),
   asyncHandler(controller.updateProfile.bind(controller))
 );
 
@@ -210,7 +210,6 @@ router.get(
   "/get/:profileId?",
   ...commonMiddlewares,
   asyncHandler(validateParamMiddleware()),
-  expressValidator(validateProfileUpdate),
   asyncHandler(controller.getProfileByLink.bind(controller))
 );
 export default router;

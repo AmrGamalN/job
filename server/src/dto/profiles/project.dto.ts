@@ -18,10 +18,10 @@ export const ProjectDto = z.object({
   endDate: z.date(),
   projectUrl: z.string(),
   repositoryUrl: z.string(),
+  attachment: z.string().default(""),
 });
 
 export const ProjectAddDto = ProjectDto.pick({
-  userId: true,
   projectName: true,
   companyName: true,
   description: true,
@@ -37,7 +37,6 @@ export const ProjectAddDto = ProjectDto.pick({
 });
 
 export const ProjectUpdateDto = ProjectDto.pick({
-  userId: true,
   projectName: true,
   companyName: true,
   description: true,

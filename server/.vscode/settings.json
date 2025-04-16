@@ -3,6 +3,7 @@
         "Gharbia",
         "influencers",
         "otpauth",
+        "otps",
         "totp"
     ]
 }

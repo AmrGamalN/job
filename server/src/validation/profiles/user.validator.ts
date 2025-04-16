@@ -1,6 +1,6 @@
 import { check } from "express-validator";
 
-const validateUser = (isOptional: boolean = false) => [
+const validateUser = (isOptional: boolean = false)=> [
   check("firstName")
     .if(() => !isOptional)
     .bail()

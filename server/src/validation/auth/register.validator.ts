@@ -2,13 +2,15 @@ import { check } from "express-validator";
 
 export const registerValidator = [
   check("email")
-  .trim()
-  .notEmpty()
-  .withMessage("Email is required")
-  .isEmail()
-  .withMessage("Invalid email")
-  .matches(/^[a-zA-Z0-9._-]+@(gmail|yahoo|outlook|hotmail|icloud|example)\.com$/)
-  .withMessage("Email provider not supported"),
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Invalid email")
+    .matches(
+      /^[a-zA-Z0-9._-]+@(gmail|yahoo|outlook|hotmail|icloud|example)\.com$/
+    )
+    .withMessage("Email provider not supported"),
 
   check("password")
     .trim()
