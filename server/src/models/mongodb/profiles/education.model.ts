@@ -2,7 +2,7 @@ import { Schema, model } from "mongoose";
 import { EducationDtoType } from "../../../dto/profiles/education.dto";
 const EducationSchema = new Schema(
   {
-    userId: { type: String, ref: "users", required: true, unique: true },
+    userId: { type: String, ref: "users", required: true },
     university: { type: String, required: true },
     description: { type: String, required: true },
     degree: { type: String, required: true },

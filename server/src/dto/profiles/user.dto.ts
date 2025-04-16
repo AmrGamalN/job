@@ -1,9 +1,11 @@
 import { z } from "zod";
+import { ObjectId } from "mongodb";
 
 export const UserDto = z
   .object({
+    _id: z.union([z.string(), z.instanceof(ObjectId)]),
     userId: z.string(),
-    prefixS3:z.string().default(""),
+    prefixS3: z.string().default(""),
     userName: z.string(),
     firstName: z.string(),
     lastName: z.string(),
@@ -13,7 +15,7 @@ export const UserDto = z
     }),
     coverImage: z.object({
       imageUrl: z.string(),
-      imageKey: z.string(), 
+      imageKey: z.string(),
     }),
     account: z.enum(["user", "admin", "manager"]).default("user"),
     visibility: z

@@ -6,7 +6,7 @@ export const expressValidator = (validators: any[]) => {
     req: Request,
     res: Response,
     next: NextFunction
-  ): Promise<void> => {
+  ): Promise<Response | void> => {
     req.body = req.body.variables?.input || req.body.variables || req.body;
     for (const validator of validators) {
       await validator.run(req);
@@ -14,7 +14,7 @@ export const expressValidator = (validators: any[]) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       if (!res.headersSent) {
-        res.status(400).json({
+        return res.status(400).json({
           success: false,
           status: 400,
           message: "Validation failed",
@@ -24,9 +24,8 @@ export const expressValidator = (validators: any[]) => {
             type: err.type,
           })),
         });
-        return;
       }
     }
-    next();
+    return next();
   };
 };

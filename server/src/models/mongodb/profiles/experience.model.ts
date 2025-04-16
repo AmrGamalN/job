@@ -12,7 +12,7 @@ const employmentType = [
 const locationType = ["remote", "on-site", "hybrid"];
 const ExperienceSchema = new Schema(
   {
-    userId: { type: String, ref: "users", required: true, unique: true },
+    userId: { type: String, ref: "users", required: true },
     companyName: { type: String, required: true },
     jobTitle: { type: String, required: true },
     description: { type: String, required: true },

@@ -6,6 +6,7 @@ import ProfileRouters from "./routes/profiles/profile.routes";
 import SecurityRouters from "./routes/profiles/security.routes";
 import LoginRoutes from "./routes/auth/login.routes";
 import RegisterRoutes from "./routes/auth/register.routes";
+import EducationRoutes from "./routes/profiles/education.routes";
 const router = Router();
 
 // Health Check
@@ -25,4 +26,5 @@ router.use("/address", AddressRouters);
 router.use("/security", SecurityRouters);
 router.use("/login", LoginRoutes);
 router.use("/register", RegisterRoutes);
+router.use("/education", EducationRoutes);
 export default router;

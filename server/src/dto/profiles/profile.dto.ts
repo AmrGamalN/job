@@ -1,7 +1,9 @@
 import { z } from "zod";
+import { ObjectId } from "mongodb";
 
 export const profileDto = z
   .object({
+    _id: z.union([z.string(), z.instanceof(ObjectId)]),
     userId: z.string(),
     about: z.string(),
     jobTitle: z.string(),
@@ -21,7 +23,9 @@ export const profileDto = z
       .array(
         z.object({
           language: z.string(),
-          level: z.enum(["beginner", "intermediate", "advanced", "fluent"]).default("fluent"),
+          level: z
+            .enum(["beginner", "intermediate", "advanced", "fluent"])
+            .default("fluent"),
         })
       )
       .default([]),

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import UserService from "../../services/profiles/user.service";
 import { GraphQLResolveInfo } from "graphql";
 import { responseHandler } from "../../utils/responseHandler";
+import { handleApiResponse } from "../../utils/responseHandler";
 
 class UserController {
   private static instance: UserController;
@@ -48,10 +49,11 @@ class UserController {
 
   // Update user by rest api
   async updateUser(req: Request, res: Response): Promise<Response> {
-    const query = req.params.userId ? {_id:req.params.userId} : {userId:req.curUser?.userId};
+    const query = req.params.userId
+      ? { _id: req.params.userId }
+      : { userId: req.curUser?.userId };
     const result = await this.userService.updateUser(req.body, query);
-    if (!result.success) return res.status(result.status!).json(result);
-    return res.status(200).json(result);
+    return handleApiResponse(res, result);
   }
 }
 
