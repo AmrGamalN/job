@@ -171,6 +171,29 @@ router.get(
 
 /**
  * @swagger
+ * /education/get-all:
+ *   get:
+ *     tags: [Education]
+ *     summary: Get all education data for a user
+ *     description: Get all education data for a user
+ *     responses:
+ *       200:
+ *         $ref: '#/components/responses/EducationSuccess'
+ *       400:
+ *         description: Failed to fetch educations data
+ *       403:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
+ */
+router.get(
+  "/get-all",
+  ...commonMiddlewares,
+  asyncHandler(controller.getAllEducations.bind(controller))
+);
+
+/**
+ * @swagger
  * /education/update:
  *   put:
  *     tags: [Education]

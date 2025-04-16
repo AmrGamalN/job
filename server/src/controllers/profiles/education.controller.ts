@@ -33,6 +33,13 @@ class EducationController {
     return handleApiResponse(res, result);
   }
 
+  // Get all education
+  async getAllEducations(req: Request, res: Response): Promise<Response> {
+    const userId = req.params.userId ? req.params.userId : req.curUser?.userId;
+    const result = await this.educationService.getAllEducations(userId);
+    return handleApiResponse(res, result);
+  }
+
   // Update education
   async updateEducation(req: Request, res: Response): Promise<Response> {
     const query = req.params.EducationId
@@ -45,12 +52,11 @@ class EducationController {
   // Delete education
   async deleteEducation(req: Request, res: Response): Promise<Response> {
     const query = req.params.EducationId
-     ? { _id: req.params.EducationId }
+      ? { _id: req.params.EducationId }
       : { userId: req.curUser?.userId };
     const result = await this.educationService.deleteEducation(query);
     return handleApiResponse(res, result);
   }
-
 }
 
 export default EducationController;
