@@ -39,7 +39,7 @@ class ExperienceService {
   updateExperience = warpAsync(
     async (
       ExperienceData: ExperienceUpdateDtoType,
-      experienceId: string
+      query: object
     ): Promise<responseHandler> => {
       const parseSafe = validateAndFormatData(
         ExperienceData,
@@ -48,7 +48,7 @@ class ExperienceService {
       if (!parseSafe.success) return parseSafe;
 
       const updateExperience = await Experience.findOneAndUpdate(
-        { experienceId },
+        query,
         {
           $set: {
             ...ExperienceData,
@@ -77,32 +77,26 @@ class ExperienceService {
   );
 
   // Get experience
-  getExperience = warpAsync(
-    async (experienceId: string): Promise<responseHandler> => {
-      const getExperience = await Experience.findOne({
-        _id: experienceId,
-      }).lean();
-
-      if (!getExperience) {
-        return {
-          success: false,
-          status: 404,
-          message: "Experience not found",
-        };
-      }
-
-      const parseSafeExperience = validateAndFormatData(
-        getExperience,
-        ExperienceDto
-      );
-      if (!parseSafeExperience.success) return parseSafeExperience;
-
+  getExperience = warpAsync(async (query: object): Promise<responseHandler> => {
+    const getExperience = await Experience.findOne(query).lean();
+    if (!getExperience) {
       return {
-        message: "Get experience successfully",
-        ...parseSafeExperience,
+        success: false,
+        status: 404,
+        message: "Experience not found",
       };
     }
-  );
+    const parseSafeExperience = validateAndFormatData(
+      getExperience,
+      ExperienceDto
+    );
+    if (!parseSafeExperience.success) return parseSafeExperience;
+
+    return {
+      message: "Get experience successfully",
+      ...parseSafeExperience,
+    };
+  });
 
   // Get all experience
   getAllExperiences = warpAsync(
@@ -129,6 +123,25 @@ class ExperienceService {
       return {
         message: "Get experience successfully",
         ...parseSafeExperiences,
+      };
+    }
+  );
+
+  // Delete experience
+  deleteExperience = warpAsync(
+    async (query: object): Promise<responseHandler> => {
+      const deleteExperience = await Experience.deleteOne(query);
+      if (!deleteExperience.deletedCount) {
+        return {
+          success: false,
+          status: 404,
+          message: "Experience not found",
+        };
+      }
+      return {
+        success: true,
+        status: 200,
+        message: "Delete experience successfully",
       };
     }
   );

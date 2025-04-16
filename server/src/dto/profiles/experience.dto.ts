@@ -28,8 +28,8 @@ export const ExperienceDto = z.object({
   locationType: z.enum(["remote", "on-site", "hybrid"], {
     errorMap: () => ({ message: "Invalid location type" }),
   }),
-  startDate: z.date(),
-  endDate: z.date(),
+  startDate: z.union([z.date(), z.string()]),
+  endDate: z.union([z.date(), z.string()]),
   currentlyWorking: z.boolean(),
 });
 

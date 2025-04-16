@@ -100,10 +100,39 @@ class EducationService {
     };
   });
 
+  // Get all Educations
+  getAllEducations = warpAsync(
+    async (userId: string): Promise<responseHandler> => {
+      const getEducations = await Education.find({
+        userId,
+      }).lean();
+
+      if (!getEducations) {
+        return {
+          success: false,
+          status: 404,
+          message: "Educations not found",
+        };
+      }
+
+      const parseSafeEducations = validateAndFormatData(
+        getEducations,
+        EducationDto,
+        "getAll"
+      );
+      if (!parseSafeEducations.success) return parseSafeEducations;
+
+      return {
+        message: "Get experience successfully",
+        ...parseSafeEducations,
+      };
+    }
+  );
+
   deleteEducation = warpAsync(
     async (query: object): Promise<responseHandler> => {
-      const deleteEducation = await Education.findOneAndDelete(query).lean();
-      if (!deleteEducation) {
+      const deleteEducation = await Education.deleteOne(query);
+      if (!deleteEducation.deletedCount) {
         return {
           success: false,
           status: 404,
