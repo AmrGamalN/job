@@ -23,22 +23,16 @@ class TokenMiddleware {
 
   // Authorization middleware & allow to
   public authorizationMiddleware(role: string[]) {
-    try {
-      return async (req: Request, res: Response, next: NextFunction) => {
-        const userRole = req.curUser?.role;
-        if (!userRole) {
-          throw new CustomError("unauthorized: No user role found", false, 401);
-        }
-        if (!role.includes(userRole)) {
-          throw new CustomError("unauthorized: Access denied", false, 403);
-        }
-        return next();
-      };
-    } catch (error) {
-      throw new Error(
-        error instanceof Error ? error.message : "Internal server error"
-      );
-    }
+    return async (req: Request, res: Response, next: NextFunction) => {
+      const userRole = req.curUser?.role;
+      if (!userRole) {
+        throw new CustomError("unauthorized: No user role found", false, 401);
+      }
+      if (!role.includes(userRole)) {
+        throw new CustomError("unauthorized: Access denied", false, 403);
+      }
+      return next();
+    };
   }
 
   // Verify refresh token middleware and create new access token
@@ -56,42 +50,47 @@ class TokenMiddleware {
 
     if (accessToken) {
       try {
-        const decoded = jwt.verify(decryptToken(accessToken), "slat");
-        req.curUser = decoded;
-        return next();
-      } catch (err) {
-        throw new CustomError("Unauthorized: Invalid access token", false, 403);
-      }
-    } else {
-      try {
         const decoded = jwt.verify(
-          decryptToken(refreshToken),
-          String(process.env.REFRESH_TOKEN_SECRET)
+          decryptToken(accessToken),
+          String(process.env.ACCESS_TOKEN_SECRET)
         );
-
-        if (typeof decoded !== "object" || decoded === null) {
-          throw new CustomError("Unauthorized: No refresh token", false, 401);
-        }
-
-        const { iat, exp, ...payload } = decoded;
-        const newAccessToken = jwt.sign(
-          payload,
-          String(process.env.ACCESS_TOKEN_SECRET),
-          { expiresIn: "30m" }
-        );
-
-        res.cookie("accessToken", encryptToken(newAccessToken), {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "strict",
-          maxAge: 60 * 60 * 1000,
-        });
-
         req.curUser = decoded;
         return next();
-      } catch (err) {
-        throw new CustomError("Invalid or expired refresh token", false, 401);
+      } catch (err) {}
+    }
+
+    try {
+      const decoded = jwt.verify(
+        decryptToken(refreshToken),
+        String(process.env.REFRESH_TOKEN_SECRET)
+      );
+
+      if (typeof decoded !== "object" || decoded === null) {
+        throw new CustomError(
+          "Unauthorized: Invalid refresh token",
+          false,
+          401
+        );
       }
+
+      const { iat, exp, ...payload } = decoded;
+      const newAccessToken = jwt.sign(
+        payload,
+        String(process.env.ACCESS_TOKEN_SECRET),
+        { expiresIn: "30m" }
+      );
+
+      res.cookie("accessToken", encryptToken(newAccessToken), {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 60 * 60 * 1000,
+      });
+
+      req.curUser = payload;
+      return next();
+    } catch (err) {
+      throw new CustomError("Invalid or expired refresh token", false, 401);
     }
   }
 }

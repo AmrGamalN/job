@@ -27,7 +27,7 @@ class SecurityController {
     info: GraphQLResolveInfo
   ): Promise<responseHandler> {
     const result = await this.SecurityService.getSecurity(args, info);
-    if (!result.success || !result) return result;
+    if (!result.success) return result;
     return result;
   }
 

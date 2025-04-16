@@ -8,12 +8,15 @@ import { securityTypeDefs } from "./schema/profiles/security.schema";
 import { userResolver } from "./resolvers/profiles/user.resolver";
 import { profileResolver } from "./resolvers/profiles/profile.resolver";
 import { SecurityResolver } from "./resolvers/profiles/security.resolver";
+import { interestResolver } from "./resolvers/profiles/interest.resolver";
+import { interestTypDefs } from "./schema/profiles/interest.schema";
 
- export const typeDefs = mergeTypeDefs([
+export const typeDefs = mergeTypeDefs([
   registerTypeDefs,
   userTypeDefs,
   profileTypeDefs,
   securityTypeDefs,
+  interestTypDefs,
 ]);
 
 export const resolvers = mergeResolvers([
@@ -21,6 +24,7 @@ export const resolvers = mergeResolvers([
   userResolver,
   profileResolver,
   SecurityResolver,
+  interestResolver,
 ]);
 
 export const schema = makeExecutableSchema({

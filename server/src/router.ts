@@ -8,6 +8,7 @@ import LoginRoutes from "./routes/auth/login.routes";
 import RegisterRoutes from "./routes/auth/register.routes";
 import EducationRoutes from "./routes/profiles/education.routes";
 import ExperienceRoutes from "./routes/profiles/experience.routes";
+import InterestRoutes from "./routes/profiles/interest.routes";
 const router = Router();
 
 // Health Check
@@ -26,4 +27,5 @@ router.use("/login", LoginRoutes);
 router.use("/register", RegisterRoutes);
 router.use("/education", EducationRoutes);
 router.use("/experience", ExperienceRoutes);
+router.use("/interest", InterestRoutes);
 export default router;

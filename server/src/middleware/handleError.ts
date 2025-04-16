@@ -5,7 +5,7 @@ type funcExpress = (
   req: Request,
   res: Response,
   next: NextFunction
-) => Promise<any>;
+) => Promise<any | Response> | void;
 
 type funcGraphql = (
   parent: any,

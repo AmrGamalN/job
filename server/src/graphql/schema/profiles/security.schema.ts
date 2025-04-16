@@ -35,7 +35,7 @@ type SecuritiesResponse {
 }
 
 type Query {
-  getSecurity(userId: String!): SecurityResponse!
+  getSecurity(securityId: String!): SecurityResponse!
   getAllSecurities(page:Int!=1 ,limit:Int!=10): SecuritiesResponse!
 }
 `;
