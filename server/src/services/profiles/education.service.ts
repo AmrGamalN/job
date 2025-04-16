@@ -39,7 +39,7 @@ class EducationService {
   updateEducation = warpAsync(
     async (
       EducationData: EducationUpdateDtoType,
-      educationId: string
+      query: object
     ): Promise<responseHandler> => {
       const parseSafe = validateAndFormatData(
         EducationData,
@@ -48,7 +48,7 @@ class EducationService {
       if (!parseSafe.success) return parseSafe;
 
       const updateEducation = await Education.findOneAndUpdate(
-        { educationId },
+        query,
         {
           $set: {
             ...EducationData,
@@ -77,27 +77,43 @@ class EducationService {
   );
 
   // Get education
-  getEducation = warpAsync(
-    async (educationId: string): Promise<responseHandler> => {
-      const getEducation = await Education.findOne({ _id: educationId }).lean();
+  getEducation = warpAsync(async (query: object): Promise<responseHandler> => {
+    const getEducation = await Education.findOne(query).lean();
 
-      if (!getEducation) {
+    if (!getEducation) {
+      return {
+        success: false,
+        status: 404,
+        message: "Education not found",
+      };
+    }
+
+    const parseSafeEducation = validateAndFormatData(
+      getEducation,
+      EducationDto
+    );
+    if (!parseSafeEducation.success) return parseSafeEducation;
+
+    return {
+      message: "Get education successfully",
+      ...parseSafeEducation,
+    };
+  });
+
+  deleteEducation = warpAsync(
+    async (query: object): Promise<responseHandler> => {
+      const deleteEducation = await Education.deleteOne(query);
+      if (!deleteEducation.deletedCount) {
         return {
           success: false,
           status: 404,
           message: "Education not found",
         };
       }
-
-      const parseSafeEducation = validateAndFormatData(
-        getEducation,
-        EducationDto
-      );
-      if (!parseSafeEducation.success) return parseSafeEducation;
-
       return {
-        message: "Get education successfully",
-        ...parseSafeEducation,
+        success: true,
+        status: 200,
+        message: "Delete education successfully",
       };
     }
   );

@@ -10,7 +10,7 @@ export const registerResolver: IResolvers = {
   Mutation: {
     register: applyMiddleware(
       asyncHandler(controller.register.bind(controller)),
-      [expressValidator(registerValidator)]
+      [asyncHandler(expressValidator(registerValidator))]
     ),
   },
 };

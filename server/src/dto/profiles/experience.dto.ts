@@ -1,6 +1,8 @@
 import { z } from "zod";
+import { ObjectId } from "mongodb";
 
 export const ExperienceDto = z.object({
+  _id: z.union([z.string(), z.instanceof(ObjectId)]),
   userId: z.string().min(1, "User ID is required"),
   companyName: z
     .string()
@@ -26,8 +28,8 @@ export const ExperienceDto = z.object({
   locationType: z.enum(["remote", "on-site", "hybrid"], {
     errorMap: () => ({ message: "Invalid location type" }),
   }),
-  startDate: z.date(),
-  endDate: z.date(),
+  startDate: z.union([z.date(), z.string()]),
+  endDate: z.union([z.date(), z.string()]),
   currentlyWorking: z.boolean(),
 });
 

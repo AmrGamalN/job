@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import EducationService from "../../services/profiles/education.service";
+import { handleApiResponse } from "../../utils/responseHandler";
 
 class EducationController {
   private static instance: EducationController;
@@ -16,27 +17,40 @@ class EducationController {
 
   // Add education
   async addEducation(req: Request, res: Response): Promise<Response> {
-    const userId = req.curUser?.userId;
-    const result = await this.educationService.addEducation(req.body, userId);
-    if (!result.success) return res.status(result.status!).json(result);
-    return res.status(result.status!).json(result);
+    const result = await this.educationService.addEducation(
+      req.body,
+      req.curUser?.userId
+    );
+    return handleApiResponse(res, result);
   }
 
   // Get education
   async getEducation(req: Request, res: Response): Promise<Response> {
-    const userId = req.params.userId ? req.params.userId : req.curUser?.userId;
-    const result = await this.educationService.getEducation(userId);
-    if (!result.success) return res.status(result.status!).json(result);
-    return res.status(result.status!).json(result);
+    const query = req.params.EducationId
+      ? { _id: req.params.EducationId }
+      : { userId: req.curUser?.userId };
+    const result = await this.educationService.getEducation(query);
+    return handleApiResponse(res, result);
   }
 
   // Update education
   async updateEducation(req: Request, res: Response): Promise<Response> {
-    const userId = req.params.userId ? req.params.userId : req.curUser?.userId;
-    const result = await this.educationService.updateEducation(req.body, userId);
-    if (!result.success) return res.status(result.status!).json(result);
-    return res.status(result.status!).json(result);
+    const query = req.params.EducationId
+      ? { _id: req.params.EducationId }
+      : { userId: req.curUser?.userId };
+    const result = await this.educationService.updateEducation(req.body, query);
+    return handleApiResponse(res, result);
   }
+
+  // Delete education
+  async deleteEducation(req: Request, res: Response): Promise<Response> {
+    const query = req.params.EducationId
+     ? { _id: req.params.EducationId }
+      : { userId: req.curUser?.userId };
+    const result = await this.educationService.deleteEducation(query);
+    return handleApiResponse(res, result);
+  }
+
 }
 
 export default EducationController;

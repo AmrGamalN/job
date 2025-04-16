@@ -6,7 +6,7 @@ import { expressValidator } from "../../middleware/validatorMiddleware";
 import TokenMiddleware from "../../middleware/token.middleware";
 const tokenMiddleware = TokenMiddleware.getInstance();
 const controller = UserController.getInstance();
-import {role} from "../../utils/role";
+import { role } from "../../utils/role";
 const router = express.Router();
 const commonMiddlewares = [
   asyncHandler(tokenMiddleware.refreshTokenMiddleware),
@@ -162,7 +162,7 @@ const commonMiddlewares = [
  *         description: User not found
  *       500:
  *         description: Internal Server Error
-  * /user/update/{userId}:
+ * /user/update/{userId}:
  *   put:
  *     tags: [User]
  *     summary: Update user details
@@ -230,7 +230,7 @@ const commonMiddlewares = [
 router.put(
   "/update/:userId?",
   ...commonMiddlewares,
-  expressValidator(validateUserUpdate),
+  asyncHandler(expressValidator(validateUserUpdate)),
   asyncHandler(controller.updateUser.bind(controller))
 );
 

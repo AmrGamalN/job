@@ -1,6 +1,8 @@
 import { z } from "zod";
+import { ObjectId } from "mongodb";
 
 export const ProjectDto = z.object({
+  _id: z.union([z.string(), z.instanceof(ObjectId)]),
   userId: z.string(),
   projectName: z.string(),
   companyName: z.string(),

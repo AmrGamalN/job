@@ -5,7 +5,7 @@ export const validateAndFormatData = (
   typeProcess?: "getAll"
 ): responseHandler => {
   if (typeProcess === "getAll") {
-    return retrievedData.map((data: any) => {
+    const parsed = retrievedData.map((data: any) => {
       const parsed = dto.safeParse(data);
       console.log(parsed.error);
       if (!parsed.success) {
@@ -16,12 +16,13 @@ export const validateAndFormatData = (
           error: parsed.error,
         };
       }
-      return {
-        success: true,
-        status: 200,
-        data: parsed.data,
-      };
+      return parsed.data;
     });
+    return {
+      success: true,
+      status: 200,
+      data: parsed,
+    };
   }
 
   const parsed = dto.safeParse(retrievedData);

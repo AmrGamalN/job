@@ -1,6 +1,8 @@
 import { z } from "zod";
+import { ObjectId } from "mongodb";
 
 export const EducationDto = z.object({
+  _id: z.union([z.string(), z.instanceof(ObjectId)]),
   userId: z.string(),
   university: z.string(),
   description: z
@@ -9,9 +11,9 @@ export const EducationDto = z.object({
     .max(100, "Description must have at must 100"),
   degree: z.string(),
   major: z.string(),
-  startDate: z.date(),
-  endDate: z.date(),
-  gpa: z.string().min(1, "Time zone is required").max(5),
+  startDate: z.union([z.date(), z.string()]),
+  endDate: z.union([z.date(), z.string()]),
+  gpa: z.number().min(1, "Gpa is required").max(5),
 });
 
 export const EducationAddDto = EducationDto.pick({
@@ -22,11 +24,10 @@ export const EducationAddDto = EducationDto.pick({
   startDate: true,
   endDate: true,
   gpa: true,
-})
-  .refine((data: any) => data.startDate <= data.endDate, {
-    message: "Start date must be before or equal to end date",
-    path: ["startDate", "endDate"],
-  });
+}).refine((data: any) => data.startDate <= data.endDate, {
+  message: "Start date must be before or equal to end date",
+  path: ["startDate", "endDate"],
+});
 
 export const EducationUpdateDto = EducationDto.pick({
   university: true,
