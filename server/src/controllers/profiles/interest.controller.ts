@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import InterestService from "../../services/profiles/interest.service";
 import {
-  handleApiResponse,
+  controllerResponse,
   responseHandler,
 } from "../../utils/responseHandler";
 import { GraphQLResolveInfo } from "graphql";
@@ -40,7 +40,7 @@ class InterestController {
       ? { _id: req.params.interestId }
       : { userId: req.curUser?.userId };
     const result = await this.interestService.updateInterest(req.body, query);
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 
   // Delete interest
@@ -49,7 +49,7 @@ class InterestController {
       ? { _id: req.params.interestId }
       : { userId: req.curUser?.userId };
     const result = await this.interestService.deleteInterest(req.body, query);
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 }
 

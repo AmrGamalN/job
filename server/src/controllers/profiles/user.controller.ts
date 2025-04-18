@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import UserService from "../../services/profiles/user.service";
 import { GraphQLResolveInfo } from "graphql";
 import { responseHandler } from "../../utils/responseHandler";
-import { handleApiResponse } from "../../utils/responseHandler";
+import { controllerResponse } from "../../utils/responseHandler";
 
 class UserController {
   private static instance: UserController;
@@ -53,7 +53,7 @@ class UserController {
       ? { _id: req.params.userId }
       : { userId: req.curUser?.userId };
     const result = await this.userService.updateUser(req.body, query);
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 }
 
