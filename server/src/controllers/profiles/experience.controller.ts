@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import ExperienceService from "../../services/profiles/experience.service";
-import { handleApiResponse } from "../../utils/responseHandler";
+import { controllerResponse } from "../../utils/responseHandler";
 
 class ExperienceController {
   private static instance: ExperienceController;
@@ -21,7 +21,7 @@ class ExperienceController {
       req.body,
       req.curUser?.userId
     );
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 
   // Get experience
@@ -30,14 +30,14 @@ class ExperienceController {
       ? { _id: req.params.experienceId }
       : { userId: req.curUser?.userId };
     const result = await this.experienceService.getExperience(query);
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 
   // Get all experience
   async getAllExperiences(req: Request, res: Response): Promise<Response> {
     const userId = req.params.userId ? req.params.userId : req.curUser?.userId;
     const result = await this.experienceService.getAllExperiences(userId);
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 
   // Update experience
@@ -49,7 +49,7 @@ class ExperienceController {
       req.body,
       query
     );
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 
   // Delete experience
@@ -58,7 +58,7 @@ class ExperienceController {
       ? { _id: req.params.experienceId }
       : { userId: req.curUser?.userId };
     const result = await this.experienceService.deleteExperience(query);
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 }
 

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import EducationService from "../../services/profiles/education.service";
-import { handleApiResponse } from "../../utils/responseHandler";
+import { controllerResponse } from "../../utils/responseHandler";
 
 class EducationController {
   private static instance: EducationController;
@@ -21,7 +21,7 @@ class EducationController {
       req.body,
       req.curUser?.userId
     );
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 
   // Get education
@@ -30,14 +30,14 @@ class EducationController {
       ? { _id: req.params.educationId }
       : { userId: req.curUser?.userId };
     const result = await this.educationService.getEducation(query);
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 
   // Get all education
   async getAllEducations(req: Request, res: Response): Promise<Response> {
     const userId = req.params.userId ? req.params.userId : req.curUser?.userId;
     const result = await this.educationService.getAllEducations(userId);
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 
   // Update education
@@ -46,7 +46,7 @@ class EducationController {
       ? { _id: req.params.educationId }
       : { userId: req.curUser?.userId };
     const result = await this.educationService.updateEducation(req.body, query);
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 
   // Delete education
@@ -55,7 +55,7 @@ class EducationController {
       ? { _id: req.params.educationId }
       : { userId: req.curUser?.userId };
     const result = await this.educationService.deleteEducation(query);
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 }
 

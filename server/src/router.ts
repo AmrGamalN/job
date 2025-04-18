@@ -10,6 +10,9 @@ import EducationRoutes from "./routes/profiles/education.routes";
 import ExperienceRoutes from "./routes/profiles/experience.routes";
 import InterestRoutes from "./routes/profiles/interest.routes";
 import ProjectRoutes from "./routes/profiles/project.routes";
+import PostRoutes from "./routes/post/post.routes";
+import CommentRoutes from "./routes/post/comment.routes";
+import ReactionRoutes from "./routes/post/reaction.routes";
 const router = Router();
 
 // Health Check
@@ -30,4 +33,7 @@ router.use("/education", EducationRoutes);
 router.use("/experience", ExperienceRoutes);
 router.use("/interest", InterestRoutes);
 router.use("/project", ProjectRoutes);
+router.use("/post", PostRoutes);
+router.use("/comment", CommentRoutes);
+router.use("/reaction", ReactionRoutes);
 export default router;

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import ProjectService from "../../services/profiles/project.service";
-import { handleApiResponse } from "../../utils/responseHandler";
+import { controllerResponse } from "../../utils/responseHandler";
 
 class ProjectController {
   private static instance: ProjectController;
@@ -21,7 +21,7 @@ class ProjectController {
       req.body,
       req.curUser?.userId
     );
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 
   // Get project
@@ -30,7 +30,7 @@ class ProjectController {
       ? { _id: req.params.projectId }
       : { userId: req.curUser?.userId };
     const result = await this.projectService.getProject(query);
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 
   // Get all project
@@ -39,7 +39,7 @@ class ProjectController {
       ? { userId: req.params.userId }
       : { userId: req.curUser?.userId };
     const result = await this.projectService.getAllProjects(query);
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 
   // Update project
@@ -48,7 +48,7 @@ class ProjectController {
       ? { _id: req.params.projectId }
       : { userId: req.curUser?.userId };
     const result = await this.projectService.updateProject(req.body, query);
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 
   // Delete project
@@ -57,7 +57,7 @@ class ProjectController {
       ? { _id: req.params.projectId }
       : { userId: req.curUser?.userId };
     const result = await this.projectService.deleteProject(query);
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 }
 

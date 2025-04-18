@@ -19,6 +19,7 @@ const swaggerOptions = {
     "./src/routes/*.ts",
     "./src/routes/profiles/*.ts",
     "./src/routes/auth/*.ts",
+    "./src/routes/post/*.ts",
   ]
 };
 

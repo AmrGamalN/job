@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import AddressService from "../../services/profiles/address.service";
-import { handleApiResponse } from "../../utils/responseHandler";
+import { controllerResponse } from "../../utils/responseHandler";
 
 class AddressController {
   private static instance: AddressController;
@@ -19,7 +19,7 @@ class AddressController {
   async addAddress(req: Request, res: Response): Promise<Response> {
     const userId = req.curUser?.userId;
     const result = await this.addressService.addAddress(req.body, userId);
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 
   // Get address
@@ -28,7 +28,7 @@ class AddressController {
       ? { _id: req.params.addressId }
       : { userId: req.curUser?.userId };
     const result = await this.addressService.getAddress(query);
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 
   // Update address
@@ -37,7 +37,7 @@ class AddressController {
       ? { _id: req.params.addressId }
       : { userId: req.curUser?.userId };
     const result = await this.addressService.updateAddress(req.body, query);
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 }
 

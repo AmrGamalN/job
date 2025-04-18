@@ -12,7 +12,43 @@ export interface responseHandler {
   userId?: string;
 }
 
-export const handleApiResponse = (res: Response, response: responseHandler) => {
+export const controllerResponse = (
+  res: Response,
+  response: responseHandler
+) => {
   if (!response.success) return res.status(response.status!).json(response);
   return res.status(response.status!).json(response);
+};
+
+export const NotFound = (type: string) => {
+  return {
+    success: false,
+    status: 404,
+    message: `${type} not found`,
+  };
+};
+
+export const BadRequest = () => {
+  return {
+    success: false,
+    status: 400,
+    message: "Bad request",
+  };
+};
+export const Conflict = (message: string) => {
+  return {
+    success: false,
+    status: 409,
+    message: `${message} already exist`,
+  };
+};
+
+export const OK = (message: string, data?: any, count?: number) => {
+  return {
+    success: true,
+    status: 200,
+    message: `${message} successfully`,
+    data: data,
+    count: count,
+  };
 };

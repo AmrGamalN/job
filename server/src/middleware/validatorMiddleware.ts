@@ -1,4 +1,4 @@
-import {validationResult } from "express-validator";
+import { validationResult } from "express-validator";
 import { Request, Response, NextFunction } from "express";
 
 const validIds = [
@@ -16,7 +16,12 @@ const validIds = [
   "profileId",
   "projectId",
   "securityId",
+  "postId",
+  "commentId",
+  "reactionId",
 ];
+
+const validQueries = ["reactionType", "post", "comment"];
 
 export const expressValidator = (validators: any[]) => {
   return async (
@@ -49,14 +54,33 @@ export const expressValidator = (validators: any[]) => {
 
 export const validateParamMiddleware = () => {
   return async (req: Request, res: Response, next: NextFunction) => {
+    const params = req.params;
+    if (!params || Object.values(params)[0] == undefined) {
+      return next();
+    }
+
     for (let paramKey in req?.params) {
       if (
         !validIds.includes(paramKey) ||
         !/^[a-zA-Z0-9]{24}$/.test(req.params[paramKey])
       ) {
-        return res.status(400).json({
+        return res.status(404).json({
           success: false,
-          message: `Parameter "${paramKey}" is not allowed or invalid '${paramKey}'`,
+          message: `Parameter "${paramKey}" is not allowed`,
+        });
+      }
+    }
+    return next();
+  };
+};
+
+export const validateQueryMiddleware = () => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    for (let queryKey in req?.query) {
+      if (!validQueries.includes(queryKey)) {
+        return res.status(404).json({
+          success: false,
+          message: "Not found",
         });
       }
     }
@@ -71,9 +95,9 @@ export const validateParamFirebaseMiddleware = () => {
         paramKey !== "userId" ||
         !/^[a-zA-Z0-9]{28}$/.test(req.params[paramKey])
       ) {
-        return res.status(400).json({
+        return res.status(404).json({
           success: false,
-          message: `Parameter "${paramKey}" is not allowed or invalid '${paramKey}'`,
+          message: "Not found",
         });
       }
     }

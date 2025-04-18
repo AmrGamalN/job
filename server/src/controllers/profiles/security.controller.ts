@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import SecurityService from "../../services/profiles/security.service";
 import { GraphQLResolveInfo } from "graphql";
 import { responseHandler } from "../../utils/responseHandler";
-import { handleApiResponse } from "../../utils/responseHandler";
+import { controllerResponse } from "../../utils/responseHandler";
 
 class SecurityController {
   private static instance: SecurityController;
@@ -50,13 +50,13 @@ class SecurityController {
   async updateSecurity(req: Request, res: Response): Promise<Response> {
     const userId = req.params.userId ? req.params.userId : req.curUser?.userId;
     const result = await this.SecurityService.updateSecurity(req.body, userId);
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 
   // Count security
   async countSecurity(req: Request, res: Response): Promise<Response> {
     const result = await this.SecurityService.countSecurity();
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 
   // Delete & block
@@ -74,7 +74,7 @@ class SecurityController {
   // Reset password
   async resetPassword(req: Request, res: Response): Promise<Response> {
     const result = await this.SecurityService.resetPassword(req.body.email);
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 
   // Update password
@@ -83,7 +83,7 @@ class SecurityController {
       req.curUser.userId,
       req.body
     );
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 
   // Send verification again
@@ -91,7 +91,7 @@ class SecurityController {
     const result = await this.SecurityService.sendVerificationEmail(
       req.body.email
     );
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 
   // Generate two factor authentication
@@ -111,7 +111,7 @@ class SecurityController {
       req.curUser.userId,
       req.body.twoFactorCode
     );
-    return handleApiResponse(res, result);
+    return controllerResponse(res, result);
   }
 }
 
