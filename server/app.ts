@@ -62,7 +62,7 @@ const startApolloServer = async () => {
 const PORT = process.env.PORT || 8080;
 Promise.all([connectToMongoDB(), redisClient.connect()])
   .then(async () => {
-    // await startApolloServer();
+    await startApolloServer();
     app.get(
       "/playground",
       expressPlayground({

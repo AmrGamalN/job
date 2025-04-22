@@ -11,31 +11,6 @@ const router = express.Router();
 
 /**
  * @swagger
- * tags: [Auth]
- * description: Auth Management API
- */
-
-/**
- * @swagger
- * components:
- *   responses:
- *     AuthSuccess:
- *       description: Login Successfully
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               status:
- *                 type: number
- *               success:
- *                 type: boolean
- *               message:
- *                 type: string
- */
-
-/**
- * @swagger
  * /auth/logout:
  *   post:
  *     tags: [Auth]
@@ -43,7 +18,7 @@ const router = express.Router();
  *     description: Logout
  *     responses:
  *       200:
- *          $ref: '#/components/responses/AuthSuccess'
+ *          $ref: '#/components/schemas/BaseResponse'
  *       400:
  *         description: Bad request
  *       401:
@@ -69,10 +44,12 @@ router.post(
  *       - in: path
  *         name: token
  *         required: true
- *         description: The token
+ *         description: The token to verify
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
- *          $ref: '#/components/responses/AuthSuccess'
+ *          $ref: '#/components/responses/BaseResponse'
  *       400:
  *         description: Bad request
  *       500:

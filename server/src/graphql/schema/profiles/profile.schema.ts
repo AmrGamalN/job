@@ -40,7 +40,7 @@ type ProfilesResponse {
 }
 
 type Query {
-  getProfile(profileId: String): ProfileResponse!
+  getProfile(userId: String): ProfileResponse!
   getAllProfiles(page:Int!=1 ,limit:Int!=10): ProfilesResponse!
 }
 `;

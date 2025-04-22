@@ -6,12 +6,7 @@ import {
   commentAddDtoType,
   commentUpdateDtoType,
 } from "../../dto/post/comment.dto";
-import {
-  OK,
-  NotFound,
-  BadRequest,
-  responseHandler,
-} from "../../utils/responseHandler";
+import { responseHandler, serviceResponse } from "../../utils/responseHandler";
 import { warpAsync } from "../../utils/warpAsync";
 import { validateAndFormatData } from "../../utils/validateAndFormatData";
 import { GraphQLResolveInfo } from "graphql";
@@ -33,9 +28,9 @@ class CommentService {
       postId: string,
       userId: string
     ): Promise<responseHandler> => {
-      const parseSafe = validateAndFormatData(data, commentAddDto);
+      const parsed = validateAndFormatData(data, commentAddDto);
       const comment = await Comment.create({
-        ...parseSafe.data,
+        ...parsed.data,
         postId,
         userId,
       });
@@ -50,16 +45,15 @@ class CommentService {
           },
         }
       );
-      return OK("Add comment", parseSafe.data);
+      return serviceResponse({
+        statusText: "Created",
+      });
     }
   );
 
   getComment = warpAsync(async (query: object): Promise<responseHandler> => {
     const getComment = await Comment.findOne(query).lean();
-    if (!getComment) return NotFound("Comment");
-    const parseSafe = validateAndFormatData(getComment, commentDto);
-    if (!parseSafe.success) return parseSafe;
-    return OK("Get comment", parseSafe.data);
+    return validateAndFormatData(getComment, commentDto);
   });
 
   getAllComments = warpAsync(
@@ -70,24 +64,14 @@ class CommentService {
       },
       info: GraphQLResolveInfo
     ): Promise<responseHandler> => {
-      const getComments = await PaginationGraphQl(
-        args.page,
-        args.limit,
-        info,
-        Post
-      );
-      if (!getComments.length) return NotFound("Comments");
-
-      const parseSafe = validateAndFormatData(
-        getComments,
+      const count = await this.countComment();
+      return await PaginationGraphQl(
+        Post,
         commentDto,
-        "getAll"
+        count.count ?? 0,
+        args,
+        info
       );
-      if (!parseSafe.success) return parseSafe;
-
-      const countComment = await this.countComment();
-      if (!countComment.count) return countComment;
-      return OK("Get comments", parseSafe.data, countComment.count);
     }
   );
 
@@ -96,16 +80,14 @@ class CommentService {
       data: commentUpdateDtoType,
       query: object
     ): Promise<responseHandler> => {
-      if (Object.keys(data).length === 0) return BadRequest();
-
-      const parseSafe = validateAndFormatData(data, commentUpdateDto);
-      if (!parseSafe.success) return parseSafe;
+      const parsed = validateAndFormatData(data, commentUpdateDto, "update");
+      if (!parsed.success) return parsed;
 
       const updateComment = await Comment.updateOne(
         query,
         {
           $set: {
-            ...parseSafe.data,
+            ...parsed.data,
             isEdited: true,
           },
         },
@@ -113,22 +95,26 @@ class CommentService {
           new: true,
         }
       );
-      if (!updateComment.matchedCount) return NotFound("Comment");
-      return OK("Update comment", updateComment);
+      return serviceResponse({
+        data: updateComment.matchedCount,
+      });
     }
   );
 
   countComment = warpAsync(async (postId: string): Promise<responseHandler> => {
-    const countComments = await Comment.countDocuments({ postId });
-    if (countComments === 0) return NotFound("Comment");
-    return OK("Count comment", null, countComments);
+    return serviceResponse({
+      data: await Comment.countDocuments({ postId }),
+    });
   });
 
   deleteComment = warpAsync(async (query: object): Promise<responseHandler> => {
     const deleteComment = await Comment.findOneAndDelete(query)
       .lean()
       .select({ _id: 1, postId: 1 });
-    if (!deleteComment) return NotFound("Comment");
+    if (!deleteComment)
+      return serviceResponse({
+        data: deleteComment,
+      });
 
     await Post.updateOne(
       { _id: deleteComment.postId },
@@ -141,7 +127,9 @@ class CommentService {
         },
       }
     );
-    return OK("Delete post");
+    return serviceResponse({
+      statusText: "OK",
+    });
   });
 }
 

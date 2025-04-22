@@ -9,7 +9,7 @@ import { redisClient } from "../../config/redisConfig";
 import { sendVerificationEmail } from "../../utils/sendEmail";
 import { generateVerificationToken } from "../../utils/generateCode";
 import { warpAsync } from "../../utils/warpAsync";
-import { responseHandler } from "../../utils/responseHandler";
+import { responseHandler, serviceResponse } from "../../utils/responseHandler";
 import { generateUniqueProfile } from "../../utils/generateUniqueProfileLink";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcrypt";
@@ -29,16 +29,14 @@ class RegisterService {
   // register new user
   register = warpAsync(
     async (userData: RegisterDtoType): Promise<responseHandler> => {
-      if (userData.password !== userData.confirmPassword) {
-        return {
-          success: false,
-          status: 400,
+      if (userData.password !== userData.confirmPassword)
+        return serviceResponse({
+          statusText: "BadRequest",
           message: "Password and Confirm Password do not match.",
-        };
-      }
+        });
 
-      const formatData = validateAndFormatData(userData, RegisterDto);
-      if (!formatData.success) return formatData;
+      const parsedSafe = validateAndFormatData(userData, RegisterDto);
+      if (!parsedSafe.success) return parsedSafe;
 
       const existingUser = await this.isUserExisting(
         userData.email,
@@ -48,7 +46,7 @@ class RegisterService {
 
       // Add user caching & send otp
       const resultRegister = await this.processUserRegistration(
-        formatData.data
+        parsedSafe.data
       );
       if (!resultRegister.success) return resultRegister;
 
@@ -63,22 +61,18 @@ class RegisterService {
       const getUserByPhone = await auth
         .getUserByPhoneNumber(phoneNumber)
         .catch(() => null);
-      if (getUserByEmail) {
-        return {
-          success: false,
-          status: 409,
+      if (getUserByEmail)
+        return serviceResponse({
+          statusText: "Conflict",
           message: "Email already exists",
-        };
-      }
+        });
 
-      if (getUserByPhone) {
-        return {
-          success: false,
-          status: 409,
+      if (getUserByPhone)
+        return serviceResponse({
+          statusText: "Conflict",
           message: "Phone already exists",
-        };
-      }
-      return { success: true, status: 200 };
+        });
+      return { success: true };
     }
   );
 
@@ -87,14 +81,12 @@ class RegisterService {
     async (userData: RegisterDtoType): Promise<responseHandler> => {
       const token = await this.generateUniqueToken();
       const existingOtp = await Otp.findOne({ email: userData.email }).lean();
-
       if (existingOtp) {
-        return {
-          success: false,
-          status: 400,
+        return serviceResponse({
+          statusText: "Conflict",
           message:
             "verification link already exists or the email already register but not verify. Please check your email",
-        };
+        });
       } else {
         await Otp.create({
           email: userData.email,
@@ -117,11 +109,10 @@ class RegisterService {
       const resultCache = await this.saveUserInCache(userData, token);
       if (!resultCache.success) return resultCache;
 
-      return {
-        success: true,
-        status: 200,
+      return serviceResponse({
+        statusText: "OK",
         message: "Registration successful. Please verify email",
-      };
+      });
     }
   );
 
@@ -160,30 +151,21 @@ class RegisterService {
   // Add user in database after verification
   private addUserToDatabaseAndFirebase = warpAsync(
     async (token: string): Promise<responseHandler> => {
-      // Find and delete token
       const getOtp = await Otp.findOneAndDelete({ token });
-
-      if (!getOtp || getOtp.token != token) {
-        return {
-          success: false,
-          status: 400,
-          message:
-            "Try verifying your email again ,Your request to verify your email has expired or the link has already been used",
-        };
-      }
-
-      // Get user from caching
       const getUserFromCaching = await redisClient.get(`token: ${token}`);
-      if (!getUserFromCaching || getUserFromCaching?.length === 0) {
-        return {
-          success: false,
-          status: 400,
+
+      if (
+        !getOtp ||
+        getOtp.token != token ||
+        !getUserFromCaching ||
+        getUserFromCaching?.length === 0
+      )
+        return serviceResponse({
+          statusText: "BadRequest",
           message:
             "Try verifying your email again ,Your request to verify your email has expired or the link has already been used",
-        };
-      }
+        });
 
-      // Create user in firebase
       const userData = JSON.parse(getUserFromCaching);
       const {
         email,
@@ -226,15 +208,12 @@ class RegisterService {
           userId,
           profileLink: userUnique.profileLink,
         }),
-        Interest.create({userId}),
+        Interest.create({ userId }),
         redisClient.del(`token: ${token}`),
       ]);
-
-      return {
-        success: true,
-        status: 201,
-        message: "Registration successful. You can now log in.",
-      };
+      return serviceResponse({
+        statusText: "Created",
+      });
     }
   );
 

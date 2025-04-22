@@ -15,7 +15,6 @@ class EducationController {
     return EducationController.instance;
   }
 
-  // Add education
   async addEducation(req: Request, res: Response): Promise<Response> {
     const result = await this.educationService.addEducation(
       req.body,
@@ -24,37 +23,26 @@ class EducationController {
     return controllerResponse(res, result);
   }
 
-  // Get education
   async getEducation(req: Request, res: Response): Promise<Response> {
-    const query = req.params.educationId
-      ? { _id: req.params.educationId }
-      : { userId: req.curUser?.userId };
-    const result = await this.educationService.getEducation(query);
+    const result = await this.educationService.getEducation(req.body.id);
     return controllerResponse(res, result);
   }
 
-  // Get all education
   async getAllEducations(req: Request, res: Response): Promise<Response> {
-    const userId = req.params.userId ? req.params.userId : req.curUser?.userId;
-    const result = await this.educationService.getAllEducations(userId);
+    const result = await this.educationService.getAllEducations(req.body.id);
     return controllerResponse(res, result);
   }
 
-  // Update education
   async updateEducation(req: Request, res: Response): Promise<Response> {
-    const query = req.params.educationId
-      ? { _id: req.params.educationId }
-      : { userId: req.curUser?.userId };
-    const result = await this.educationService.updateEducation(req.body, query);
+    const result = await this.educationService.updateEducation(
+      req.body,
+      req.body.id
+    );
     return controllerResponse(res, result);
   }
 
-  // Delete education
   async deleteEducation(req: Request, res: Response): Promise<Response> {
-    const query = req.params.educationId
-      ? { _id: req.params.educationId }
-      : { userId: req.curUser?.userId };
-    const result = await this.educationService.deleteEducation(query);
+    const result = await this.educationService.deleteEducation(req.body.id);
     return controllerResponse(res, result);
   }
 }

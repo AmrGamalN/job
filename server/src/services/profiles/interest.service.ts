@@ -5,7 +5,7 @@ import {
   InterestAddDto,
 } from "../../dto/profiles/interest.dto";
 import { warpAsync } from "../../utils/warpAsync";
-import { responseHandler } from "../../utils/responseHandler";
+import { responseHandler, serviceResponse } from "../../utils/responseHandler";
 import { validateAndFormatData } from "../../utils/validateAndFormatData";
 import { GraphQLResolveInfo } from "graphql";
 import graphqlFields from "graphql-fields";
@@ -26,7 +26,6 @@ class InterestService {
     return InterestService.instanceService;
   }
 
-  // Get interest
   getInterest = warpAsync(
     async (
       query: object,
@@ -38,40 +37,25 @@ class InterestService {
       const getInterest = await Interest.findOne(query)
         .lean()
         .select(selectedFields);
-      if (!getInterest) {
-        return {
-          success: false,
-          status: 404,
-          message: "Interest not found",
-        };
-      }
-      const parseSafeInterest = validateAndFormatData(getInterest, InterestDto);
-      if (!parseSafeInterest.success) return parseSafeInterest;
-
-      return {
-        message: "Get interest successfully",
-        ...parseSafeInterest,
-      };
+      return validateAndFormatData(getInterest, InterestDto);
     }
   );
 
-  // Update interest
   updateInterest = warpAsync(
     async (
       data: InterestAddDtoType,
       query: object
     ): Promise<responseHandler> => {
-      const parseSafe = validateAndFormatData(data, InterestAddDto);
-      if (!parseSafe.success) return parseSafe;
+      const parsed = validateAndFormatData(data, InterestAddDto, "update");
+      if (!parsed.success) return parsed;
 
-      const keys = Object.keys(data) as InterestType[];
-      if (keys.length !== 1 || !keys[0]) {
-        return {
-          success: false,
-          status: 400,
+      const keys = Object.keys(parsed.data) as InterestType[];
+      if (keys.length !== 1 || !keys[0])
+        return serviceResponse({
+          statusText: "BadRequest",
           message: "Invalid interest data",
-        };
-      }
+        });
+
       const updateInterest = await Interest.updateOne(
         query,
         {
@@ -85,41 +69,27 @@ class InterestService {
           new: true,
         }
       ).lean();
-
-      if (!updateInterest.modifiedCount) {
-        return {
-          success: false,
-          status: 404,
-          message: "Interest not found",
-        };
-      }
-
-      return {
-        success: true,
-        status: 200,
-        message: "Update interest successfully",
-        data: updateInterest,
-      };
+      return serviceResponse({
+        data: updateInterest.modifiedCount,
+      });
     }
   );
 
-  // Delete interest
   deleteInterest = warpAsync(
     async (
       data: InterestAddDtoType,
       query: object
     ): Promise<responseHandler> => {
-      const parseSafe = validateAndFormatData(data, InterestAddDto);
-      if (!parseSafe.success) return parseSafe;
+      const parsed = validateAndFormatData(data, InterestAddDto, "delete");
+      if (!parsed.success) return parsed;
 
-      const keys = Object.keys(data) as InterestType[];
-      if (keys.length !== 1 || !keys[0]) {
-        return {
-          success: false,
-          status: 400,
+      const keys = Object.keys(parsed.data) as InterestType[];
+      if (keys.length !== 1 || !keys[0])
+        return serviceResponse({
+          statusText: "BadRequest",
           message: "Invalid interest data",
-        };
-      }
+        });
+
       const deleteInterest = await Interest.updateOne(query, {
         $pull: {
           [keys[0]]: {
@@ -127,19 +97,9 @@ class InterestService {
           },
         },
       });
-
-      if (!deleteInterest.modifiedCount) {
-        return {
-          success: false,
-          status: 404,
-          message: "Interest not found",
-        };
-      }
-      return {
-        success: true,
-        status: 200,
-        message: "Delete interest successfully",
-      };
+      return serviceResponse({
+        data: deleteInterest.modifiedCount,
+      });
     }
   );
 }

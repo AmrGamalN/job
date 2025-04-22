@@ -21,7 +21,7 @@ const postReactionSchema = new Schema(
       default: ReactionType.LIKE,
       required: true,
     },
-    postId: { type: Schema.Types.ObjectId, ref: "posts", required: true },
+    id: { type: Schema.Types.ObjectId, ref: "posts", required: true },
   },
   { timestamps: true }
 );
@@ -29,7 +29,7 @@ const postReactionSchema = new Schema(
 const commentReactionSchema = new Schema(
   {
     userId: { type: String, ref: "users", required: true },
-    commentId: { type: Schema.Types.ObjectId, ref: "comments", required: true },
+    id: { type: Schema.Types.ObjectId, ref: "comments", required: true },
     reactionType: {
       type: String,
       enum: Object.values(ReactionType),
@@ -40,8 +40,8 @@ const commentReactionSchema = new Schema(
   { timestamps: true }
 );
 
-postReactionSchema.index({ userId: 1, postId: 1 }, { unique: true });
-commentReactionSchema.index({ userId: 1, commentId: 1 }, { unique: true });
+postReactionSchema.index({ userId: 1, id: 1 }, { unique: true });
+commentReactionSchema.index({ userId: 1, id: 1 }, { unique: true });
 export const PostReaction = model<ReactionDtoType>(
   "post_reactions",
   postReactionSchema
