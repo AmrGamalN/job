@@ -5,7 +5,7 @@ import {
   UserSecurityUpdateDtoType,
 } from "../../dto/profiles/security.dto";
 import { warpAsync } from "../../utils/warpAsync";
-import { responseHandler } from "../../utils/responseHandler";
+import { responseHandler, serviceResponse } from "../../utils/responseHandler";
 import { validateAndFormatData } from "../../utils/validateAndFormatData";
 import { GraphQLResolveInfo } from "graphql";
 import { auth } from "../../config/firebase";
@@ -15,6 +15,7 @@ import Otp from "../../models/mongodb/profiles/otp.model";
 import speakeasy from "speakeasy";
 import QRCode from "qrcode";
 import bcrypt from "bcrypt";
+import { PaginationGraphQl } from "../../utils/pagination";
 const graphqlFields = require("graphql-fields");
 
 class SecurityService {
@@ -39,30 +40,10 @@ class SecurityService {
       const getSecurity = await Security.findOne(args)
         .select(selectedFields)
         .lean();
-
-      if (!getSecurity) {
-        return {
-          success: false,
-          status: 404,
-          message: "Security data not found",
-        };
-      }
-      const parseSafeSecurity = validateAndFormatData(
-        getSecurity,
-        UserSecurityDto
-      );
-      if (!parseSafeSecurity.success) return parseSafeSecurity;
-
-      return {
-        success: true,
-        status: 200,
-        message: "Get security successfully",
-        data: getSecurity,
-      };
+      return validateAndFormatData(getSecurity, UserSecurityDto);
     }
   );
 
-  // Get all Security model by using GraphQl to select any field is need
   getAllSecurities = warpAsync(
     async (
       args: {
@@ -71,66 +52,28 @@ class SecurityService {
       },
       info: GraphQLResolveInfo
     ): Promise<responseHandler> => {
-      const pageNum = Math.max(args.page, 1);
-      const limitNum = Math.max(args.limit, 10);
-      const skip = (pageNum - 1) * limitNum;
-      const selectedFields = Object.keys(graphqlFields(info).data || {}).join(
-        " "
-      );
-
-      const getSecurities = await Security.find({})
-        .skip(skip)
-        .limit(limitNum)
-        .select(selectedFields)
-        .lean();
-
-      if (!getSecurities.length) {
-        return {
-          success: false,
-          status: 404,
-          message: "Securities not found",
-        };
-      }
-
-      const parseSafeSecurities = validateAndFormatData(
-        getSecurities,
-        UserSecurityDto,
-        "getAll"
-      );
-      if (parseSafeSecurities.success === false) return parseSafeSecurities;
-
       const count = await this.countSecurity();
-      if (count.count === 0) return count;
-
-      return {
-        success: true,
-        status: 200,
-        message: "Get Securities successfully",
-        data: getSecurities,
-        count: count.count,
-      };
+      return await PaginationGraphQl(
+        Security,
+        UserSecurityDto,
+        count.count ?? 0,
+        args,
+        info
+      );
     }
   );
 
-  // Update Security
   updateSecurity = warpAsync(
     async (
       SecurityData: UserSecurityUpdateDtoType,
       userId: string
     ): Promise<responseHandler> => {
-      if (Object.keys(SecurityData).length === 0) {
-        return {
-          success: false,
-          status: 400,
-          message: "No data provided for update",
-        };
-      }
-
-      const parseSafe = validateAndFormatData(
+      const parsed = validateAndFormatData(
         SecurityData,
-        UserSecurityUpdateDto
+        UserSecurityUpdateDto,
+        "update"
       );
-      if (!parseSafe.success) return parseSafe;
+      if (!parsed.success) return parsed;
 
       const updateSecurity = await Security.findOneAndUpdate(
         { userId },
@@ -143,40 +86,16 @@ class SecurityService {
           new: true,
         }
       ).lean();
-
-      if (!updateSecurity) {
-        return {
-          success: false,
-          status: 404,
-          message: "Security not found",
-        };
-      }
-
-      return {
-        success: true,
-        status: 200,
-        message: "Update Security successfully",
+      return serviceResponse({
         data: updateSecurity,
-      };
+      });
     }
   );
 
-  // Count all Security
   countSecurity = warpAsync(async (): Promise<responseHandler> => {
-    const countSecurities = await Security.countDocuments();
-    if (countSecurities === 0) {
-      return {
-        success: false,
-        status: 404,
-        message: "Securities not found",
-      };
-    }
-    return {
-      success: true,
-      status: 200,
-      message: "Count Security successfully",
-      count: countSecurities,
-    };
+    return serviceResponse({
+      count: await Security.countDocuments(),
+    });
   });
 
   deleteBlockUser = warpAsync(
@@ -190,31 +109,18 @@ class SecurityService {
           new: true,
         }
       );
-
-      if (!getUser) {
-        return {
-          success: false,
-          status: 404,
-          message: "User not found",
-        };
-      }
-      return {
-        success: true,
-        status: 200,
-        message: "User process updated successfully.",
-      };
+      return serviceResponse({
+        data: getUser,
+      });
     }
   );
 
   resetPassword = warpAsync(async (email: string): Promise<responseHandler> => {
     const passwordResetLink = await auth.generatePasswordResetLink(email);
-    if (!passwordResetLink) {
-      return {
-        success: false,
-        status: 404,
-        message: "Invalid email ,User not found",
-      };
-    }
+    if (!passwordResetLink)
+      return serviceResponse({
+        message: "Email not found",
+      });
     const sendLink = await sendVerificationEmail(
       email,
       passwordResetLink,
@@ -222,19 +128,17 @@ class SecurityService {
       "The link to reset your password:"
     );
 
-    if (!sendLink.success) {
-      return {
-        success: false,
-        status: 400,
+    if (!sendLink.success)
+      return serviceResponse({
+        statusText: "BadRequest",
         message: "Something error Please try aging",
-      };
-    }
-    return {
-      success: true,
-      status: 200,
+      });
+
+    return serviceResponse({
+      statusText: "OK",
       message:
         "Send link to your email ,Please check your email to reset password",
-    };
+    });
   });
 
   updatePassword = warpAsync(
@@ -242,25 +146,20 @@ class SecurityService {
       const getUser = await Security.findOne({ userId })
         .lean()
         .select({ password: 1 });
+      if (!getUser)
+        return serviceResponse({
+          statusText: "NotFound",
+        });
 
-      if (!getUser) {
-        return {
-          success: false,
-          status: 404,
-          message: "User not found",
-        };
-      }
       const compare = await bcrypt.compare(
         body.oldPassword,
         getUser?.password!
       );
-      if (compare) {
-        return {
-          success: false,
-          status: 400,
+      if (compare)
+        return serviceResponse({
+          statusText: "BadRequest",
           message: "New password must be different from the old password",
-        };
-      }
+        });
 
       await Promise.all([
         auth.updateUser(userId, {
@@ -273,12 +172,10 @@ class SecurityService {
           }
         ),
       ]);
-
-      return {
-        success: true,
-        status: 200,
+      return serviceResponse({
+        statusText: "OK",
         message: "Password updated successfully",
-      };
+      });
     }
   );
 
@@ -288,12 +185,11 @@ class SecurityService {
       const existingOtp = await Otp.findOne({ email }).lean();
 
       if (existingOtp) {
-        return {
-          success: false,
-          status: 400,
+        return serviceResponse({
+          statusText: "BadRequest",
           message:
             "verification link already exists or the email already register but not verify. Please check your email",
-        };
+        });
       } else {
         await Otp.create({
           email,
@@ -312,15 +208,13 @@ class SecurityService {
       );
       if (!resultSendEmail.success) return resultSendEmail;
 
-      return {
-        success: true,
-        status: 200,
+      return serviceResponse({
+        statusText: "OK",
         message: `Otp sended successfully please check your email ${email}`,
-      };
+      });
     }
   );
 
-  // Create unique token
   private async generateUniqueToken(): Promise<string> {
     let token;
     do {
@@ -329,7 +223,6 @@ class SecurityService {
     return token;
   }
 
-  // Generate secret code and qrcode
   generateTwoFactorAuth = warpAsync(
     async (userId: string): Promise<responseHandler> => {
       const secret = speakeasy.generateSecret({
@@ -343,30 +236,25 @@ class SecurityService {
         { new: true, upsert: false }
       ).lean();
 
-      if (!updatedUser || !secret.otpauth_url) {
-        return {
-          success: false,
-          status: 400,
+      if (!updatedUser || !secret.otpauth_url)
+        return serviceResponse({
+          statusText: "BadRequest",
           message:
             "Error creating two-factor authentication or 2FA already enable.",
-        };
-      }
+        });
 
       const generateQrCode = await QRCode.toBuffer(secret.otpauth_url);
-
-      return {
-        success: true,
-        status: 201,
+      return serviceResponse({
+        statusText: "Created",
         message:
           "Scan the QR code to set up 2FA. After scanning, enter the 6-digit code to complete verification.",
         data: {
           qrCode: generateQrCode,
         },
-      };
+      });
     }
   );
 
-  // Verify two factor auth
   verifyTwoFactorAuth = warpAsync(
     async (userId: string, twoFactorCode: string): Promise<responseHandler> => {
       const userSecurity = await Security.findOne({
@@ -378,21 +266,17 @@ class SecurityService {
         })
         .lean();
 
-      if (userSecurity && userSecurity.isTwoFactorAuth === true) {
-        return {
-          success: false,
-          status: 400,
+      if (userSecurity && userSecurity.isTwoFactorAuth === true)
+        return serviceResponse({
+          statusText: "Conflict",
           message: "Two factor already enable",
-        };
-      }
+        });
 
-      if (!userSecurity || !userSecurity.isTwoFactorAuth === false) {
-        return {
-          success: false,
-          status: 400,
+      if (!userSecurity || !userSecurity.isTwoFactorAuth === false)
+        return serviceResponse({
+          statusText: "BadRequest",
           message: "Error: Invalid user or 2FA not enabled",
-        };
-      }
+        });
 
       const verified = speakeasy.totp.verify({
         secret: String(userSecurity.twoFactorCode),
@@ -401,24 +285,20 @@ class SecurityService {
         window: 1,
       });
 
-      if (!verified) {
-        return {
-          success: false,
-          status: 400,
+      if (!verified)
+        return serviceResponse({
+          statusText: "BadRequest",
           message: "Invalid or expired 2FA code",
-        };
-      }
+        });
 
       await Security.findOneAndUpdate(
         { userId },
         { $set: { isTwoFactorAuth: true } }
       );
-
-      return {
-        success: true,
-        status: 200,
+      return serviceResponse({
+        statusText: "OK",
         message: "2FA verification successful",
-      };
+      });
     }
   );
 }

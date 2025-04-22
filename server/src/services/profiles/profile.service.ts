@@ -5,9 +5,10 @@ import {
   ProfileUpdateDtoType,
 } from "../../dto/profiles/profile.dto";
 import { warpAsync } from "../../utils/warpAsync";
-import { responseHandler } from "../../utils/responseHandler";
+import { responseHandler, serviceResponse } from "../../utils/responseHandler";
 import { validateAndFormatData } from "../../utils/validateAndFormatData";
 import { GraphQLResolveInfo } from "graphql";
+import { PaginationGraphQl } from "../../utils/pagination";
 const graphqlFields = require("graphql-fields");
 
 class ProfileService {
@@ -19,22 +20,17 @@ class ProfileService {
     return ProfileService.instanceService;
   }
 
-  // Update profile
   updateProfile = warpAsync(
     async (
       profileData: ProfileUpdateDtoType,
       query: object
     ): Promise<responseHandler> => {
-      if (Object.keys(profileData).length === 0) {
-        return {
-          success: false,
-          status: 400,
-          message: "No data provided for update",
-        };
-      }
-
-      const parseSafe = validateAndFormatData(profileData, profileUpdateDto);
-      if (!parseSafe.success) return parseSafe;
+      const parsed = validateAndFormatData(
+        profileData,
+        profileUpdateDto,
+        "update"
+      );
+      if (!parsed.success) return parsed;
 
       const updateProfile = await Profile.findOneAndUpdate(
         query,
@@ -47,49 +43,19 @@ class ProfileService {
           new: true,
         }
       ).lean();
-
-      if (!updateProfile) {
-        return {
-          success: false,
-          status: 404,
-          message: "Profile not found",
-        };
-      }
-
-      return {
-        success: true,
-        status: 200,
-        message: "Update profile successfully",
+      return serviceResponse({
         data: updateProfile,
-      };
+      });
     }
   );
 
-  // Get profile model by using GraphQl to select any field is need
   getProfileByLink = warpAsync(
     async (query: object): Promise<responseHandler> => {
       const getProfile = await Profile.findOne(query).lean();
-      if (!getProfile) {
-        return {
-          success: false,
-          status: 404,
-          message: "Profile not found",
-        };
-      }
-
-      const parseSafeProfile = validateAndFormatData(getProfile, profileDto);
-      if (!parseSafeProfile.success) return parseSafeProfile;
-
-      return {
-        success: true,
-        status: 200,
-        message: "Get profile successfully",
-        data: getProfile,
-      };
+      return validateAndFormatData(getProfile, profileDto);
     }
   );
 
-  // Get profile model by using GraphQl to select any field is need
   getProfile = warpAsync(
     async (
       args: {
@@ -103,28 +69,10 @@ class ProfileService {
       const getProfile = await Profile.findOne({ userId: args })
         .select(selectedFields)
         .lean();
-
-      if (!getProfile) {
-        return {
-          success: false,
-          status: 404,
-          message: "Profile not found",
-        };
-      }
-
-      const parseSafeProfile = validateAndFormatData(getProfile, profileDto);
-      if (!parseSafeProfile.success) return parseSafeProfile;
-
-      return {
-        success: true,
-        status: 200,
-        message: "Get profile successfully",
-        data: getProfile,
-      };
+      return validateAndFormatData(getProfile, profileDto);
     }
   );
 
-  // Get all profile model by using GraphQl to select any field is need
   getAllProfiles = warpAsync(
     async (
       args: {
@@ -133,62 +81,22 @@ class ProfileService {
       },
       info: GraphQLResolveInfo
     ): Promise<responseHandler> => {
-      const pageNum = Math.max(args.page, 1);
-      const limitNum = Math.max(args.limit, 10);
-      const skip = (pageNum - 1) * limitNum;
-      const selectedFields = Object.keys(graphqlFields(info).data || {}).join(
-        " "
-      );
-
-      const getProfiles = await Profile.find({})
-        .skip(skip)
-        .limit(limitNum)
-        .select(selectedFields)
-        .lean();
-
-      if (!getProfiles.length) {
-        return {
-          success: false,
-          status: 404,
-          message: "Profiles not found",
-        };
-      }
-      const parseSafeProfiles = validateAndFormatData(
-        getProfiles,
+      const count = await this.countProfile();
+      return await PaginationGraphQl(
+        Profile,
         profileDto,
-        "getAll"
+        count.count ?? 0,
+        args,
+        info
       );
-      if (parseSafeProfiles.success === false) return parseSafeProfiles;
-
-      const countProfile = await this.countProfile();
-      if (countProfile.count === 0) return countProfile;
-
-      return {
-        success: true,
-        status: 200,
-        message: "Get profiles successfully",
-        data: getProfiles,
-        count: countProfile.count,
-      };
     }
   );
 
-  // Count all profile
   countProfile = warpAsync(async (): Promise<responseHandler> => {
-    const countProfiles = await Profile.countDocuments();
-    if (countProfiles === 0) {
-      return {
-        success: false,
-        status: 404,
-        message: "Profiles not found",
-      };
-    }
-    return {
-      success: true,
-      status: 200,
-      message: "Count profile successfully",
-      count: countProfiles,
-    };
+    return serviceResponse({
+      statusText: "OK",
+      count: await Profile.countDocuments(),
+    });
   });
 }
 

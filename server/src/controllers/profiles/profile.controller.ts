@@ -17,7 +17,6 @@ class ProfileController {
     return ProfileController.instance;
   }
 
-  // Get profile by graphQl
   async getProfile(
     parent: any,
     args: {
@@ -28,11 +27,10 @@ class ProfileController {
   ): Promise<responseHandler> {
     const userId = args.userId ? args.userId : context.req.curUser?.userId;
     const result = await this.profileService.getProfile(userId, info);
-    if (!result.success) return result;
+    if (!result.success) result;
     return result;
   }
 
-  // Get all profile by graphQl
   async getAllProfiles(
     parent: any,
     args: {
@@ -47,21 +45,19 @@ class ProfileController {
     return result;
   }
 
-  // Get profile by link and using rst api
   async getProfileByLink(req: Request, res: Response): Promise<Response> {
-    const query = req.params.profileId
+    const query = req.params.id
       ? { profileLink: process.env.BACKEND_URL + req.originalUrl }
       : { profileLink: req.curUser?.profileLink };
     const result = await this.profileService.getProfileByLink(query);
     return controllerResponse(res, result);
   }
 
-  // Update profile by rest api
   async updateProfile(req: Request, res: Response): Promise<Response> {
-    const query = req.params.profileId
-      ? { _id: req.params.profileId }
-      : { userId: req.curUser?.userId };
-    const result = await this.profileService.updateProfile(req.body, query);
+    const result = await this.profileService.updateProfile(
+      req.body,
+      req.body.id
+    );
     return controllerResponse(res, result);
   }
 }

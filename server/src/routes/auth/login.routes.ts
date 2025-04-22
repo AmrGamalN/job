@@ -8,35 +8,10 @@ import {
   validateLoginByEmail,
 } from "../../validation/auth/login.validator";
 import { validateCode2AF } from "../../validation/profiles/security.validator";
-import {role} from "../../utils/role";
+import { role } from "../../utils/role";
 const tokenMiddleware = TokenMiddleware.getInstance();
 const controller = LoginController.getInstance();
 const router = express.Router();
-
-/**
- * @swagger
- * tags: [Login]
- * description: Login Management API
- */
-
-/**
- * @swagger
- * components:
- *   responses:
- *     LoginSuccess:
- *       description: Login Successfully
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               status:
- *                 type: number
- *               success:
- *                 type: boolean
- *               message:
- *                 type: string
- */
 
 /**
  *  @swagger
@@ -49,23 +24,19 @@ const router = express.Router();
  *        content:
  *          application/json:
  *            schema:
- *              type: object
- *              properties:
- *                email:
- *                  type: string
- *                  example: amr5189520@gmail.com
- *                password:
- *                  type: string
- *                  example: 01200812638Amr@
+ *              $ref: '#/components/schemas/LoginEmailComponents'
  *      responses:
  *        200:
- *          $ref: '#/components/responses/LoginSuccess'
+ *          $ref: '#/components/schemas/BaseResponse'
  *        400:
  *          description: Bad Request
+ *        404:
+ *          description: Not Found
+ *        401:
+ *          description: Unauthorized
  *        500:
  *          description: Internal Server Error
  */
-
 router.post(
   "/email",
   asyncHandler(expressValidator(validateLoginByEmail)),
@@ -83,19 +54,16 @@ router.post(
  *        content:
  *          application/json:
  *            schema:
- *              type: object
- *              properties:
- *                phoneNumber:
- *                  type: string
- *                  example: +201200812638
- *                password:
- *                  type: string
- *                  example: 01200812638Amr@
+ *              $ref: '#/components/schemas/LoginPhoneComponents'
  *      responses:
  *        200:
- *          $ref: '#/components/responses/LoginSuccess'
+ *          $ref: '#/components/schemas/BaseResponse'
  *        400:
  *          description: Bad Request
+ *        404:
+ *          description: Not Found
+ *        401:
+ *          description: Unauthorized
  *        500:
  *          description: Internal Server Error
  */
@@ -116,17 +84,16 @@ router.post(
  *        content:
  *          application/json:
  *            schema:
- *              type: object
- *              properties:
- *                twoFactorCode:
- *                  type: string
- *                  example: 123456
- *                  description: The code that sent to your 2FA device
+ *              $ref: '#/components/schemas/Login2FAComponents'
  *      responses:
  *        200:
- *          $ref: '#/components/responses/LoginSuccess'
+ *          $ref: '#/components/schemas/BaseResponse'
  *        400:
  *          description: Bad Request
+ *        404:
+ *          description: Not Found
+ *        401:
+ *          description: Unauthorized
  *        500:
  *          description: Internal Server Error
  */
@@ -136,6 +103,5 @@ router.post(
   asyncHandler(expressValidator(validateCode2AF)),
   asyncHandler(controller.verifyTwoFactorAuthentication.bind(controller))
 );
-
 
 export default router;

@@ -7,7 +7,7 @@ import {
   ExperienceUpdateDtoType,
 } from "../../dto/profiles/experience.dto";
 import { warpAsync } from "../../utils/warpAsync";
-import { responseHandler } from "../../utils/responseHandler";
+import { responseHandler, serviceResponse } from "../../utils/responseHandler";
 import { validateAndFormatData } from "../../utils/validateAndFormatData";
 
 class ExperienceService {
@@ -19,33 +19,31 @@ class ExperienceService {
     return ExperienceService.instanceService;
   }
 
-  // Add experience
   addExperience = warpAsync(
     async (
       ExperienceData: ExperienceAddDtoType,
       userId: string
     ): Promise<responseHandler> => {
-      const parseSafe = validateAndFormatData(ExperienceData, ExperienceAddDto);
-      if (!parseSafe.success) return parseSafe;
+      const parsed = validateAndFormatData(ExperienceData, ExperienceAddDto);
+      if (!parsed.success) return parsed;
       await Experience.create({ userId, ...ExperienceData });
-      return {
-        ...parseSafe,
-        message: "Add experience successfully",
-      };
+      return serviceResponse({
+        statusText: "Created",
+      });
     }
   );
 
-  // Update experience
   updateExperience = warpAsync(
     async (
       ExperienceData: ExperienceUpdateDtoType,
       query: object
     ): Promise<responseHandler> => {
-      const parseSafe = validateAndFormatData(
+      const parsed = validateAndFormatData(
         ExperienceData,
-        ExperienceUpdateDto
+        ExperienceUpdateDto,
+        "update"
       );
-      if (!parseSafe.success) return parseSafe;
+      if (!parsed.success) return parsed;
 
       const updateExperience = await Experience.findOneAndUpdate(
         query,
@@ -58,92 +56,31 @@ class ExperienceService {
           new: true,
         }
       ).lean();
-
-      if (!updateExperience) {
-        return {
-          success: false,
-          status: 404,
-          message: "Experience not found",
-        };
-      }
-
-      return {
-        success: true,
-        status: 200,
-        message: "Update experience successfully",
+      return serviceResponse({
         data: updateExperience,
-      };
+      });
     }
   );
 
-  // Get experience
   getExperience = warpAsync(async (query: object): Promise<responseHandler> => {
     const getExperience = await Experience.findOne(query).lean();
-    if (!getExperience) {
-      return {
-        success: false,
-        status: 404,
-        message: "Experience not found",
-      };
-    }
-    const parseSafeExperience = validateAndFormatData(
-      getExperience,
-      ExperienceDto
-    );
-    if (!parseSafeExperience.success) return parseSafeExperience;
-
-    return {
-      message: "Get experience successfully",
-      ...parseSafeExperience,
-    };
+    return validateAndFormatData(getExperience, ExperienceDto);
   });
 
-  // Get all experience
   getAllExperiences = warpAsync(
     async (userId: string): Promise<responseHandler> => {
       const getExperiences = await Experience.find({
         userId,
       }).lean();
-
-      if (!getExperiences) {
-        return {
-          success: false,
-          status: 404,
-          message: "Experience not found",
-        };
-      }
-
-      const parseSafeExperiences = validateAndFormatData(
-        getExperiences,
-        ExperienceDto,
-        "getAll"
-      );
-      if (!parseSafeExperiences.success) return parseSafeExperiences;
-
-      return {
-        message: "Get experience successfully",
-        count: getExperiences.length,
-        ...parseSafeExperiences,
-      };
+      return validateAndFormatData(getExperiences, ExperienceDto, "getAll");
     }
   );
 
-  // Delete experience
   deleteExperience = warpAsync(
     async (query: object): Promise<responseHandler> => {
-      const deleteExperience = await Experience.deleteOne(query);
-      if (!deleteExperience.deletedCount) {
-        return {
-          success: false,
-          status: 404,
-          message: "Experience not found",
-        };
-      }
-      return {
-        success: true,
-        status: 200,
-        message: "Delete experience successfully",
-      };
+      return serviceResponse({
+        data: (await Experience.deleteOne(query)).deletedCount,
+      });
     }
   );
 }

@@ -10,13 +10,7 @@ import {
   ReactionAddDto,
   ReactionUpdateDto,
 } from "../../dto/post/reaction.dto";
-import {
-  OK,
-  NotFound,
-  BadRequest,
-  Conflict,
-  responseHandler,
-} from "../../utils/responseHandler";
+import { responseHandler, serviceResponse } from "../../utils/responseHandler";
 import { warpAsync } from "../../utils/warpAsync";
 import { validateAndFormatData } from "../../utils/validateAndFormatData";
 import { GraphQLResolveInfo } from "graphql";
@@ -31,7 +25,6 @@ class ReactionService {
     return ReactionService.instanceService;
   }
 
-  // Add reaction to post or comment
   addReaction = warpAsync(
     async (
       query: any,
@@ -39,38 +32,39 @@ class ReactionService {
       userId: string
     ): Promise<responseHandler> => {
       const reactionContext = this.resolveReactionModel(query);
-      const parseSafe = validateAndFormatData(
+      const parsed = validateAndFormatData(
         { reactionType: reactionContext.reactionType },
         ReactionAddDto
       );
-      if (!parseSafe.success) return parseSafe;
+      if (!parsed.success) return parsed;
 
       const isExistReaction = await reactionContext.modelReaction.findOne({
         userId,
       });
-      if (isExistReaction) return Conflict("Reaction");
+      if (isExistReaction)
+        return serviceResponse({
+          statusText: "Conflict",
+        });
 
       const reaction = await reactionContext.modelReaction.create({
-        ...parseSafe.data,
+        ...parsed.data,
         userId,
         [reactionContext.id]: id,
       });
       await this.updatePostReaction(reactionContext, reaction, "add");
-      return OK("Add reaction", parseSafe.data);
+      return serviceResponse({
+        statusText: "Created",
+      });
     }
   );
 
   getReaction = warpAsync(
-    async (query: any, reactionId: string): Promise<responseHandler> => {
+    async (query: any, id: string): Promise<responseHandler> => {
       const reactionContext = this.resolveReactionModel(query);
       const getReaction = await reactionContext.modelReaction
-        .findOne({ _id: reactionId })
+        .findOne({ _id: id })
         .lean();
-      console.log(getReaction);
-      if (!getReaction) NotFound("Reaction");
-      const parseSafe = validateAndFormatData(getReaction, ReactionDto);
-      if (!parseSafe.success) return parseSafe;
-      return OK("Get reaction", parseSafe.data);
+      return validateAndFormatData(getReaction, ReactionDto);
     }
   );
 
@@ -83,84 +77,93 @@ class ReactionService {
       info: GraphQLResolveInfo
     ): Promise<responseHandler> => {
       const reactionContext = this.resolveReactionModel(info.fieldName);
-      const getReactions = await PaginationGraphQl(
-        args.page,
-        args.limit,
-        info,
-        reactionContext.modelReaction
-      );
-      if (!getReactions.length) return NotFound("Reactions");
-
-      const parseSafe = validateAndFormatData(
-        getReactions,
+      const count = await this.countReaction();
+      return await PaginationGraphQl(
+        reactionContext.modelReaction,
         ReactionDto,
-        "getAll"
+        count.count ?? 0,
+        args,
+        info
       );
-      if (!parseSafe.success) return parseSafe;
-
-      const countReaction = await this.countReaction();
-      if (!countReaction.count) return countReaction;
-      return OK("Get reactions", parseSafe.data, countReaction.count);
     }
   );
 
   updateReaction = warpAsync(
-    async (query: any, reactionId: string): Promise<responseHandler> => {
-      if (Object.keys(query).length === 0) return BadRequest();
+    async (query: any, id: string): Promise<responseHandler> => {
       const reactionContext = this.resolveReactionModel(query);
-      const parseSafe = validateAndFormatData(
+      const parsed = validateAndFormatData(
         { reactionType: reactionContext.reactionType },
-        ReactionUpdateDto
+        ReactionUpdateDto,
+        "update"
       );
-      if (!parseSafe.success) return parseSafe;
+      if (!parsed.success) return parsed;
 
       const updateReaction = await reactionContext.modelReaction
         .findOneAndUpdate(
-          { _id: reactionId },
+          { _id: id },
           {
             $set: {
-              ...parseSafe.data,
+              ...parsed.data,
             },
           }
         )
         .lean();
-      if (!updateReaction) return NotFound("Reaction");
+      if (!updateReaction)
+        return serviceResponse({
+          statusText: "NotFound",
+        });
 
       await this.updatePostReaction(reactionContext, updateReaction, "update");
-      return OK("Update reaction", updateReaction);
+      return serviceResponse({
+        statusText: "OK",
+        message: "Update",
+        data: parsed.data,
+      });
     }
   );
 
   countReaction = warpAsync(
     async (query: string, id: string): Promise<responseHandler> => {
       const reactionContext = this.resolveReactionModel(query);
-      console.log(reactionContext);
       const countReactions = await reactionContext.modelReaction.countDocuments(
         { [reactionContext.id]: id }
       );
-      if (!countReactions) return NotFound("Reaction");
-      return OK("Count reaction", null, countReactions);
+      if (!countReactions)
+        return serviceResponse({
+          statusText: "NotFound",
+        });
+      return serviceResponse({
+        statusText: "OK",
+        message: "Delete",
+        count: countReactions,
+      });
     }
   );
 
   deleteReaction = warpAsync(
-    async (query: string, reactionId: string): Promise<responseHandler> => {
+    async (query: string, id: string): Promise<responseHandler> => {
       const reactionContext = this.resolveReactionModel(query);
-      const parseSafe = validateAndFormatData(
+      const parsed = validateAndFormatData(
         { reactionType: reactionContext.reactionType },
         ReactionUpdateDto
       );
-      if (!parseSafe.success) return parseSafe;
+      if (!parsed.success) return parsed;
 
       const deleteReaction = await reactionContext.modelReaction
         .findOneAndDelete({
-          _id: reactionId,
+          _id: id,
         })
         .lean();
-      if (!deleteReaction) return NotFound("Reaction");
+      if (!deleteReaction)
+        return serviceResponse({
+          statusText: "NotFound",
+        });
 
       await this.updatePostReaction(reactionContext, deleteReaction, "delete");
-      return OK("Delete reaction");
+      return serviceResponse({
+        statusText: "OK",
+        message: "Delete",
+      });
     }
   );
 
@@ -178,8 +181,7 @@ class ReactionService {
       angry: 5,
     };
 
-    const idValue =
-      newReaction.id === "postId" ? oldReaction.postId : oldReaction.commentId;
+    const idValue = newReaction.id === "id" ? oldReaction.id : oldReaction.id;
     const newIndex = reactionMap[newReaction.reactionType];
     const oldIndex = reactionMap[oldReaction.reactionType];
     const update: any = { $inc: {} };
@@ -190,10 +192,10 @@ class ReactionService {
       update.$inc[`reactionCount.${newIndex}`] = 1;
     } else if (action === "add") {
       update.$inc[`reactionCount.${newIndex}`] = 1;
-      update.$addToSet = { reactionId: oldReaction._id };
+      update.$addToSet = { id: oldReaction._id };
     } else if (action === "delete") {
       update.$inc[`reactionCount.${oldIndex}`] = -1;
-      update.$pull = { reactionId: oldReaction._id };
+      update.$pull = { id: oldReaction._id };
     }
     await newReaction.model.updateOne({ _id: idValue }, update);
   }
@@ -201,20 +203,20 @@ class ReactionService {
   private resolveReactionModel(query: any): {
     modelReaction: Model<any>;
     model: Model<any>;
-    id: "postId" | "commentId";
+    id: "id" | "id";
     reactionType: string;
   } {
     return Object.keys(query)[0] === "post" ||
       Object.values(query)[0] === "post"
       ? {
           modelReaction: PostReaction,
-          id: "postId",
+          id: "id",
           model: Post,
           reactionType: query.post,
         }
       : {
           modelReaction: CommentReaction,
-          id: "commentId",
+          id: "id",
           model: Comment,
           reactionType: query.comment,
         };

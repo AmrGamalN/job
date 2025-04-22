@@ -1,5 +1,5 @@
 import { warpAsync } from "../../utils/warpAsync";
-import { responseHandler } from "../../utils/responseHandler";
+import { responseHandler, serviceResponse } from "../../utils/responseHandler";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { UserSecurityDtoType } from "../../dto/profiles/security.dto";
@@ -31,14 +31,11 @@ class TokenService {
           algorithm: "HS256",
         }
       );
-
-      if (!tempToken) {
-        return {
-          success: false,
-          status: 400,
-          message: "Failed to temp access token",
-        };
-      }
+      if (!tempToken)
+        return serviceResponse({
+          statusText: "Unauthorized",
+          message: "Failed to login, please try again later",
+        });
       return { success: true, tempToken: tempToken };
     }
   );
@@ -46,15 +43,19 @@ class TokenService {
   // Generate temporarily token when login with two factor authentication
   generateTokens = warpAsync(
     async (userSecurity: UserSecurityDtoType): Promise<responseHandler> => {
-      const user = await User.findOne({ userId: userSecurity.userId }).lean().select({
-        firstName: 1,
-        lastName: 1,
-        userName: 1,
-        profileImage: 1,
-      });
-      const profile = await Profile.findOne({ userId: userSecurity.userId }).lean().select({
-        profileLink: 1,
-      });
+      const user = await User.findOne({ userId: userSecurity.userId })
+        .lean()
+        .select({
+          firstName: 1,
+          lastName: 1,
+          userName: 1,
+          profileImage: 1,
+        });
+      const profile = await Profile.findOne({ userId: userSecurity.userId })
+        .lean()
+        .select({
+          profileLink: 1,
+        });
       const payload = {
         userId: userSecurity.userId,
         email: userSecurity.email,
@@ -89,13 +90,11 @@ class TokenService {
         }
       );
 
-      if (!accessToken || !refreshToken) {
-        return {
-          success: false,
-          status: 400,
-          message: "Failed to generate token",
-        };
-      }
+      if (!accessToken || !refreshToken)
+        return serviceResponse({
+          statusText: "Unauthorized",
+          message: "Failed to login, please try again later",
+        });
 
       return {
         success: true,
@@ -117,14 +116,11 @@ class TokenService {
         }
       );
 
-      if (!decoded) {
-        return {
-          success: false,
-          status: 400,
-          message:
-            "Two-factor authentication failed. Invalid or expired token.",
-        };
-      }
+      if (!decoded)
+        return serviceResponse({
+          statusText: "Unauthorized",
+          message: "Two-factor authentication failed. please try again later",
+        });
       return { success: true };
     }
   );

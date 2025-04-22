@@ -19,6 +19,6 @@ type InterestResponse {
 }
 
 type Query {
-    getInterest(interestId: String): InterestResponse!
+    getInterest(id: String): InterestResponse!
 }
 `;

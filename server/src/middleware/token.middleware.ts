@@ -21,21 +21,15 @@ class TokenMiddleware {
     return TokenMiddleware.Instance;
   }
 
-  // Authorization middleware & allow to
   public authorizationMiddleware(role: string[]) {
     return async (req: Request, res: Response, next: NextFunction) => {
-      const userRole = req.curUser?.role;
-      if (!userRole) {
-        throw new CustomError("unauthorized: No user role found", false, 401);
-      }
-      if (!role.includes(userRole)) {
+      if (!role.includes(req.curUser?.role)) {
         throw new CustomError("unauthorized: Access denied", false, 403);
       }
       return next();
     };
   }
 
-  // Verify refresh token middleware and create new access token
   async refreshTokenMiddleware(
     req: Request,
     res: Response,

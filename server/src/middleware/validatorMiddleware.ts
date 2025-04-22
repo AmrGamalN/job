@@ -1,26 +1,8 @@
 import { validationResult } from "express-validator";
 import { Request, Response, NextFunction } from "express";
+import { serviceResponse } from "../utils/responseHandler";
 
-const validIds = [
-  "id",
-  "userId",
-  "addressId",
-  "interestId",
-  "companyId",
-  "groupId",
-  "influencerId",
-  "hobbyId",
-  "industryId",
-  "educationId",
-  "experienceId",
-  "profileId",
-  "projectId",
-  "securityId",
-  "postId",
-  "commentId",
-  "reactionId",
-];
-
+const validIds = ["id"];
 const validQueries = ["reactionType", "post", "comment"];
 
 export const expressValidator = (validators: any[]) => {
@@ -54,22 +36,23 @@ export const expressValidator = (validators: any[]) => {
 
 export const validateParamMiddleware = () => {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const params = req.params;
-    if (!params || Object.values(params)[0] == undefined) {
-      return next();
-    }
-
-    for (let paramKey in req?.params) {
-      if (
-        !validIds.includes(paramKey) ||
-        !/^[a-zA-Z0-9]{24}$/.test(req.params[paramKey])
-      ) {
-        return res.status(404).json({
-          success: false,
-          message: `Parameter "${paramKey}" is not allowed`,
-        });
+    if (!req.params?.id) {
+      if (req.curUser?.userId) {
+        req.body.id = { userId: req.curUser?.userId };
+        return next();
       }
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
     }
+    if (!/^[a-fA-F0-9]{24}$/.test(req.params?.id)) {
+      return res.status(404).json({
+        success: false,
+        message: "Not found",
+      });
+    }
+    req.body.id = { _id: req.params?.id };
     return next();
   };
 };
@@ -88,18 +71,27 @@ export const validateQueryMiddleware = () => {
   };
 };
 
-export const validateParamFirebaseMiddleware = () => {
+export const validateOptionalUserIdMiddleware = () => {
   return async (req: Request, res: Response, next: NextFunction) => {
-    for (let paramKey in req?.params) {
-      if (
-        paramKey !== "userId" ||
-        !/^[a-zA-Z0-9]{28}$/.test(req.params[paramKey])
-      ) {
-        return res.status(404).json({
-          success: false,
-          message: "Not found",
-        });
-      }
+    const userId = req.body.userId ? req.body.userId : req.curUser?.userId;
+    if (userId && !/^[a-zA-Z0-9]{28}$/.test(userId)) {
+      return res.status(404).json({
+        success: false,
+        message: "Not found",
+      });
+    }
+    req.curUser.userId = userId;
+    return next();
+  };
+};
+
+export const validateRequiredUserIdMiddleware = () => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    if (!/^[a-zA-Z0-9]{28}$/.test(req.body.userId)) {
+      return res.status(404).json({
+        success: false,
+        message: "Not found",
+      });
     }
     return next();
   };

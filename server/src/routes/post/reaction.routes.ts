@@ -19,60 +19,13 @@ const commonMiddlewares = [
 
 /**
  * @swagger
- * tags: [Reaction]
- * definitions: Reaction Management Api
- */
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     ReactionDTO:
- *       type: object
- *       required:
- *         - reactionType
- *       properties:
- *         reactionType:
- *           type: string
- *           enum: [like, love, haha, wow, sad, angry]
- *           example: like
- */
-
-/**
- * @swagger
- * components:
- *   responses:
- *     ReactionSuccess:
- *       description: Successfully
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               status:
- *                 type: number
- *               count:
- *                 type: number
- *               success:
- *                 type: boolean
- *               message:
- *                 type: string
- *               data:
- *                 $ref: '#/components/schemas/ReactionDTO'
- */
-
-/**
- * @swagger
  * /reaction/add/{id}:
  *   post:
  *     tags: [Reaction]
  *     summary: Add reaction record
  *     description: Add a new reaction record for the user
  *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: The post id or comment id  of the user to add reaction
+ *       - $ref: '#/components/schemas/Id'
  *       - in: query
  *         name: post
  *         required: false
@@ -91,16 +44,18 @@ const commonMiddlewares = [
  *           example: like
  *     responses:
  *       200:
- *         $ref: '#/components/responses/ReactionSuccess'
+ *         $ref: '#/components/responses/BaseResponse'
  *       400:
  *         description: Failed to add reaction record
  *       403:
  *         description: Unauthorized
+ *       404:
+ *         description: Not found
  *       500:
  *         description: Internal Server Error
  */
 router.post(
-  "/add/:id",
+  "/add/:id?",
   ...commonMiddlewares,
   asyncHandler(validateQueryMiddleware()),
   asyncHandler(validateParamMiddleware()),
@@ -116,10 +71,7 @@ router.post(
  *     summary: Get count reaction of specific post
  *     description: Returns the total count of reaction
  *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: The post id or comment id  of the user to count reaction
+ *       - $ref: '#/components/parameters/Id'
  *       - in: query
  *         name: reactionType
  *         required: true
@@ -130,16 +82,18 @@ router.post(
  *           example: post
  *     responses:
  *       200:
- *         $ref: '#/components/responses/ReactionSuccess'
+ *         $ref: '#/components/responses/BaseResponse'
  *       400:
  *         description: Failed to fetch reaction data
  *       403:
  *         description: Unauthorized
+ *       404:
+ *         description: Not found
  *       500:
  *         description: Internal Server Error
  */
 router.get(
-  "/count/:id",
+  "/count/:id?",
   ...commonMiddlewares,
   asyncHandler(validateParamMiddleware()),
   asyncHandler(controller.countReaction.bind(controller))
@@ -147,18 +101,13 @@ router.get(
 
 /**
  * @swagger
- * /reaction/get/{reactionId}:
+ * /reaction/get/{id}:
  *   get:
  *     tags: [Reaction]
  *     summary: Get reaction data for a user
  *     description: Retrieve the reaction record of a specific user by id
  *     parameters:
- *       - in: path
- *         name: reactionId
- *         required: true
- *         description: Get user reaction by id
- *         schema:
- *           type: string
+ *       - $ref: '#/components/parameters/Id'
  *       - in: query
  *         name: reactionType
  *         required: true
@@ -169,16 +118,18 @@ router.get(
  *           example: post
  *     responses:
  *       200:
- *         $ref: '#/components/responses/ReactionSuccess'
+ *         $ref: '#/components/responses/ReactionResponse'
  *       400:
  *         description: Failed to fetch reaction data
  *       403:
  *         description: Unauthorized
+ *       404:
+ *         description: Not found
  *       500:
  *         description: Internal Server Error
  */
 router.get(
-  "/get/:reactionId",
+  "/get/:id?",
   ...commonMiddlewares,
   asyncHandler(validateQueryMiddleware()),
   asyncHandler(validateParamMiddleware()),
@@ -187,18 +138,13 @@ router.get(
 
 /**
  * @swagger
- * /reaction/update/{reactionId}:
+ * /reaction/update/{id}:
  *   put:
  *     tags: [Reaction]
  *     summary: Update reaction record
  *     description: Update specific a user's reaction information by id
  *     parameters:
- *       - in: path
- *         name: reactionId
- *         required: true
- *         description: The reaction id of the user to update
- *         schema:
- *           type: string
+ *       - $ref: '#/components/parameters/Id'
  *       - in: query
  *         name: post
  *         required: false
@@ -217,16 +163,18 @@ router.get(
  *           example: like
  *     responses:
  *       200:
- *         $ref: '#/components/responses/ReactionSuccess'
+ *         $ref: '#/components/responses/ReactionResponse'
  *       400:
  *         description: Failed to update reaction record
  *       403:
  *         description: Unauthorized
+ *       404:
+ *         description: Not found
  *       500:
  *         description: Internal Server Error
  */
 router.put(
-  "/update/:reactionId",
+  "/update/:id?",
   ...commonMiddlewares,
   asyncHandler(validateQueryMiddleware()),
   asyncHandler(validateParamMiddleware()),
@@ -236,18 +184,13 @@ router.put(
 
 /**
  * @swagger
- * /reaction/delete/{reactionId}:
+ * /reaction/delete/{id}:
  *   delete:
  *     tags: [Reaction]
  *     summary: Delete reaction record
  *     description: Delete specific a user's reaction information by id
  *     parameters:
- *       - in: path
- *         name: reactionId
- *         required: true
- *         description: The reaction id of the user to update
- *         schema:
- *           type: string
+ *       - $ref: '#/components/parameters/Id'
  *       - in: query
  *         name: reactionType
  *         required: true
@@ -263,11 +206,13 @@ router.put(
  *         description: Failed to delete reaction record
  *       403:
  *         description: Unauthorized
+ *       404:
+ *         description: Not found
  *       500:
  *         description: Internal Server Error
  */
 router.delete(
-  "/delete/:reactionId",
+  "/delete/:id?",
   ...commonMiddlewares,
   asyncHandler(validateQueryMiddleware()),
   asyncHandler(validateParamMiddleware()),

@@ -20,6 +20,7 @@ const swaggerOptions = {
     "./src/routes/profiles/*.ts",
     "./src/routes/auth/*.ts",
     "./src/routes/post/*.ts",
+    "./src/swagger/*.ts",
   ]
 };
 

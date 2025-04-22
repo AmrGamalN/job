@@ -2,7 +2,7 @@ import { IResolvers } from "@graphql-tools/utils";
 import UserController from "../../../controllers/profiles/profile.controller";
 import { applyMiddleware } from "../../../middleware/applyMiddleWare";
 import { asyncHandler } from "../../../middleware/handleError";
-import { validateParamMiddleware } from "../../../middleware/validatorMiddleware";
+import { validateOptionalUserIdMiddleware } from "../../../middleware/validatorMiddleware";
 import TokenMiddleware from "../../../middleware/token.middleware";
 const tokenMiddleware = TokenMiddleware.getInstance();
 const commonMiddlewares = [
@@ -15,7 +15,7 @@ export const profileResolver: IResolvers = {
   Query: {
     getProfile: applyMiddleware(
       asyncHandler(controller.getProfile.bind(controller)),
-      [...commonMiddlewares, asyncHandler(validateParamMiddleware())]
+      [...commonMiddlewares, asyncHandler(validateOptionalUserIdMiddleware())]
     ),
     getAllProfiles: applyMiddleware(
       asyncHandler(controller.getAllProfiles.bind(controller)),

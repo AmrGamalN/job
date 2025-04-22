@@ -5,9 +5,10 @@ import {
   UserUpdateDtoType,
 } from "../../dto/profiles/user.dto";
 import { warpAsync } from "../../utils/warpAsync";
-import { responseHandler } from "../../utils/responseHandler";
+import { responseHandler, serviceResponse } from "../../utils/responseHandler";
 import { validateAndFormatData } from "../../utils/validateAndFormatData";
 import { GraphQLResolveInfo } from "graphql";
+import { PaginationGraphQl } from "../../utils/pagination";
 const graphqlFields = require("graphql-fields");
 
 class UserService {
@@ -19,20 +20,11 @@ class UserService {
     return UserService.instanceService;
   }
 
-  // Update User
   updateUser = warpAsync(
     async (
       UserData: UserUpdateDtoType,
-      query: object,
+      query: object
     ): Promise<responseHandler> => {
-      if (Object.keys(UserData).length === 0) {
-        return {
-          success: false,
-          status: 400,
-          message: "No data provided for update",
-        };
-      }
-
       const parseSafe = validateAndFormatData(UserData, UserUpdateDto);
       if (!parseSafe.success) return parseSafe;
 
@@ -47,25 +39,12 @@ class UserService {
           new: true,
         }
       ).lean();
-
-      if (!updateUser) {
-        return {
-          success: false,
-          status: 404,
-          message: "User not found",
-        };
-      }
-
-      return {
-        success: true,
-        status: 200,
-        message: "Update User successfully",
+      return serviceResponse({
         data: updateUser,
-      };
+      });
     }
   );
 
-  // Get user model with profile model with security model by using GraphQl to select any field he need
   getUser = warpAsync(
     async (
       args: {
@@ -76,32 +55,18 @@ class UserService {
       const selectedFields = Object.keys(graphqlFields(info).data || {}).join(
         " "
       );
-
       const getUser = await User.findOne({ userId: args })
         .select(selectedFields)
         .lean();
 
-      if (!getUser) {
-        return {
-          success: false,
-          status: 404,
-          message: "User not found",
-        };
-      }
-
-      const parseSafeUser = validateAndFormatData(getUser, UserDto);
-      if (!parseSafeUser.success) return parseSafeUser;
-
-      return {
-        success: true,
-        status: 200,
-        message: "Get user successfully",
-        data: getUser,
-      };
+      const parseSafe = validateAndFormatData(getUser, UserDto);
+      if (!parseSafe.success) return parseSafe;
+      return serviceResponse({
+        data: parseSafe.data,
+      });
     }
   );
-    
-  // Get all user model by using GraphQl to select any field is need
+
   getAllUsers = warpAsync(
     async (
       args: {
@@ -110,58 +75,21 @@ class UserService {
       },
       info: GraphQLResolveInfo
     ): Promise<responseHandler> => {
-      const pageNum = Math.max(args.page, 1);
-      const limitNum = Math.max(args.limit, 10);
-      const skip = (pageNum - 1) * limitNum;
-      const selectedFields = Object.keys(graphqlFields(info).data || {}).join(
-        " "
+      const count = await this.countUser();
+      return await PaginationGraphQl(
+        User,
+        UserDto,
+        count.count ?? 0,
+        args,
+        info
       );
-
-      const getUsers = await User.find({})
-        .skip(skip)
-        .limit(limitNum)
-        .select(selectedFields)
-        .lean();
-      if (!getUsers.length) {
-        return {
-          success: false,
-          status: 404,
-          message: "Users not found",
-        };
-      }
-
-      const parseSafeUsers = validateAndFormatData(getUsers, UserDto, "getAll");
-      if (parseSafeUsers.success === false) return parseSafeUsers;
-
-      const countUsers = await this.countUser();
-      if (countUsers.count === 0) return countUsers;
-
-      return {
-        success: true,
-        status: 200,
-        message: "Get users successfully",
-        data: getUsers,
-        count: countUsers.count,
-      };
     }
   );
 
-  // Count all User
   countUser = warpAsync(async (): Promise<responseHandler> => {
-    const countUsers = await User.countDocuments();
-    if (countUsers === 0) {
-      return {
-        success: false,
-        status: 404,
-        message: "Users not found",
-      };
-    }
-    return {
-      success: true,
-      status: 200,
-      message: "Count User successfully",
-      count: countUsers,
-    };
+    return serviceResponse({
+      count: await User.countDocuments(),
+    });
   });
 }
 

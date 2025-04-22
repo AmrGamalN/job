@@ -1,43 +1,47 @@
-import { responseHandler } from "./responseHandler";
+import { responseHandler, serviceResponse } from "./responseHandler";
+type actionType = "getAll" | "update" | "getOne" | "delete";
 export const validateAndFormatData = (
   retrievedData: any,
   dto: any,
-  typeProcess?: "getAll"
+  action?: actionType
 ): responseHandler => {
-  if (typeProcess === "getAll") {
+  if (!retrievedData)
+    return serviceResponse({ statusText: "NotFound", data: [] });
+
+  if (
+    Object.keys(retrievedData).length === 0 &&
+    (action == "update" || action == "delete")
+  )
+    return serviceResponse({
+      statusText: "BadRequest",
+      message: "No data provided for update",
+      data: [],
+    });
+
+  if (action === "getAll") {
     const parsed = retrievedData.map((data: any) => {
       const parsed = dto.safeParse(data);
-      console.log(parsed.error);
-      if (!parsed.success) {
-        return {
-          success: false,
-          status: 400,
-          message: "Invalid data format",
+      if (!parsed.success)
+        return serviceResponse({
+          statusText: "BadRequest",
           error: parsed.error,
-        };
-      }
+        });
       return parsed.data;
     });
-    return {
-      success: true,
-      status: 200,
-      data: parsed,
-    };
+    return serviceResponse({
+      data: parsed.length > 0 ? parsed : null,
+    });
   }
 
   const parsed = dto.safeParse(retrievedData);
-  console.log(parsed.error);
-  if (!parsed.success) {
-    return {
-      success: false,
-      status: 400,
-      message: "Invalid data format",
+  if (!parsed.success)
+    return serviceResponse({
+      statusText: "BadRequest",
       error: parsed.error,
-    };
-  }
-  return {
-    success: true,
-    status: 200,
+    });
+  return serviceResponse({
     data: parsed.data,
-  };
+    error: parsed.error,
+    message: "Operation successfully",
+  });
 };

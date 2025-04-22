@@ -22,17 +22,14 @@ class CommentController {
   async addComment(req: Request, res: Response): Promise<Response> {
     const result = await this.commentService.addComment(
       req.body,
-      req.params.postId,
+      req.params.id,
       req.curUser?.userId
     );
     return controllerResponse(res, result);
   }
 
   async getComment(req: Request, res: Response): Promise<Response> {
-    const query = req.params.commentId
-      ? { _id: req.params.commentId }
-      : { userId: req.curUser?.userId };
-    const result = await this.commentService.getComment(query);
+    const result = await this.commentService.getComment(req.body.id);
     return controllerResponse(res, result);
   }
 
@@ -51,23 +48,20 @@ class CommentController {
   }
 
   async updateComment(req: Request, res: Response): Promise<Response> {
-    const query = req.params.commentId
-      ? { _id: req.params.commentId }
-      : { userId: req.curUser?.userId };
-    const result = await this.commentService.updateComment(req.body, query);
+    const result = await this.commentService.updateComment(
+      req.body,
+      req.body.id
+    );
     return controllerResponse(res, result);
   }
 
   async countComment(req: Request, res: Response): Promise<Response> {
-    const result = await this.commentService.countComment(req.params.postId);
+    const result = await this.commentService.countComment(req.params.id);
     return controllerResponse(res, result);
   }
 
   async deleteComment(req: Request, res: Response): Promise<Response> {
-    const query = req.params.commentId
-      ? { _id: req.params.commentId }
-      : { userId: req.curUser?.userId };
-    const result = await this.commentService.deleteComment(query);
+    const result = await this.commentService.deleteComment(req.body.id);
     return controllerResponse(res, result);
   }
 }

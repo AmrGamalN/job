@@ -15,28 +15,24 @@ class AddressController {
     return AddressController.instance;
   }
 
-  // Add address
   async addAddress(req: Request, res: Response): Promise<Response> {
-    const userId = req.curUser?.userId;
-    const result = await this.addressService.addAddress(req.body, userId);
+    const result = await this.addressService.addAddress(
+      req.body,
+      req.curUser?.userId
+    );
     return controllerResponse(res, result);
   }
 
-  // Get address
   async getAddress(req: Request, res: Response): Promise<Response> {
-    const query = req.params.addressId
-      ? { _id: req.params.addressId }
-      : { userId: req.curUser?.userId };
-    const result = await this.addressService.getAddress(query);
+    const result = await this.addressService.getAddress(req.body.id);
     return controllerResponse(res, result);
   }
 
-  // Update address
   async updateAddress(req: Request, res: Response): Promise<Response> {
-    const query = req.params.addressId
-      ? { _id: req.params.addressId }
-      : { userId: req.curUser?.userId };
-    const result = await this.addressService.updateAddress(req.body, query);
+    const result = await this.addressService.updateAddress(
+      req.body,
+      req.body.id
+    );
     return controllerResponse(res, result);
   }
 }

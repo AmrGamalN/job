@@ -21,188 +21,6 @@ const commonMiddlewares = [
 
 /**
  * @swagger
- * tags: [Post]
- * definitions: Post Management Api
- */
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     PostAddDTO:
- *       type: object
- *       required:
- *         - userId
- *         - prefixS3
- *         - content
- *       properties:
- *         mentions:
- *           type: array
- *           items:
- *             type: string
- *           description: List of mentioned user IDs
- *           example: ["643a5b2e8b9d2f001c8f4e5ee47cv21"]
- *         content:
- *           type: string
- *           description: Main content of the post
- *           example: "Just launched my new portfolio website"
- *         media:
- *           type: array
- *           items:
- *             type: object
- *             required:
- *               - type
- *               - url
- *               - key
- *             properties:
- *               type:
- *                 type: string
- *                 enum: [image, video, document]
- *                 example: "image"
- *               url:
- *                 type: string
- *                 format: uri
- *                 example: "https://s3.amazonaws.com/bucket/image.png"
- *               key:
- *                 type: string
- *                 example: "uploads/image.png"
- *         visibility:
- *           type: string
- *           enum: [public, connections, private]
- *           default: public
- *           example: "connections"
- *         hashtags:
- *           type: array
- *           items:
- *             type: string
- *           example: ["#nodejs", "#typescript"]
- */
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     PostGetDTO:
- *       type: object
- *       required:
- *         - userId
- *         - prefixS3
- *         - content
- *       properties:
- *         userId:
- *           type: string
- *           description: ID of the user who created the post
- *           example: "643a5b2e8b9d2f001c8f4e5a"
- *         commentId:
- *           type: array
- *           items:
- *             type: string
- *             format: objectId
- *           description: Array of comment IDs
- *           example: ["643a5b2e8b9d2f001c8f4e5c"]
- *         reactionId:
- *           type: array
- *           items:
- *             type: string
- *             format: objectId
- *           description: Array of reaction IDs
- *           example: ["643a5b2e8b9d2f001c8f4e5d"]
- *         mentions:
- *           type: array
- *           items:
- *             type: string
- *           description: List of mentioned user IDs
- *           example: ["643a5b2e8b9d2f001c8f4e5e"]
- *         prefixS3:
- *           type: string
- *           description: S3 prefix for media storage
- *           example: "user_uploads/posts/"
- *         content:
- *           type: string
- *           description: Main content of the post
- *           example: "Just launched my new portfolio website 🚀"
- *         media:
- *           type: array
- *           items:
- *             type: object
- *             required:
- *               - type
- *               - url
- *               - key
- *             properties:
- *               type:
- *                 type: string
- *                 enum: [image, video, document]
- *                 example: "image"
- *               url:
- *                 type: string
- *                 format: uri
- *                 example: "https://s3.amazonaws.com/bucket/image.png"
- *               key:
- *                 type: string
- *                 example: "uploads/image.png"
- *         shares:
- *           type: integer
- *           default: 0
- *           example: 3
- *         watch:
- *           type: integer
- *           default: 0
- *           example: 154
- *         visibility:
- *           type: string
- *           enum: [public, connections, private]
- *           default: public
- *           example: "connections"
- *         hashtags:
- *           type: array
- *           items:
- *             type: string
- *           example: ["#nodejs", "#typescript"]
- *         reactionCount:
- *           type: array
- *           items:
- *             type: integer
- *           example: [4, 0, 2, 1, 0]
- *         commentCount:
- *           type: number
- *           default: 0
- *           example: 150
- *         createdAt:
- *           type: string
- *           format: date-time
- *           example: "2024-12-01T10:00:00.000Z"
- *         updatedAt:
- *           type: string
- *           format: date-time
- *           example: "2024-12-02T12:00:00.000Z"
- */
-
-/**
- * @swagger
- * components:
- *   responses:
- *     PostSuccess:
- *       description: Successfully
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               status:
- *                 type: number
- *               count:
- *                 type: number
- *               success:
- *                 type: boolean
- *               message:
- *                 type: string
- *               data:
- *                 $ref: '#/components/schemas/PostGetDTO'
- */
-
-/**
- * @swagger
  * /post/add:
  *   post:
  *     tags: [Post]
@@ -213,10 +31,10 @@ const commonMiddlewares = [
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/PostAddDTO'
+ *             $ref: '#/components/schemas/PostAddComponents'
  *     responses:
  *       200:
- *         $ref: '#/components/responses/PostSuccess'
+ *         $ref: '#/components/responses/BaseResponse'
  *       400:
  *         description: Failed to add post record
  *       403:
@@ -240,11 +58,13 @@ router.post(
  *     description: Returns the total count of post
  *     responses:
  *       200:
- *         $ref: '#/components/responses/PostSuccess'
+ *         $ref: '#/components/responses/BaseResponse'
  *       400:
  *         description: Failed to fetch post data
  *       403:
  *         description: Unauthorized
+ *       404:
+ *         description: Not found
  *       500:
  *         description: Internal Server Error
  */
@@ -256,44 +76,27 @@ router.get(
 
 /**
  * @swagger
- * /post/get:
- *   get:
- *     tags: [Post]
- *     summary: Get post data for a user
- *     description: Retrieve the post record of a specific user
- *     responses:
- *       200:
- *         $ref: '#/components/responses/PostSuccess'
- *       400:
- *         description: Failed to fetch post data
- *       403:
- *         description: Unauthorized
- *       500:
- *         description: Internal Server Error
- * /post/get/{postId}:
+ * /post/get/{id}:
  *   get:
  *     tags: [Post]
  *     summary: Get post data for a user
  *     description: Retrieve the post record of a specific user by id
  *     parameters:
- *       - in: path
- *         name: postId
- *         required: true
- *         description: Get user post by id
- *         schema:
- *           type: string
+ *      - $ref: '#/components/parameters/Id'
  *     responses:
  *       200:
- *         $ref: '#/components/responses/PostSuccess'
+ *         $ref: '#/components/responses/PostResponse'
  *       400:
  *         description: Failed to fetch post data
  *       403:
  *         description: Unauthorized
+ *       404:
+ *         description: Not found
  *       500:
  *         description: Internal Server Error
  */
 router.get(
-  "/get/:postId?",
+  "/get/:id?",
   ...commonMiddlewares,
   asyncHandler(validateParamMiddleware()),
   asyncHandler(controller.getPost.bind(controller))
@@ -301,56 +104,33 @@ router.get(
 
 /**
  * @swagger
- * /post/update:
- *   put:
- *     tags: [Post]
- *     summary: Update post record
- *     description: Update current a user's post information
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/PostAddDTO'
- *     responses:
- *       200:
- *         $ref: '#/components/responses/PostSuccess'
- *       400:
- *         description: Failed to update post record
- *       403:
- *         description: Unauthorized
- *       500:
- *         description: Internal Server Error
- * /post/update/{postId}:
+ * /post/update/{id}:
  *   put:
  *     tags: [Post]
  *     summary: Update post record
  *     description: Update specific a user's post information by id
  *     parameters:
- *       - in: path
- *         name: postId
- *         required: true
- *         description: The post id of the user to update
- *         schema:
- *           type: string
+ *      - $ref: '#/components/parameters/Id'
  *     requestBody:
- *       required: true
+ *       required: false
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/PostAddDTO'
+ *             $ref: '#/components/schemas/PostAddComponents'
  *     responses:
  *       200:
- *         $ref: '#/components/responses/PostSuccess'
+ *         $ref: '#/components/responses/PostResponse'
  *       400:
  *         description: Failed to update post record
  *       403:
  *         description: Unauthorized
+ *       404:
+ *         description: Not found
  *       500:
  *         description: Internal Server Error
  */
 router.put(
-  "/update/:postId?",
+  "/update/:id?",
   ...commonMiddlewares,
   asyncHandler(validateParamMiddleware()),
   asyncHandler(expressValidator(validatePostUpdate)),
@@ -359,46 +139,63 @@ router.put(
 
 /**
  * @swagger
- * /post/delete:
- *   delete:
- *     tags: [Post]
- *     summary: Delete post record
- *     description: Delete current a user's post information
- *     responses:
- *       200:
- *         $ref: '#/components/responses/PostSuccess'
- *       400:
- *         description: Failed to delete post record
- *       403:
- *         description: Unauthorized
- *       500:
- *         description: Internal Server Error
- * /post/delete/{postId}:
+ * /post/delete/{id}:
  *   delete:
  *     tags: [Post]
  *     summary: Delete post record
  *     description: Delete specific a user's post information by id
  *     parameters:
- *       - in: path
- *         name: postId
- *         required: true
- *         description: The post id of the user to delete
- *         schema:
- *           type: string
+ *      - $ref: '#/components/parameters/Id'
  *     responses:
  *       200:
- *         $ref: '#/components/responses/PostSuccess'
+ *         $ref: '#/components/responses/BaseResponse'
  *       400:
  *         description: Failed to delete post record
  *       403:
  *         description: Unauthorized
+ *       404:
+ *         description: Not found
  *       500:
  *         description: Internal Server Error
  */
 router.delete(
-  "/delete/:postId?",
+  "/delete/:id?",
   ...commonMiddlewares,
   asyncHandler(validateParamMiddleware()),
   asyncHandler(controller.deletePost.bind(controller))
+);
+
+/**
+ * @swagger
+ * /post/search:
+ *   get:
+ *     tags: [Post]
+ *     summary: Get post by hash tag
+ *     description: Get post by hash tag
+ *     parameters:
+ *      - name: hashtag
+ *        in: query
+ *        description: hashtag
+ *        required: true
+ *        schema:
+ *          type: string
+ *      - $ref: '#/components/parameters/Page'
+ *      - $ref: '#/components/parameters/Limit'
+ *     responses:
+ *       200:
+ *         $ref: '#/components/responses/BaseResponse'
+ *       400:
+ *         description: Failed to get post record
+ *       403:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
+ */
+router.get(
+  "/search",
+  ...commonMiddlewares,
+  asyncHandler(controller.searchWithHashtag.bind(controller))
 );
 export default router;
