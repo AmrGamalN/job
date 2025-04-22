@@ -5,7 +5,7 @@ import {
   signInWithEmailAndPassword,
 } from "../../config/firebase";
 import { warpAsync } from "../../utils/warpAsync";
-import { responseHandler } from "../../utils/responseHandler";
+import { responseHandler, serviceResponse } from "../../utils/responseHandler";
 import dotenv from "dotenv";
 import { UserSecurityDtoType } from "../../dto/profiles/security.dto";
 import TokenService from "../../services/auth/token.service";
@@ -41,9 +41,11 @@ class LoginService {
       if (isUserExisting.success === false) return isUserExisting;
 
       const userSecurity = await Security.findOne(credential).lean();
-      if (!userSecurity) {
-        return { success: false, status: 404, message: "Account not found" };
-      }
+      if (!userSecurity)
+        return serviceResponse({
+          statusText: "NotFound",
+          message: "Account not found",
+        });
 
       const checkAccountStatus = await this.checkAccountStatusBeforeLogin(
         userSecurity
@@ -85,14 +87,15 @@ class LoginService {
       }
 
       const tokens = await this.tokenService.generateTokens(userSecurity);
-      return {
-        success: true,
-        status: 200,
+      return serviceResponse({
+        statusText: "OK",
         message: "Login successful",
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
-        userId: userSecurity.userId,
-      };
+        data: {
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          userId: userSecurity.userId,
+        },
+      });
     }
   );
 
@@ -132,14 +135,12 @@ class LoginService {
           .getUserByPhoneNumber(credential.phoneNumber)
           .catch(() => null);
       }
-      if (!getUser) {
-        return {
-          success: false,
-          status: 404,
+      if (!getUser)
+        return serviceResponse({
+          statusText: "NotFound",
           message: `User not exists, Please check your ${provider}`,
-        };
-      }
-      return { success: true, status: 200 };
+        });
+      return { success: true };
     }
   );
 
@@ -161,11 +162,10 @@ class LoginService {
       } catch (error: any) {
         if (error.code === "auth/invalid-credential") {
           this.trackFailedLoginAttempt(email, null);
-          return {
-            success: false,
-            status: 401,
+          return serviceResponse({
+            statusText: "Unauthorized",
             message: "Invalid email or password",
-          };
+          });
         }
       }
       return { success: true, data: userCredential };
@@ -182,11 +182,10 @@ class LoginService {
       const comparePass = await bcrypt.compare(plainPassword, hashPassword);
       if (!comparePass) {
         this.trackFailedLoginAttempt(null, phoneNumber);
-        return {
-          success: false,
-          status: 401,
-          message: "Invalid phone or password",
-        };
+        return serviceResponse({
+          statusText: "Unauthorized",
+          message: "Invalid email or password",
+        });
       }
       await Security.updateOne(
         { phoneNumber },
@@ -221,11 +220,10 @@ class LoginService {
 
         if (timeDifference < 10) {
           const remainingTime = Math.ceil(10 - timeDifference);
-          return {
-            success: false,
-            status: 400,
+          return serviceResponse({
+            statusText: "BadRequest",
             message: `Your account is temporarily locked due to multiple failed login attempts. Please try again in ${remainingTime} minutes or reset your password.`,
-          };
+          });
         }
 
         await Security.updateOne(
@@ -251,22 +249,17 @@ class LoginService {
     }
   );
 
-  // Check apply Two factor authentication
   private checkApplyTwoFactorAuth = warpAsync(
     async (userSecurity: UserSecurityDtoType): Promise<responseHandler> => {
-      if (userSecurity.isTwoFactorAuth) {
-        return {
-          success: true,
-          status: 200,
+      if (userSecurity.isTwoFactorAuth)
+        return serviceResponse({
+          statusText: "OK",
           message: "2FA required",
-          userId: userSecurity.userId,
-        };
-      }
+        });
       return { success: false };
     }
   );
 
-  // Verify two factor authentication
   verifyTwoFactorAuthentication = warpAsync(
     async (email: string, twoFactorCode: string): Promise<responseHandler> => {
       // Get user security details
@@ -285,13 +278,11 @@ class LoginService {
         })
         .lean();
 
-      if (!userSecurity) {
-        return {
-          success: false,
-          status: 400,
+      if (!userSecurity)
+        return serviceResponse({
+          statusText: "BadRequest",
           message: "Invalid code",
-        };
-      }
+        });
 
       const verified = speakeasy.totp.verify({
         secret: String(userSecurity.twoFactorCode),
@@ -300,24 +291,23 @@ class LoginService {
         window: 1,
       });
 
-      if (!verified) {
-        return {
-          success: false,
-          status: 400,
+      if (!verified)
+        return serviceResponse({
+          statusText: "BadRequest",
           message: "Invalid or expired 2FA code",
-        };
-      }
+        });
 
       // Generate access token and refresh token
       const tokens = await this.tokenService.generateTokens(userSecurity);
-      return {
-        success: true,
-        status: 200,
+      return serviceResponse({
+        statusText: "OK",
         message: "Login successful",
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
-        userId: userSecurity.userId,
-      };
+        data: {
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          userId: userSecurity.userId,
+        },
+      });
     }
   );
 }

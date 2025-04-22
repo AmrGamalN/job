@@ -17,57 +17,49 @@ class LoginController {
     return LoginController.instance;
   }
 
-  // Login by email
   async loginByEmail(req: Request, res: Response): Promise<Response> {
-    const { email, password } = req.body;
-    const authResult = await this.loginService.Login(password, email, null);
+    const authResult = await this.loginService.Login(
+      req.body.password,
+      req.body.email,
+      null
+    );
     if (!authResult.success)
       return res.status(authResult.status!).json(authResult);
-    const { refreshToken, accessToken, tempToken, userId, ...responseData } =
-      authResult;
-    this.generateCookies(res, refreshToken, accessToken, tempToken);
-    this.loginService.updateUserStatus(userId, "active", "email");
+    const { data, ...responseData } = authResult;
+    this.generateCookies(res, data);
+    this.loginService.updateUserStatus(data.userId, "active", "email");
     return res.status(200).json(responseData);
   }
 
-  // Login by phone
   async loginByPhone(req: Request, res: Response): Promise<Response> {
-    const { phoneNumber, password } = req.body;
     const authResult = await this.loginService.Login(
-      password,
+      req.body.password,
       null,
-      phoneNumber
+      req.body.phoneNumber
     );
     if (!authResult.success) return res.status(200).json(authResult);
-    const { refreshToken, accessToken, tempToken, userId, ...responseData } =
-      authResult;
-    this.generateCookies(res, refreshToken, accessToken, tempToken);
-    this.loginService.updateUserStatus(userId, "active", "phone");
+    const { data, ...responseData } = authResult;
+    this.generateCookies(res, data);
+    this.loginService.updateUserStatus(data.userId, "active", "phone");
     return res.status(200).json(responseData);
   }
 
-  // Login by 2fa
   async verifyTwoFactorAuthentication(
     req: Request,
     res: Response
   ): Promise<Response> {
-    const { twoFactorCode } = req.body;
-    const verificationResult =
-      await this.loginService.verifyTwoFactorAuthentication(
-        req.curUser.email,
-        twoFactorCode
-      );
-    if (!verificationResult.success)
-      return res.status(verificationResult.status!).json(verificationResult);
-
-    const { refreshToken, accessToken, userId, ...responseData } =
-      verificationResult;
-    this.loginService.updateUserStatus(userId, "active");
-    this.generateCookies(res, refreshToken, accessToken);
+    const authResult = await this.loginService.verifyTwoFactorAuthentication(
+      req.curUser.email,
+      req.body.twoFactorCode
+    );
+    if (!authResult.success)
+      return res.status(authResult.status!).json(authResult);
+    const { data, ...responseData } = authResult;
+    this.generateCookies(res, data);
+    this.loginService.updateUserStatus(data.userId, "active");
     return res.status(200).json(responseData);
   }
 
-  // Logout
   async logOut(req: Request, res: Response): Promise<Response> {
     ["accessToken", "refreshToken"].forEach((cookieName) => {
       res.clearCookie(cookieName, {
@@ -80,14 +72,14 @@ class LoginController {
     this.loginService.updateUserStatus(req.curUser.userId, "inactive");
     return res.status(200).json({
       message: "Logged out successfully",
+      success: true,
+      status: 200,
     });
   }
 
   private generateCookies(
     res: Response,
-    refreshToken?: string,
-    accessToken?: string,
-    tempToken?: string
+    data: { refreshToken?: string; accessToken?: string; tempToken?: string }
   ) {
     const options = {
       httpOnly: true,
@@ -97,17 +89,17 @@ class LoginController {
     const tokens = [
       {
         name: "refreshToken",
-        value: refreshToken,
+        value: data.refreshToken,
         expires: 60 * 24 * 7,
       },
       {
         name: "accessToken",
-        value: accessToken,
+        value: data.accessToken,
         expires: 60,
       },
       {
         name: "tempToken",
-        value: tempToken,
+        value: data.tempToken,
         expires: 15,
       },
     ];

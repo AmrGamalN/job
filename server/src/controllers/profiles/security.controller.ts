@@ -17,7 +17,6 @@ class SecurityController {
     return SecurityController.instance;
   }
 
-  // Get Security by graphQl
   async getSecurity(
     parent: any,
     args: {
@@ -31,7 +30,6 @@ class SecurityController {
     return result;
   }
 
-  // Get all security by graphQl
   async getAllSecurities(
     parent: any,
     args: {
@@ -46,14 +44,12 @@ class SecurityController {
     return result;
   }
 
-  // Update security by rest api
   async updateSecurity(req: Request, res: Response): Promise<Response> {
     const userId = req.params.userId ? req.params.userId : req.curUser?.userId;
     const result = await this.SecurityService.updateSecurity(req.body, userId);
     return controllerResponse(res, result);
   }
 
-  // Count security
   async countSecurity(req: Request, res: Response): Promise<Response> {
     const result = await this.SecurityService.countSecurity();
     return controllerResponse(res, result);

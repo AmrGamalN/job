@@ -7,7 +7,7 @@ import {
   EducationUpdateDtoType,
 } from "../../dto/profiles/education.dto";
 import { warpAsync } from "../../utils/warpAsync";
-import { responseHandler } from "../../utils/responseHandler";
+import { responseHandler, serviceResponse } from "../../utils/responseHandler";
 import { validateAndFormatData } from "../../utils/validateAndFormatData";
 
 class EducationService {
@@ -19,33 +19,31 @@ class EducationService {
     return EducationService.instanceService;
   }
 
-  // Add Education
   addEducation = warpAsync(
     async (
       EducationData: EducationAddDtoType,
       userId: string
     ): Promise<responseHandler> => {
-      const parseSafe = validateAndFormatData(EducationData, EducationAddDto);
-      if (!parseSafe.success) return parseSafe;
+      const parsed = validateAndFormatData(EducationData, EducationAddDto);
+      if (!parsed.success) return parsed;
       await Education.create({ userId, ...EducationData });
-      return {
-        ...parseSafe,
-        message: "Add education successfully",
-      };
+      return serviceResponse({
+        statusText: "Created",
+      });
     }
   );
 
-  // Update Education
   updateEducation = warpAsync(
     async (
       EducationData: EducationUpdateDtoType,
       query: object
     ): Promise<responseHandler> => {
-      const parseSafe = validateAndFormatData(
+      const parsed = validateAndFormatData(
         EducationData,
-        EducationUpdateDto
+        EducationUpdateDto,
+        "update"
       );
-      if (!parseSafe.success) return parseSafe;
+      if (!parsed.success) return parsed;
 
       const updateEducation = await Education.findOneAndUpdate(
         query,
@@ -58,93 +56,31 @@ class EducationService {
           new: true,
         }
       ).lean();
-
-      if (!updateEducation) {
-        return {
-          success: false,
-          status: 404,
-          message: "Education not found",
-        };
-      }
-
-      return {
-        success: true,
-        status: 200,
-        message: "Update Education successfully",
+      return serviceResponse({
         data: updateEducation,
-      };
+      });
     }
   );
 
-  // Get education
   getEducation = warpAsync(async (query: object): Promise<responseHandler> => {
     const getEducation = await Education.findOne(query).lean();
-
-    if (!getEducation) {
-      return {
-        success: false,
-        status: 404,
-        message: "Education not found",
-      };
-    }
-
-    const parseSafeEducation = validateAndFormatData(
-      getEducation,
-      EducationDto
-    );
-    if (!parseSafeEducation.success) return parseSafeEducation;
-
-    return {
-      message: "Get education successfully",
-      ...parseSafeEducation,
-    };
+    return validateAndFormatData(getEducation, EducationDto);
   });
 
-  // Get all Educations
   getAllEducations = warpAsync(
     async (userId: string): Promise<responseHandler> => {
       const getEducations = await Education.find({
         userId,
       }).lean();
-
-      if (!getEducations) {
-        return {
-          success: false,
-          status: 404,
-          message: "Educations not found",
-        };
-      }
-
-      const parseSafeEducations = validateAndFormatData(
-        getEducations,
-        EducationDto,
-        "getAll"
-      );
-      if (!parseSafeEducations.success) return parseSafeEducations;
-
-      return {
-        message: "Get experience successfully",
-        count: getEducations.length,
-        ...parseSafeEducations,
-      };
+      return validateAndFormatData(getEducations, EducationDto, "getAll");
     }
   );
 
   deleteEducation = warpAsync(
     async (query: object): Promise<responseHandler> => {
-      const deleteEducation = await Education.deleteOne(query);
-      if (!deleteEducation.deletedCount) {
-        return {
-          success: false,
-          status: 404,
-          message: "Education not found",
-        };
-      }
-      return {
-        success: true,
-        status: 200,
-        message: "Delete education successfully",
-      };
+      return serviceResponse({
+        data: (await Education.deleteOne(query)).deletedCount,
+      });
     }
   );
 }

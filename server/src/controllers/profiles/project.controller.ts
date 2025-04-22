@@ -15,7 +15,6 @@ class ProjectController {
     return ProjectController.instance;
   }
 
-  // Add project
   async addProject(req: Request, res: Response): Promise<Response> {
     const result = await this.projectService.addProject(
       req.body,
@@ -24,39 +23,26 @@ class ProjectController {
     return controllerResponse(res, result);
   }
 
-  // Get project
   async getProject(req: Request, res: Response): Promise<Response> {
-    const query = req.params.projectId
-      ? { _id: req.params.projectId }
-      : { userId: req.curUser?.userId };
-    const result = await this.projectService.getProject(query);
+    const result = await this.projectService.getProject(req.body.id);
     return controllerResponse(res, result);
   }
 
-  // Get all project
   async getAllProjects(req: Request, res: Response): Promise<Response> {
-    const query = req.params.userId
-      ? { userId: req.params.userId }
-      : { userId: req.curUser?.userId };
-    const result = await this.projectService.getAllProjects(query);
+    const result = await this.projectService.getAllProjects(req.body.id);
     return controllerResponse(res, result);
   }
 
-  // Update project
   async updateProject(req: Request, res: Response): Promise<Response> {
-    const query = req.params.projectId
-      ? { _id: req.params.projectId }
-      : { userId: req.curUser?.userId };
-    const result = await this.projectService.updateProject(req.body, query);
+    const result = await this.projectService.updateProject(
+      req.body,
+      req.body.id
+    );
     return controllerResponse(res, result);
   }
 
-  // Delete project
   async deleteProject(req: Request, res: Response): Promise<Response> {
-    const query = req.params.projectId
-      ? { _id: req.params.projectId }
-      : { userId: req.curUser?.userId };
-    const result = await this.projectService.deleteProject(query);
+    const result = await this.projectService.deleteProject(req.body.id);
     return controllerResponse(res, result);
   }
 }

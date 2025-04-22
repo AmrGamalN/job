@@ -31,7 +31,7 @@ class ReactionController {
   async getReaction(req: Request, res: Response): Promise<Response> {
     const result = await this.reactionService.getReaction(
       req.query,
-      req.params.reactionId
+      req.params.id
     );
     return controllerResponse(res, result);
   }
@@ -44,16 +44,15 @@ class ReactionController {
     },
     context: { req: Request; res: Response },
     info: GraphQLResolveInfo
-  ): Promise<responseHandler> {
+  ): Promise<Response> {
     const result = await this.reactionService.getAllReactions(args, info);
-    if (!result.success) result;
-    return result;
+    return controllerResponse(context.res, result);
   }
 
   async updateReaction(req: Request, res: Response): Promise<Response> {
     const result = await this.reactionService.updateReaction(
       req.query,
-      req.params.reactionId
+      req.params.id
     );
     return controllerResponse(res, result);
   }
@@ -69,7 +68,7 @@ class ReactionController {
   async deleteReaction(req: Request, res: Response): Promise<Response> {
     const result = await this.reactionService.deleteReaction(
       req.query,
-      req.params.reactionId
+      req.params.id
     );
     return controllerResponse(res, result);
   }

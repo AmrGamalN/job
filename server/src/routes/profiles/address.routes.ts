@@ -21,59 +21,6 @@ const commonMiddlewares = [
 
 /**
  * @swagger
- * tags: [Address]
- * description: Address Management API
- */
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     AddressDTO:
- *       type: object
- *       properties:
- *         userId:
- *           type: string
- *           description: The user id
- *         country:
- *           type: string
- *           description: The user country
- *         city:
- *           type: string
- *           description: The user city
- *         state:
- *           type: string
- *           description: The user state
- *         address:
- *           type: string
- *           description: The user address
- *         timeZone:
- *           type: string
- */
-
-/**
- * @swagger
- * components:
- *   responses:
- *     AddressSuccess:
- *       description: Successfully
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               status:
- *                 type: number
- *               success:
- *                 type: boolean
- *               message:
- *                 type: string
- *               data:
- *                 $ref: '#/components/schemas/AddressDTO'
- */
-
-/**
- * @swagger
  * /address/add:
  *   post:
  *     tags: [Address]
@@ -84,35 +31,15 @@ const commonMiddlewares = [
  *       content:
  *         application/json:
  *           schema:
- *             properties:
- *               country:
- *                 type: string
- *                 description: The user country
- *                 example: Vietnam
- *               city:
- *                 type: string
- *                 description: The user city
- *                 example: Ho Chi City
- *               state:
- *                 type: string
- *                 description: The user state
- *                 example: EG
- *               address:
- *                 type: string
- *                 description: The user address
- *                 example: 123 Le Thanh
- *               timeZone:
- *                 type: string
- *                 description: The user timeZone
- *                 example: Asia
+ *             $ref: '#/components/schemas/AddressBaseComponents'
  *     responses:
  *      200:
- *        $ref: '#/components/responses/AddressSuccess'
- *     400:
+ *        $ref: '#/components/responses/BaseResponse'
+ *      400:
  *        description: Failed to add address
- *     401:
+ *      401:
  *        description: Unauthorized
- *     500:
+ *      500:
  *        description: Internal Server Error
  */
 router.post(
@@ -124,44 +51,27 @@ router.post(
 
 /**
  * @swagger
- * /address/get:
- *   get:
- *     tags: [Address]
- *     summary: Get address for current user
- *     description: If no addressId is provided, returns address for the current user.
- *     responses:
- *       200:
- *         $ref: '#/components/responses/AddressSuccess'
- *       400:
- *         description: Failed to get address
- *       401:
- *         description: Unauthorized
- *       500:
- *         description: Internal Server Error
- * /address/get/{addressId}:
+ * /address/get/{id}:
  *   get:
  *     tags: [Address]
  *     summary: Get address by id
- *     description: Get a specific address
+ *     description: Get a specific address by id or curUser id
  *     parameters:
- *       - in: path
- *         name: addressId
- *         required: true
- *         schema:
- *           type: string
- *         description: The address id
+ *      - $ref: '#/components/parameters/Id'
  *     responses:
  *       200:
- *         $ref: '#/components/responses/AddressSuccess'
+ *         $ref: '#/components/responses/AddressResponse'
  *       400:
  *         description: Failed to get address
  *       401:
  *         description: Unauthorized
+ *       404:
+ *         description: Not found
  *       500:
  *         description: Internal Server Error
  */
 router.get(
-  "/get/:addressId?",
+  "/get/:id?",
   ...commonMiddlewares,
   asyncHandler(validateParamMiddleware()),
   asyncHandler(controller.getAddress.bind(controller))
@@ -169,56 +79,33 @@ router.get(
 
 /**
  * @swagger
- * /address/update:
+ * /address/update/{id}:
  *   put:
  *     tags: [Address]
- *     summary: Update current user's address
- *     description: Update address for the currently authenticated user.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/AddressDTO'
- *     responses:
- *       200:
- *         $ref: '#/components/responses/AddressSuccess'
- *       400:
- *         description: Failed to update address
- *       403:
- *         description: Unauthorized
- *       500:
- *         description: Internal Server Error
- * /address/update/{addressId}:
- *   put:
- *     tags: [Address]
- *     summary: Update address by id
- *     description: Admin can update address by specifying the address id.
+ *     summary: Update address by id  or curUser id
+ *     description: Admin can update address by specifying the address id or curUser id
  *     parameters:
- *       - in: path
- *         name: addressId
- *         required: true
- *         schema:
- *           type: string
- *         description: The address id
+ *      - $ref: '#/components/parameters/Id'
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/AddressDTO'
+ *             $ref: '#/components/schemas/AddressBaseComponents'
  *     responses:
  *       200:
- *         $ref: '#/components/responses/AddressSuccess'
+ *         $ref: '#/components/responses/AddressResponse'
  *       400:
  *         description: Failed to update address
  *       403:
  *         description: Unauthorized
+ *       404:
+ *         description: Not found
  *       500:
  *         description: Internal Server Error
  */
 router.put(
-  "/update/:addressId?",
+  "/update/:id?",
   ...commonMiddlewares,
   asyncHandler(validateParamMiddleware()),
   asyncHandler(expressValidator(validateAddressUpdate)),

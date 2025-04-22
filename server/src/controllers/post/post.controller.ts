@@ -5,6 +5,7 @@ import {
   responseHandler,
 } from "../../utils/responseHandler";
 import { GraphQLResolveInfo } from "graphql";
+import helmet from "helmet";
 
 class PostController {
   private static instance: PostController;
@@ -28,10 +29,7 @@ class PostController {
   }
 
   async getPost(req: Request, res: Response): Promise<Response> {
-    const query = req.params.postId
-      ? { _id: req.params.postId }
-      : { userId: req.curUser?.userId };
-    const result = await this.postService.getPost(query);
+    const result = await this.postService.getPost(req.body.id);
     return controllerResponse(res, result);
   }
 
@@ -50,10 +48,7 @@ class PostController {
   }
 
   async updatePost(req: Request, res: Response): Promise<Response> {
-    const query = req.params.postId
-      ? { _id: req.params.postId }
-      : { userId: req.curUser?.userId };
-    const result = await this.postService.updatePost(req.body, query);
+    const result = await this.postService.updatePost(req.body, req.body.id);
     return controllerResponse(res, result);
   }
 
@@ -63,10 +58,12 @@ class PostController {
   }
 
   async deletePost(req: Request, res: Response): Promise<Response> {
-    const query = req.params.postId
-      ? { _id: req.params.postId }
-      : { userId: req.curUser?.userId };
-    const result = await this.postService.deletePost(query);
+    const result = await this.postService.deletePost(req.body.id);
+    return controllerResponse(res, result);
+  }
+
+  async searchWithHashtag(req: Request, res: Response): Promise<Response> {
+    const result = await this.postService.searchWithHashtag(req.query);
     return controllerResponse(res, result);
   }
 }

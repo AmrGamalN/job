@@ -7,7 +7,7 @@ import {
   AddressUpdateDtoType,
 } from "../../dto/profiles/address.dto";
 import { warpAsync } from "../../utils/warpAsync";
-import { responseHandler } from "../../utils/responseHandler";
+import { responseHandler, serviceResponse } from "../../utils/responseHandler";
 import { validateAndFormatData } from "../../utils/validateAndFormatData";
 
 class AddressService {
@@ -19,44 +19,42 @@ class AddressService {
     return AddressService.instanceService;
   }
 
-  // Add Address
   addAddress = warpAsync(
     async (
       AddressData: AddressAddDtoType,
       userId: string
     ): Promise<responseHandler> => {
-      const parseSafe = validateAndFormatData(AddressData, AddressAddDto);
-      if (!parseSafe.success) return parseSafe;
+      const parsed = validateAndFormatData(AddressData, AddressAddDto);
+      if (!parsed.success) return parsed;
       const getAddress = await Address.findOne({ userId })
         .select({
           userId: 1,
         })
         .lean();
-
-      if (getAddress) {
-        return {
-          success: false,
-          status: 404,
-          message: "Address Already found",
-        };
-      }
-
-      await Address.create({ ...AddressData,userId });
-      return {
-        ...parseSafe,
-        message: "Add address successfully",
-      };
+      if (getAddress) return serviceResponse({ statusText: "Conflict" });
+      await Address.create({ ...AddressData, userId });
+      return serviceResponse({
+        statusText: "Created",
+      });
     }
   );
 
-  // Update Address
+  getAddress = warpAsync(async (query: object): Promise<responseHandler> => {
+    const getAddress = await Address.findOne(query).lean();
+    return validateAndFormatData(getAddress, AddressDto);
+  });
+
   updateAddress = warpAsync(
     async (
       AddressData: AddressUpdateDtoType,
       query: object
     ): Promise<responseHandler> => {
-      const parseSafe = validateAndFormatData(AddressData, AddressUpdateDto);
-      if (!parseSafe.success) return parseSafe;
+      const parsed = validateAndFormatData(
+        AddressData,
+        AddressUpdateDto,
+        "update"
+      );
+      if (!parsed.success) return parsed;
 
       const updateAddress = await Address.findOneAndUpdate(
         query,
@@ -69,44 +67,10 @@ class AddressService {
           new: true,
         }
       ).lean();
-
-      if (!updateAddress) {
-        return {
-          success: false,
-          status: 404,
-          message: "Address not found",
-        };
-      }
-
-      return {
-        success: true,
-        status: 200,
-        message: "Update Address successfully",
+      return serviceResponse({
         data: updateAddress,
-      };
-    }
-  );
-
-  // Get address
-  getAddress = warpAsync(
-    async (query: object): Promise<responseHandler> => {
-      const getAddress = await Address.findOne(query).lean();
-      if (!getAddress) {
-        return {
-          success: false,
-          status: 404,
-          message: "Address not found",
-        };
-      }
-
-      const parseSafeAddress = validateAndFormatData(getAddress, AddressDto);
-      if (!parseSafeAddress.success) return parseSafeAddress;
-      return {
-        message: "Get address successfully",
-        ...parseSafeAddress,
-      };
+      });
     }
   );
 }
-
 export default AddressService;

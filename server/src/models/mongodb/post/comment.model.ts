@@ -1,19 +1,9 @@
 import mongoose, { Schema } from "mongoose";
 import { commentDtoType } from "../../../dto/post/comment.dto";
-
-enum ReactionType {
-  LIKE = "like",
-  LOVE = "love",
-  HAHA = "haha",
-  WOW = "wow",
-  SAD = "sad",
-  ANGRY = "angry",
-}
-
 const CommentSchema = new Schema(
   {
     userId: { type: String, ref: "users", required: true },
-    postId: {
+    id: {
       type: Schema.Types.ObjectId,
       ref: "posts",
       required: true,
@@ -69,7 +59,7 @@ const CommentSchema = new Schema(
   }
 );
 
-CommentSchema.index({ postId: 1, createdAt: -1 });
+CommentSchema.index({ id: 1, createdAt: -1 });
 CommentSchema.index({ userId: 1 });
 const Comment = mongoose.model<commentDtoType>("Comment", CommentSchema);
 export default Comment;

@@ -10,7 +10,7 @@ const PostSchema = new Schema(
         ref: "comments",
       },
     ],
-    reactionId: [
+    postId: [
       {
         type: Schema.Types.ObjectId,
         ref: "posts",
@@ -77,6 +77,7 @@ const PostSchema = new Schema(
     timestamps: true,
   }
 );
-PostSchema.index({ postId: 1 });
+PostSchema.index({ id: 1 });
+PostSchema.index({ hashtags: 1 });
 const Post = mongoose.model<postDtoType>("posts", PostSchema);
 export default Post;
