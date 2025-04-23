@@ -11,7 +11,6 @@ import { responseHandler, serviceResponse } from "../../utils/responseHandler";
 import { validateAndFormatData } from "../../utils/validateAndFormatData";
 import { GraphQLResolveInfo } from "graphql";
 import { PaginationGraphQl } from "../../utils/pagination";
-import { isNullishCoalesce } from "typescript";
 
 class PostService {
   private static instanceService: PostService;
@@ -83,13 +82,13 @@ class PostService {
 
   countPost = warpAsync(async (userId: string): Promise<responseHandler> => {
     return serviceResponse({
-      data: await Post.countDocuments({ userId }),
+      count: await Post.countDocuments({ userId }),
     });
   });
 
   deletePost = warpAsync(async (query: object): Promise<responseHandler> => {
     return serviceResponse({
-      data: (await Post.deleteOne(query)).deletedCount,
+      deleteCount: (await Post.deleteOne(query)).deletedCount,
     });
   });
 

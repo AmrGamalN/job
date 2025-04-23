@@ -88,7 +88,7 @@ class UserService {
 
   countUser = warpAsync(async (): Promise<responseHandler> => {
     return serviceResponse({
-      data: await User.countDocuments(),
+      count: await User.countDocuments(),
     });
   });
 }

@@ -135,7 +135,7 @@ class ReactionService {
       return serviceResponse({
         statusText: "OK",
         message: "Delete",
-        data: countReactions,
+        count: countReactions,
       });
     }
   );

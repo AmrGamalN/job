@@ -71,7 +71,7 @@ export const validateQueryMiddleware = () => {
   };
 };
 
-export const validateQueryFirebaseMiddleware = () => {
+export const validateOptionalUserIdMiddleware = () => {
   return async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.body.userId ? req.body.userId : req.curUser?.userId;
     if (userId && !/^[a-zA-Z0-9]{28}$/.test(userId)) {
@@ -81,6 +81,18 @@ export const validateQueryFirebaseMiddleware = () => {
       });
     }
     req.curUser.userId = userId;
+    return next();
+  };
+};
+
+export const validateRequiredUserIdMiddleware = () => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    if (!/^[a-zA-Z0-9]{28}$/.test(req.body.userId)) {
+      return res.status(404).json({
+        success: false,
+        message: "Not found",
+      });
+    }
     return next();
   };
 };

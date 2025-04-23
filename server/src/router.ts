@@ -2,6 +2,7 @@ import { Request, Response, Router } from "express";
 import AuthRouters from "./routes/auth/auth.routes";
 import UserRouters from "./routes/profiles/user.routes";
 import AddressRouters from "./routes/profiles/address.routes";
+import ConnectionRouters from "./routes/profiles/connection.routes";
 import ProfileRouters from "./routes/profiles/profile.routes";
 import SecurityRouters from "./routes/profiles/security.routes";
 import LoginRoutes from "./routes/auth/login.routes";
@@ -15,7 +16,6 @@ import CommentRoutes from "./routes/post/comment.routes";
 import ReactionRoutes from "./routes/post/reaction.routes";
 const router = Router();
 
-// Health Check
 router.get("/health-check", (req: Request, res: Response) => {
   console.log("Server is running");
   res.send("Server is running");
@@ -26,6 +26,7 @@ router.use("/auth", AuthRouters);
 router.use("/user", UserRouters);
 router.use("/profile", ProfileRouters);
 router.use("/address", AddressRouters);
+router.use("/connection", ConnectionRouters);
 router.use("/security", SecurityRouters);
 router.use("/login", LoginRoutes);
 router.use("/register", RegisterRoutes);
@@ -36,4 +37,5 @@ router.use("/project", ProjectRoutes);
 router.use("/post", PostRoutes);
 router.use("/comment", CommentRoutes);
 router.use("/reaction", ReactionRoutes);
+
 export default router;

@@ -27,4 +27,6 @@
  *     description: The Education managing API
  *   - name: Address
  *     description: The Address managing API
+ *   - name: Connection
+ *     description: Operations related to user connections
  */

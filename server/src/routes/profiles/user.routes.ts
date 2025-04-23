@@ -4,7 +4,7 @@ import { asyncHandler } from "../../middleware/handleError";
 import { validateUserUpdate } from "../../validation/profiles/user.validator";
 import {
   expressValidator,
-  validateQueryFirebaseMiddleware,
+  validateOptionalUserIdMiddleware,
 } from "../../middleware/validatorMiddleware";
 import TokenMiddleware from "../../middleware/token.middleware";
 const tokenMiddleware = TokenMiddleware.getInstance();
@@ -18,19 +18,20 @@ const commonMiddlewares = [
 
 /**
  * @swagger
- * /user/update/{userId}:
+ * /user/update:
  *   put:
  *     tags: [User]
  *     summary: Update user details
  *     description: Admin can update user by specifying the user id.
  *     parameters:
- *       - $ref: '#/components/parameters/UserId'
  *     requestBody:
  *       required: true
  *       content:
  *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/UserUpdateComponents'
+ *              allOf:
+ *               - $ref: '#/components/schemas/UserId'
+ *               - $ref: '#/components/schemas/UserUpdateComponents'
  *     responses:
  *       200:
  *         $ref: '#/components/responses/BaseResponse'
@@ -44,9 +45,9 @@ const commonMiddlewares = [
  *         description: Internal Server Error
  */
 router.put(
-  "/update/:userId?",
+  "/update",
   ...commonMiddlewares,
-  asyncHandler(validateQueryFirebaseMiddleware()),
+  asyncHandler(validateOptionalUserIdMiddleware()),
   asyncHandler(expressValidator(validateUserUpdate)),
   asyncHandler(controller.updateUser.bind(controller))
 );

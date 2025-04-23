@@ -93,10 +93,9 @@ class ProfileService {
   );
 
   countProfile = warpAsync(async (): Promise<responseHandler> => {
-    const count = await Profile.countDocuments();
     return serviceResponse({
       statusText: "OK",
-      count,
+      count: await Profile.countDocuments(),
     });
   });
 }

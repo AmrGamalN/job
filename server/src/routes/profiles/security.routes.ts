@@ -2,7 +2,7 @@ import express from "express";
 import SecurityController from "../../controllers/profiles/security.controller";
 import {
   expressValidator,
-  validateQueryFirebaseMiddleware,
+  validateOptionalUserIdMiddleware,
 } from "../../middleware/validatorMiddleware";
 import { asyncHandler } from "../../middleware/handleError";
 import {
@@ -24,7 +24,7 @@ const commonMiddlewares = [
 
 /**
  * @swagger
- * /security/update/{userId}:
+ * /security/update:
  *   put:
  *     tags: [User]
  *     summary: Update user security
@@ -52,9 +52,9 @@ const commonMiddlewares = [
  *         description: Internal server error
  */
 router.put(
-  "/update/:userId",
+  "/update",
   ...commonMiddlewares,
-  asyncHandler(validateQueryFirebaseMiddleware()),
+  asyncHandler(validateOptionalUserIdMiddleware()),
   asyncHandler(expressValidator(validateUserSecurityUpdate)),
   asyncHandler(controller.updateSecurity.bind(controller))
 );
@@ -86,7 +86,7 @@ router.get(
 
 /**
  * @swagger
- * /security/block-delete/{userId}:
+ * /security/block-delete:
  *   post:
  *     tags: [Security]
  *     summary: Block or delete user account
@@ -96,15 +96,16 @@ router.get(
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/UserId'
- *             type: object
- *             properties:
- *               isAccountBlocked:
- *                 type: boolean
- *                 example: true
- *               isAccountDeleted:
- *                 type: boolean
- *                 example: false
+ *             allOf:
+ *              - $ref: '#/components/schemas/UserId'
+ *              - type: object
+ *                properties:
+ *                 isAccountBlocked:
+ *                   type: boolean
+ *                   example: true
+ *                 isAccountDeleted:
+ *                   type: boolean
+ *                   example: false
  *     responses:
  *       200:
  *         $ref: '#/components/responses/BaseResponse'
@@ -118,9 +119,9 @@ router.get(
  *         description: Internal server error
  */
 router.post(
-  "/block-delete/:userId",
+  "/block-delete",
   ...commonMiddlewares,
-  asyncHandler(validateQueryFirebaseMiddleware()),
+  asyncHandler(validateOptionalUserIdMiddleware()),
   asyncHandler(expressValidator(validateSecurityStatus)),
   asyncHandler(controller.deleteBlockUser.bind(controller))
 );

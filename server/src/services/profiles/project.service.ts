@@ -76,7 +76,7 @@ class ProjectService {
 
   deleteProject = warpAsync(async (query: object): Promise<responseHandler> => {
     return serviceResponse({
-      data: (await Project.deleteOne(query)).deletedCount,
+      deleteCount: (await Project.deleteOne(query)).deletedCount,
     });
   });
 }

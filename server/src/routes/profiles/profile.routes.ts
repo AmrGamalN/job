@@ -4,7 +4,7 @@ import { asyncHandler } from "../../middleware/handleError";
 import {
   expressValidator,
   validateParamMiddleware,
-  validateQueryFirebaseMiddleware,
+  validateOptionalUserIdMiddleware,
 } from "../../middleware/validatorMiddleware";
 import { validateProfileUpdate } from "../../validation/profiles/profile.validator";
 import TokenMiddleware from "../../middleware/token.middleware";
@@ -48,7 +48,7 @@ const commonMiddlewares = [
 router.put(
   "/update/:userId",
   ...commonMiddlewares,
-  asyncHandler(validateQueryFirebaseMiddleware()),
+  asyncHandler(validateOptionalUserIdMiddleware()),
   asyncHandler(expressValidator(validateProfileUpdate)),
   asyncHandler(controller.updateProfile.bind(controller))
 );

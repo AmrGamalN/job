@@ -24,20 +24,24 @@ export const validateAndFormatData = (
       if (!parsed.success)
         return serviceResponse({
           statusText: "BadRequest",
-          error: parsed.error.errors,
+          error: parsed.error,
         });
       return parsed.data;
     });
     return serviceResponse({
-      data: parsed,
-      message: "Get data successfully",
+      data: parsed.length > 0 ? parsed : null,
     });
   }
 
   const parsed = dto.safeParse(retrievedData);
+  if (!parsed.success)
+    return serviceResponse({
+      statusText: "BadRequest",
+      error: parsed.error,
+    });
   return serviceResponse({
     data: parsed.data,
-    error: parsed.error.errors,
-    message: "Get data successfully",
+    error: parsed.error,
+    message: "Operation successfully",
   });
 };

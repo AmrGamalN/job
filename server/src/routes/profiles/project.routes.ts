@@ -4,8 +4,7 @@ import { asyncHandler } from "../../middleware/handleError";
 import TokenMiddleware from "../../middleware/token.middleware";
 import {
   expressValidator,
-  validateParamMiddleware,
-  validateQueryFirebaseMiddleware,
+  validateOptionalUserIdMiddleware,
 } from "../../middleware/validatorMiddleware";
 const tokenMiddleware = TokenMiddleware.getInstance();
 const controller = ProjectController.getInstance();
@@ -74,7 +73,7 @@ router.post(
 router.get(
   "/get/:id?",
   ...commonMiddlewares,
-  asyncHandler(validateQueryFirebaseMiddleware()),
+  asyncHandler(validateOptionalUserIdMiddleware()),
   asyncHandler(controller.getProject.bind(controller))
 );
 
@@ -105,19 +104,19 @@ router.get(
 
 /**
  * @swagger
- * /project/update/{id}:
+ * /project/update:
  *   put:
  *     tags: [Project]
  *     summary: Update project record
  *     description: Update specific a user's project information by id
- *     parameters:
- *      - $ref: '#/components/parameters/Id'
  *     requestBody:
  *       required: false
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/ProjectBaseComponents'
+ *              allOf:
+ *                - $ref: '#/components/schemas/UserId'
+ *                - $ref: '#/components/schemas/ProjectBaseComponents'
  *     responses:
  *       200:
  *         $ref: '#/components/responses/ProjectResponse'
@@ -131,22 +130,26 @@ router.get(
  *         description: Internal Server Error
  */
 router.put(
-  "/update/:id?",
+  "/update",
   ...commonMiddlewares,
-  asyncHandler(validateParamMiddleware()),
+  asyncHandler(validateOptionalUserIdMiddleware()),
   asyncHandler(expressValidator(validateProjectUpdate)),
   asyncHandler(controller.updateProject.bind(controller))
 );
 
 /**
  * @swagger
- * /project/delete/{id}:
+ * /project/delete:
  *   delete:
  *     tags: [Project]
  *     summary: Delete project record
  *     description: Delete specific a user's project information by id
- *     parameters:
- *      - $ref: '#/components/parameters/Id'
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *              - $ref: '#/components/schemas/UserId'
  *     responses:
  *       200:
  *         $ref: '#/components/responses/BaseResponse'
@@ -160,9 +163,9 @@ router.put(
  *         description: Internal Server Error
  */
 router.delete(
-  "/delete/:id?",
+  "/delete",
   ...commonMiddlewares,
-  asyncHandler(validateParamMiddleware()),
+  asyncHandler(validateOptionalUserIdMiddleware()),
   asyncHandler(controller.deleteProject.bind(controller))
 );
 

@@ -119,6 +119,23 @@
  *                   $ref: '#/components/schemas/AddressBaseComponents'
  */
 
+/**
+ * @swagger
+ * components:
+ *   responses:
+ *     ConnectionResponse:
+ *       description: Address Response
+ *       content:
+ *         application/json:
+ *           schema:
+ *             allOf:
+ *               - $ref: '#/components/schemas/BaseResponse'
+ *               - type: object
+ *                 properties:
+ *                  data:
+ *                   $ref: '#/components/schemas/ConnectionBaseComponents'
+ */
+
 //#endregion
 
 //#region [ post folder ]

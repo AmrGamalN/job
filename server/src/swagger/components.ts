@@ -490,6 +490,60 @@
  *           type: string
  */
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     ConnectionBaseComponents:
+ *       type: object
+ *       properties:
+ *         userId:
+ *           type: string
+ *           description: The user ID associated with the connection.
+ *         connectorId:
+ *           type: string
+ *           description: The connector (other user) ID for the connection.
+ *         status:
+ *           type: string
+ *           enum: ["pending", "accepted", "blocked", "unBlocked"]
+ *           description: The current status of the connection.
+ *         acceptedAt:
+ *           type: string
+ *           format: date-time
+ *           nullable: true
+ *           description: Date and time when the connection was accepted.
+ *         blockedAt:
+ *           type: string
+ *           format: date-time
+ *           nullable: true
+ *           description: Date and time when the connection was blocked.
+ *         unBlockedAt:
+ *           type: string
+ *           format: date-time
+ *           nullable: true
+ *           description: Date and time when the connection was unblocked.
+ *         history:
+ *           type: object
+ *           properties:
+ *             action:
+ *               type: string
+ *               enum: ["blocked", "unBlocked", "accepted"]
+ *               nullable: true
+ *               description: The action that took place (e.g., blocked, accepted, etc.).
+ *             actionBy:
+ *               type: string
+ *               nullable: true
+ *               description: The user who performed the action.
+ *             actionAt:
+ *               type: string
+ *               format: date-time
+ *               nullable: true
+ *               description: The time when the action occurred.
+ *       required:
+ *         - userId
+ *         - connectorId
+ */
+
 //#endregion
 
 //#region [ post folder ]

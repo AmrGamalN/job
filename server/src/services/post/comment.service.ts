@@ -103,7 +103,7 @@ class CommentService {
 
   countComment = warpAsync(async (postId: string): Promise<responseHandler> => {
     return serviceResponse({
-      data: await Comment.countDocuments({ postId }),
+      count: await Comment.countDocuments({ postId }),
     });
   });
 

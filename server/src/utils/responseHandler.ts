@@ -11,6 +11,7 @@ export interface responseHandler {
   refreshToken?: string;
   tempToken?: string;
   userId?: string;
+  deleteCount?: number;
 }
 
 type ResponseType =
@@ -27,6 +28,7 @@ interface ResponseOptions {
   data?: any;
   error?: any;
   count?: number;
+  deleteCount?: number;
 }
 
 export const controllerResponse = (res: Response, response: any) => {
@@ -40,6 +42,7 @@ export const serviceResponse = ({
   data,
   error,
   count,
+  deleteCount,
 }: ResponseOptions): responseHandler => {
   switch (statusText) {
     case "BadRequest":
@@ -53,8 +56,14 @@ export const serviceResponse = ({
 
     case "OK":
     default:
-      if (statusText == "OK" || data || count)
-        return response({ statusText: "OK", message, data, count });
+      if (statusText == "OK" || data || count || deleteCount)
+        return response({
+          statusText: "OK",
+          message,
+          data,
+          count,
+          deleteCount,
+        });
       return response({ statusText: "NotFound", message });
   }
 };
@@ -65,6 +74,7 @@ const response = ({
   data,
   error,
   count,
+  deleteCount,
 }: ResponseOptions): responseHandler => {
   const defaultMessages = {
     OK: "Operation successfully",
@@ -93,6 +103,7 @@ const response = ({
         message: message ?? defaultMessages.OK,
         data,
         count,
+        deleteCount,
       };
 
     case "BadRequest":
@@ -100,7 +111,7 @@ const response = ({
         statusText: "BadRequest",
         success: false,
         status: 400,
-        message: defaultMessages.BadRequest,
+        message: message ?? defaultMessages.BadRequest,
         error,
       };
 
@@ -119,7 +130,7 @@ const response = ({
         status: 409,
         message: message ?? defaultMessages.Conflict,
       };
-    
+
     case "Unauthorized":
       return {
         statusText: "Unauthorized",

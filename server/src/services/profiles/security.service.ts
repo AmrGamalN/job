@@ -94,7 +94,7 @@ class SecurityService {
 
   countSecurity = warpAsync(async (): Promise<responseHandler> => {
     return serviceResponse({
-      data: await Security.countDocuments(),
+      count: await Security.countDocuments(),
     });
   });
 

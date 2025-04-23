@@ -3,7 +3,12 @@ import { ObjectId } from "mongodb";
 
 export const AddressDto = z.object({
   _id: z.union([z.string(), z.instanceof(ObjectId)]),
-  userId: z.string().min(1, "User ID is required"),
+  ownerId: z.string().min(1, "User ID is required"),
+  ownerType: z.enum(["users", "companies", "schools"], {
+    errorMap: () => ({
+      message: "Owner type must be either 'users' or 'companies'",
+    }),
+  }),
   country: z.string().min(1, "Country is required"),
   city: z.string().min(1, "City is required"),
   state: z.string().min(1, "State is required"),

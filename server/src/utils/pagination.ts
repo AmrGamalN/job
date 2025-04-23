@@ -26,9 +26,10 @@ export const PaginationGraphQl = async (
     .lean();
 
   const pareSafe = validateAndFormatData(retrievedModel, Dto, "getAll");
-  if (!pareSafe || !pareSafe.data.length)
+  if (!retrievedModel || !pareSafe.data || retrievedModel.length === 0)
     return serviceResponse({
-      data: pareSafe.data,
+      statusText: "NotFound",
+      data: [],
     });
   const totalPages = Math.ceil(count / limitNum);
   const remainPages = totalPages - pageNum;
