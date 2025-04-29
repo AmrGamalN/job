@@ -2,7 +2,18 @@ import { Schema, model } from "mongoose";
 import { ConnectionDtoType } from "../../../dto/profiles/connection.dto";
 const ConnectionSchema = new Schema(
   {
-    userId: { type: String,  required: true },
+    ownerId: {
+      type: String,
+      refPath: "ownerModel",
+      required: true,
+      unique: true,
+    },
+    ownerType: {
+      type: String,
+      required: true,
+      enum: ["user", "company", "school"],
+      default: "user",
+    },
     connectorId: { type: String, required: true },
     status: {
       type: String,
@@ -23,8 +34,10 @@ const ConnectionSchema = new Schema(
   },
   { timestamps: true }
 );
-ConnectionSchema.index({ userId: 1, connectorId: 1 }, { unique: true });
-ConnectionSchema.index({ userId: 1 });
+ConnectionSchema.index({ ownerId: 1, connectorId: 1 }, { unique: true });
 ConnectionSchema.index({ connectorId: 1 });
-const Connection = model<ConnectionDtoType>("connections", ConnectionSchema);
+const Connection = model<ConnectionDtoType>(
+  "user_connections",
+  ConnectionSchema
+);
 export default Connection;

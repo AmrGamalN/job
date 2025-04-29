@@ -1,20 +1,21 @@
+import { Model } from "mongoose";
+import { GraphQLResolveInfo } from "graphql";
 import {
   PostReaction,
   CommentReaction,
 } from "../../models/mongodb/post/reaction.model";
 import Post from "../../models/mongodb/post/post.model";
 import Comment from "../../models/mongodb/post/comment.model";
-import { Model } from "mongoose";
 import {
   ReactionDto,
   ReactionAddDto,
   ReactionUpdateDto,
 } from "../../dto/post/reaction.dto";
-import { responseHandler, serviceResponse } from "../../utils/responseHandler";
-import { warpAsync } from "../../utils/warpAsync";
-import { validateAndFormatData } from "../../utils/validateAndFormatData";
-import { GraphQLResolveInfo } from "graphql";
-import { PaginationGraphQl } from "../../utils/pagination";
+import { warpAsync } from "../../utils/warpAsync.util";
+import { paginate } from "../../utils/pagination.util";
+import { serviceResponse } from "../../utils/response.util";
+import { validateAndFormatData } from "../../utils/validateData.util";
+import { ServiceResponseType } from "../../types/response.type";
 
 class ReactionService {
   private static instanceService: ReactionService;
@@ -30,13 +31,13 @@ class ReactionService {
       query: any,
       id: string,
       userId: string
-    ): Promise<responseHandler> => {
+    ): Promise<ServiceResponseType> => {
       const reactionContext = this.resolveReactionModel(query);
-      const parsed = validateAndFormatData(
+      const validationResult = validateAndFormatData(
         { reactionType: reactionContext.reactionType },
         ReactionAddDto
       );
-      if (!parsed.success) return parsed;
+      if (!validationResult.success) return validationResult;
 
       const isExistReaction = await reactionContext.modelReaction.findOne({
         userId,
@@ -47,7 +48,7 @@ class ReactionService {
         });
 
       const reaction = await reactionContext.modelReaction.create({
-        ...parsed.data,
+        ...validationResult.data,
         userId,
         [reactionContext.id]: id,
       });
@@ -59,7 +60,7 @@ class ReactionService {
   );
 
   getReaction = warpAsync(
-    async (query: any, id: string): Promise<responseHandler> => {
+    async (query: any, id: string): Promise<ServiceResponseType> => {
       const reactionContext = this.resolveReactionModel(query);
       const getReaction = await reactionContext.modelReaction
         .findOne({ _id: id })
@@ -75,10 +76,10 @@ class ReactionService {
         limit: number;
       },
       info: GraphQLResolveInfo
-    ): Promise<responseHandler> => {
+    ): Promise<ServiceResponseType> => {
       const reactionContext = this.resolveReactionModel(info.fieldName);
       const count = await this.countReaction();
-      return await PaginationGraphQl(
+      return await paginate(
         reactionContext.modelReaction,
         ReactionDto,
         count.count ?? 0,
@@ -89,21 +90,21 @@ class ReactionService {
   );
 
   updateReaction = warpAsync(
-    async (query: any, id: string): Promise<responseHandler> => {
+    async (query: any, id: string): Promise<ServiceResponseType> => {
       const reactionContext = this.resolveReactionModel(query);
-      const parsed = validateAndFormatData(
+      const validationResult = validateAndFormatData(
         { reactionType: reactionContext.reactionType },
         ReactionUpdateDto,
         "update"
       );
-      if (!parsed.success) return parsed;
+      if (!validationResult.success) return validationResult;
 
       const updateReaction = await reactionContext.modelReaction
         .findOneAndUpdate(
           { _id: id },
           {
             $set: {
-              ...parsed.data,
+              ...validationResult.data,
             },
           }
         )
@@ -117,13 +118,13 @@ class ReactionService {
       return serviceResponse({
         statusText: "OK",
         message: "Update",
-        data: parsed.data,
+        data: validationResult.data,
       });
     }
   );
 
   countReaction = warpAsync(
-    async (query: string, id: string): Promise<responseHandler> => {
+    async (query: string, id: string): Promise<ServiceResponseType> => {
       const reactionContext = this.resolveReactionModel(query);
       const countReactions = await reactionContext.modelReaction.countDocuments(
         { [reactionContext.id]: id }
@@ -141,13 +142,13 @@ class ReactionService {
   );
 
   deleteReaction = warpAsync(
-    async (query: string, id: string): Promise<responseHandler> => {
+    async (query: string, id: string): Promise<ServiceResponseType> => {
       const reactionContext = this.resolveReactionModel(query);
-      const parsed = validateAndFormatData(
+      const validationResult = validateAndFormatData(
         { reactionType: reactionContext.reactionType },
         ReactionUpdateDto
       );
-      if (!parsed.success) return parsed;
+      if (!validationResult.success) return validationResult;
 
       const deleteReaction = await reactionContext.modelReaction
         .findOneAndDelete({

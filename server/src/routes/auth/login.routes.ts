@@ -1,15 +1,13 @@
 import express from "express";
 import LoginController from "../../controllers/auth/login.controller";
-import { asyncHandler } from "../../middleware/handleError";
-import TokenMiddleware from "../../middleware/token.middleware";
-import { expressValidator } from "../../middleware/validatorMiddleware";
+import { asyncHandler } from "../../middlewares/handleError.middleware";
+import { expressValidator } from "../../middlewares/validator.middleware";
+import { validateCode2AF } from "../../validation/profiles/security.validator";
+import { userAuthorizationMiddlewares } from "../../utils/authorizationRole.util";
 import {
   validateLoginByPhone,
   validateLoginByEmail,
 } from "../../validation/auth/login.validator";
-import { validateCode2AF } from "../../validation/profiles/security.validator";
-import { role } from "../../utils/role";
-const tokenMiddleware = TokenMiddleware.getInstance();
 const controller = LoginController.getInstance();
 const router = express.Router();
 
@@ -39,7 +37,7 @@ const router = express.Router();
  */
 router.post(
   "/email",
-  asyncHandler(expressValidator(validateLoginByEmail)),
+  expressValidator(validateLoginByEmail),
   asyncHandler(controller.loginByEmail.bind(controller))
 );
 
@@ -69,7 +67,7 @@ router.post(
  */
 router.post(
   "/phone",
-  asyncHandler(expressValidator(validateLoginByPhone)),
+  expressValidator(validateLoginByPhone),
   asyncHandler(controller.loginByPhone.bind(controller))
 );
 
@@ -99,8 +97,8 @@ router.post(
  */
 router.post(
   "/2fa",
-  asyncHandler(tokenMiddleware.authorizationMiddleware(role)),
-  asyncHandler(expressValidator(validateCode2AF)),
+  ...userAuthorizationMiddlewares,
+  expressValidator(validateCode2AF),
   asyncHandler(controller.verifyTwoFactorAuthentication.bind(controller))
 );
 

@@ -3,17 +3,17 @@ import { postDtoType } from "../../../dto/post/post.dto";
 
 const PostSchema = new Schema(
   {
-    userId: { type: String, ref: "users", required: true },
+    userId: { type: String, ref: "user_users", required: true },
     commentId: [
       {
         type: Schema.Types.ObjectId,
-        ref: "comments",
+        ref: "post_comments",
       },
     ],
     postId: [
       {
         type: Schema.Types.ObjectId,
-        ref: "posts",
+        ref: "post_posts",
       },
     ],
     mentions: [],
@@ -79,5 +79,5 @@ const PostSchema = new Schema(
 );
 PostSchema.index({ id: 1 });
 PostSchema.index({ hashtags: 1 });
-const Post = mongoose.model<postDtoType>("posts", PostSchema);
+const Post = mongoose.model<postDtoType>("post_posts", PostSchema);
 export default Post;

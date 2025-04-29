@@ -1,23 +1,17 @@
 import express from "express";
 import CommentController from "../../controllers/post/comment.controller";
-import { asyncHandler } from "../../middleware/handleError";
-import TokenMiddleware from "../../middleware/token.middleware";
+import { asyncHandler } from "../../middlewares/handleError.middleware";
+import { userAuthorizationMiddlewares } from "../../utils/authorizationRole.util";
 import {
   expressValidator,
-  validateParamMiddleware,
-} from "../../middleware/validatorMiddleware";
+  validateToggleParamMiddleware,
+} from "../../middlewares/validator.middleware";
 import {
   validateCommentUpdate,
   validateCommentAdd,
 } from "../../validation/post/comment.validator";
-const tokenMiddleware = TokenMiddleware.getInstance();
 const controller = CommentController.getInstance();
-import { role } from "../../utils/role";
 const router = express.Router();
-const commonMiddlewares = [
-  asyncHandler(tokenMiddleware.refreshTokenMiddleware),
-  asyncHandler(tokenMiddleware.authorizationMiddleware(role)),
-];
 
 /**
  * @swagger
@@ -37,7 +31,7 @@ const commonMiddlewares = [
  *             $ref: '#/components/schemas/CommentAddComponents'
  *     responses:
  *       200:
- *         $ref: '#/components/responses/BaseResponse'
+ *         $ref: '#/components/schemas/BaseResponse'
  *       400:
  *         description: Failed to add comment record
  *       403:
@@ -49,9 +43,9 @@ const commonMiddlewares = [
  */
 router.post(
   "/add/:id?",
-  ...commonMiddlewares,
-  asyncHandler(validateParamMiddleware()),
-  asyncHandler(expressValidator(validateCommentAdd)),
+  ...userAuthorizationMiddlewares,
+  validateToggleParamMiddleware(),
+  expressValidator(validateCommentAdd),
   asyncHandler(controller.addComment.bind(controller))
 );
 
@@ -66,7 +60,7 @@ router.post(
  *      - $ref: '#/components/parameters/Id'
  *     responses:
  *       200:
- *         $ref: '#/components/responses/BaseResponse'
+ *         $ref: '#/components/schemas/BaseResponse'
  *       400:
  *         description: Failed to fetch comment data
  *       403:
@@ -78,7 +72,7 @@ router.post(
  */
 router.get(
   "/count/:id?",
-  ...commonMiddlewares,
+  ...userAuthorizationMiddlewares,
   asyncHandler(controller.countComment.bind(controller))
 );
 
@@ -105,8 +99,8 @@ router.get(
  */
 router.get(
   "/get/:id?",
-  ...commonMiddlewares,
-  asyncHandler(validateParamMiddleware()),
+  ...userAuthorizationMiddlewares,
+  validateToggleParamMiddleware(),
   asyncHandler(controller.getComment.bind(controller))
 );
 
@@ -139,9 +133,9 @@ router.get(
  */
 router.put(
   "/update/:id?",
-  ...commonMiddlewares,
-  asyncHandler(validateParamMiddleware()),
-  asyncHandler(expressValidator(validateCommentUpdate)),
+  ...userAuthorizationMiddlewares,
+  validateToggleParamMiddleware(),
+  expressValidator(validateCommentUpdate),
   asyncHandler(controller.updateComment.bind(controller))
 );
 
@@ -168,8 +162,8 @@ router.put(
  */
 router.delete(
   "/delete/:id?",
-  ...commonMiddlewares,
-  asyncHandler(validateParamMiddleware()),
+  ...userAuthorizationMiddlewares,
+  validateToggleParamMiddleware(),
   asyncHandler(controller.deleteComment.bind(controller))
 );
 export default router;

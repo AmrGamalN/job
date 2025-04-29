@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import loginService from "../../services/auth/login.service";
 import { auth } from "../../config/firebase";
-import { encryptToken } from "../../utils/encryptionToken";
+import { encryptToken } from "../../utils/encryptToken.util";
 
 class LoginController {
   private static instance: LoginController;

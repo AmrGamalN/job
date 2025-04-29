@@ -1,11 +1,8 @@
 import { Request, Response } from "express";
 import PostService from "../../services/post/post.service";
-import {
-  controllerResponse,
-  responseHandler,
-} from "../../utils/responseHandler";
+import { controllerResponse } from "../../utils/response.util";
+import { ServiceResponseType } from "../../types/response.type";
 import { GraphQLResolveInfo } from "graphql";
-import helmet from "helmet";
 
 class PostController {
   private static instance: PostController;
@@ -41,7 +38,7 @@ class PostController {
     },
     context: { req: Request; res: Response },
     info: GraphQLResolveInfo
-  ): Promise<responseHandler> {
+  ): Promise<ServiceResponseType> {
     const result = await this.postService.getAllPosts(args, info);
     if (!result.success) result;
     return result;

@@ -4,9 +4,10 @@ import {
   InterestAddDtoType,
   InterestAddDto,
 } from "../../dto/profiles/interest.dto";
-import { warpAsync } from "../../utils/warpAsync";
-import { responseHandler, serviceResponse } from "../../utils/responseHandler";
-import { validateAndFormatData } from "../../utils/validateAndFormatData";
+import { warpAsync } from "../../utils/warpAsync.util";
+import { serviceResponse } from "../../utils/response.util";
+import { ServiceResponseType } from "../../types/response.type";
+import { validateAndFormatData } from "../../utils/validateData.util";
 import { GraphQLResolveInfo } from "graphql";
 import graphqlFields from "graphql-fields";
 
@@ -30,7 +31,7 @@ class InterestService {
     async (
       query: object,
       info: GraphQLResolveInfo
-    ): Promise<responseHandler> => {
+    ): Promise<ServiceResponseType> => {
       const selectedFields = Object.keys(graphqlFields(info).data || {}).join(
         " "
       );
@@ -44,12 +45,17 @@ class InterestService {
   updateInterest = warpAsync(
     async (
       data: InterestAddDtoType,
-      query: object
-    ): Promise<responseHandler> => {
-      const parsed = validateAndFormatData(data, InterestAddDto, "update");
-      if (!parsed.success) return parsed;
+      query: object,
+      ownerType: string
+    ): Promise<ServiceResponseType> => {
+      const validationResult = validateAndFormatData(
+        data,
+        InterestAddDto,
+        "update"
+      );
+      if (!validationResult.success) return validationResult;
 
-      const keys = Object.keys(parsed.data) as InterestType[];
+      const keys = Object.keys(validationResult.data) as InterestType[];
       if (keys.length !== 1 || !keys[0])
         return serviceResponse({
           statusText: "BadRequest",
@@ -57,7 +63,7 @@ class InterestService {
         });
 
       const updateInterest = await Interest.updateOne(
-        query,
+        { ...query, ownerType },
         {
           $addToSet: {
             [keys[0]]: {
@@ -78,25 +84,33 @@ class InterestService {
   deleteInterest = warpAsync(
     async (
       data: InterestAddDtoType,
-      query: object
-    ): Promise<responseHandler> => {
-      const parsed = validateAndFormatData(data, InterestAddDto, "delete");
-      if (!parsed.success) return parsed;
+      query: object,
+      ownerType: string
+    ): Promise<ServiceResponseType> => {
+      const validationResult = validateAndFormatData(
+        data,
+        InterestAddDto,
+        "delete"
+      );
+      if (!validationResult.success) return validationResult;
 
-      const keys = Object.keys(parsed.data) as InterestType[];
+      const keys = Object.keys(validationResult.data) as InterestType[];
       if (keys.length !== 1 || !keys[0])
         return serviceResponse({
           statusText: "BadRequest",
           message: "Invalid interest data",
         });
 
-      const deleteInterest = await Interest.updateOne(query, {
-        $pull: {
-          [keys[0]]: {
-            $in: data[keys[0]],
+      const deleteInterest = await Interest.updateOne(
+        { ...query, ownerType },
+        {
+          $pull: {
+            [keys[0]]: {
+              $in: data[keys[0]],
+            },
           },
-        },
-      });
+        }
+      );
       return serviceResponse({
         data: deleteInterest.modifiedCount,
       });

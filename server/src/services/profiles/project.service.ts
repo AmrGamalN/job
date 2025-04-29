@@ -6,9 +6,10 @@ import {
   ProjectAddDtoType,
   ProjectUpdateDtoType,
 } from "../../dto/profiles/project.dto";
-import { warpAsync } from "../../utils/warpAsync";
-import { responseHandler, serviceResponse } from "../../utils/responseHandler";
-import { validateAndFormatData } from "../../utils/validateAndFormatData";
+import { warpAsync } from "../../utils/warpAsync.util";
+import { serviceResponse } from "../../utils/response.util";
+import { ServiceResponseType } from "../../types/response.type";
+import { validateAndFormatData } from "../../utils/validateData.util";
 
 class ProjectService {
   private static instanceService: ProjectService;
@@ -23,9 +24,12 @@ class ProjectService {
     async (
       ProjectData: ProjectAddDtoType,
       userId: string
-    ): Promise<responseHandler> => {
-      const parsed = validateAndFormatData(ProjectData, ProjectAddDto);
-      if (!parsed.success) return parsed;
+    ): Promise<ServiceResponseType> => {
+      const validationResult = validateAndFormatData(
+        ProjectData,
+        ProjectAddDto
+      );
+      if (!validationResult.success) return validationResult;
       await Project.create({ ...ProjectData, userId });
       return serviceResponse({
         statusText: "Created",
@@ -37,13 +41,13 @@ class ProjectService {
     async (
       ProjectData: ProjectUpdateDtoType,
       query: object
-    ): Promise<responseHandler> => {
-      const parsed = validateAndFormatData(
+    ): Promise<ServiceResponseType> => {
+      const validationResult = validateAndFormatData(
         ProjectData,
         ProjectUpdateDto,
         "update"
       );
-      if (!parsed.success) return parsed;
+      if (!validationResult.success) return validationResult;
 
       const updateProject = await Project.findOneAndUpdate(
         query,
@@ -62,23 +66,25 @@ class ProjectService {
     }
   );
 
-  getProject = warpAsync(async (query): Promise<responseHandler> => {
+  getProject = warpAsync(async (query): Promise<ServiceResponseType> => {
     const getProject = await Project.findOne(query).lean();
     return validateAndFormatData(getProject, ProjectDto);
   });
 
   getAllProjects = warpAsync(
-    async (query: object): Promise<responseHandler> => {
+    async (query: object): Promise<ServiceResponseType> => {
       const getProjects = await Project.find(query).lean();
       return validateAndFormatData(getProjects, ProjectDto, "getAll");
     }
   );
 
-  deleteProject = warpAsync(async (query: object): Promise<responseHandler> => {
-    return serviceResponse({
-      deleteCount: (await Project.deleteOne(query)).deletedCount,
-    });
-  });
+  deleteProject = warpAsync(
+    async (query: object): Promise<ServiceResponseType> => {
+      return serviceResponse({
+        deleteCount: (await Project.deleteOne(query)).deletedCount,
+      });
+    }
+  );
 }
 
 export default ProjectService;

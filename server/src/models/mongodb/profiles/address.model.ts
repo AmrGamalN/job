@@ -2,11 +2,17 @@ import { Schema, model } from "mongoose";
 import { AddressDtoType } from "../../../dto/profiles/address.dto";
 const AddressSchema = new Schema(
   {
-    ownerId: { type: String, ref: "users", required: true, unique: true },
+    ownerId: {
+      type: String,
+      refPath: "ownerModel",
+      required: true,
+      unique: true,
+    },
     ownerType: {
       type: String,
       required: true,
-      enum: ["users", "Companies", "schools"],
+      enum: ["user", "company", "school"],
+      default: "user",
     },
     country: { type: String, required: true },
     city: { type: String, required: true },
@@ -17,5 +23,5 @@ const AddressSchema = new Schema(
   { timestamps: true }
 );
 
-const Address = model<AddressDtoType>("addresses", AddressSchema);
+const Address = model<AddressDtoType>("user_addresses", AddressSchema);
 export default Address;

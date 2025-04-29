@@ -4,8 +4,9 @@ import {
   authentication,
   signInWithEmailAndPassword,
 } from "../../config/firebase";
-import { warpAsync } from "../../utils/warpAsync";
-import { responseHandler, serviceResponse } from "../../utils/responseHandler";
+import { warpAsync } from "../../utils/warpAsync.util";
+import { serviceResponse } from "../../utils/response.util";
+import { ServiceResponseType } from "../../types/response.type";
 import dotenv from "dotenv";
 import { UserSecurityDtoType } from "../../dto/profiles/security.dto";
 import TokenService from "../../services/auth/token.service";
@@ -32,7 +33,7 @@ class LoginService {
       password: string,
       email?: string,
       phoneNumber?: string
-    ): Promise<responseHandler> => {
+    ): Promise<ServiceResponseType> => {
       const credential = email
         ? { email: email }
         : { phoneNumber: phoneNumber };
@@ -104,7 +105,7 @@ class LoginService {
       userId: string,
       status: string,
       sign_in_provider: string
-    ): Promise<responseHandler> => {
+    ): Promise<ServiceResponseType> => {
       await Security.updateOne(
         {
           userId,
@@ -122,7 +123,7 @@ class LoginService {
 
   // Check user existing
   private isUserExisting = warpAsync(
-    async (credential: any): Promise<responseHandler> => {
+    async (credential: any): Promise<ServiceResponseType> => {
       let getUser;
       let provider;
       if (credential.email) {
@@ -146,7 +147,7 @@ class LoginService {
 
   // Login with email and password
   private signWithPasswordAndEmail = warpAsync(
-    async (email: string, password: string): Promise<responseHandler> => {
+    async (email: string, password: string): Promise<ServiceResponseType> => {
       let userCredential;
       try {
         userCredential = await signInWithEmailAndPassword(
@@ -178,7 +179,7 @@ class LoginService {
       plainPassword: string,
       hashPassword: string,
       phoneNumber: string
-    ): Promise<responseHandler> => {
+    ): Promise<ServiceResponseType> => {
       const comparePass = await bcrypt.compare(plainPassword, hashPassword);
       if (!comparePass) {
         this.trackFailedLoginAttempt(null, phoneNumber);
@@ -197,7 +198,7 @@ class LoginService {
 
   // Check user account delete | block | verify
   private checkAccountStatusBeforeLogin = warpAsync(
-    async (userSecurity: UserSecurityDtoType): Promise<responseHandler> => {
+    async (userSecurity: UserSecurityDtoType): Promise<ServiceResponseType> => {
       const statusMessage =
         (userSecurity.isAccountDeleted && "Account is deleted") ||
         (userSecurity.isAccountBlocked && "Account is blocked") ||
@@ -210,7 +211,7 @@ class LoginService {
 
   // Check number attempts failed Login
   private checkAttemptsLogin = warpAsync(
-    async (userSecurity: UserSecurityDtoType): Promise<responseHandler> => {
+    async (userSecurity: UserSecurityDtoType): Promise<ServiceResponseType> => {
       if (Number(userSecurity.numberLogin) >= 4) {
         const currentTime = Date.now();
         const lastFailedTime = new Date(
@@ -237,7 +238,7 @@ class LoginService {
 
   // Update number of failed login
   private trackFailedLoginAttempt = warpAsync(
-    async (email: string): Promise<responseHandler> => {
+    async (email: string): Promise<ServiceResponseType> => {
       await Security.updateOne(
         { email },
         {
@@ -250,7 +251,7 @@ class LoginService {
   );
 
   private checkApplyTwoFactorAuth = warpAsync(
-    async (userSecurity: UserSecurityDtoType): Promise<responseHandler> => {
+    async (userSecurity: UserSecurityDtoType): Promise<ServiceResponseType> => {
       if (userSecurity.isTwoFactorAuth)
         return serviceResponse({
           statusText: "OK",
@@ -261,7 +262,10 @@ class LoginService {
   );
 
   verifyTwoFactorAuthentication = warpAsync(
-    async (email: string, twoFactorCode: string): Promise<responseHandler> => {
+    async (
+      email: string,
+      twoFactorCode: string
+    ): Promise<ServiceResponseType> => {
       // Get user security details
       const userSecurity = await Security.findOne({
         email,
@@ -275,6 +279,7 @@ class LoginService {
           phoneNumber: 1,
           userId: 1,
           dateToJoin: 1,
+          companyMemberId: 1,
         })
         .lean();
 

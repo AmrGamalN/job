@@ -2,22 +2,22 @@ import mongoose, { Schema } from "mongoose";
 import { commentDtoType } from "../../../dto/post/comment.dto";
 const CommentSchema = new Schema(
   {
-    userId: { type: String, ref: "users", required: true },
+    userId: { type: String, ref: "user_users", required: true },
     id: {
       type: Schema.Types.ObjectId,
-      ref: "posts",
+      ref: "post_posts",
       required: true,
     },
     commentId: [
       {
         type: Schema.Types.ObjectId,
-        ref: "comments",
+        ref: "post_comments",
       },
     ],
     reactionId: [
       {
         type: Schema.Types.ObjectId,
-        ref: "comment_reactions",
+        ref: "post_commentReactions",
       },
     ],
     content: {
@@ -61,5 +61,5 @@ const CommentSchema = new Schema(
 
 CommentSchema.index({ id: 1, createdAt: -1 });
 CommentSchema.index({ userId: 1 });
-const Comment = mongoose.model<commentDtoType>("Comment", CommentSchema);
+const Comment = mongoose.model<commentDtoType>("post_comments", CommentSchema);
 export default Comment;

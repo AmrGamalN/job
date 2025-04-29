@@ -1,9 +1,8 @@
 import { Schema, model } from "mongoose";
 import { ProjectDtoType } from "../../../dto/profiles/project.dto";
-import { optional } from "zod";
 const ProjectSchema = new Schema(
   {
-    userId: { type: String, ref: "users", required: true },
+    userId: { type: String, ref: "user_users", required: true },
     projectName: { type: String, required: true },
     companyName: { type: String, required: true },
     description: { type: String, required: true },
@@ -22,5 +21,5 @@ const ProjectSchema = new Schema(
   { timestamps: true }
 );
 
-const Project = model<ProjectDtoType>("project", ProjectSchema);
+const Project = model<ProjectDtoType>("user_projects", ProjectSchema);
 export default Project;

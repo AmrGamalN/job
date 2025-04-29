@@ -1,12 +1,10 @@
 import express from "express";
 import LoginController from "../../controllers/auth/login.controller";
-import { asyncHandler } from "../../middleware/handleError";
-import TokenMiddleware from "../../middleware/token.middleware";
-const tokenMiddleware = TokenMiddleware.getInstance();
-const loginController = LoginController.getInstance();
+import { asyncHandler } from "../../middlewares/handleError.middleware";
 import RegisterController from "../../controllers/auth/register.controller";
+import { userAuthorizationMiddlewares } from "../../utils/authorizationRole.util";
+const loginController = LoginController.getInstance();
 const registerController = RegisterController.getInstance();
-import {role} from "../../utils/role";
 const router = express.Router();
 
 /**
@@ -18,7 +16,7 @@ const router = express.Router();
  *     description: Logout
  *     responses:
  *       200:
- *          $ref: '#/components/schemas/BaseResponse'
+ *         $ref: '#/components/schemas/BaseResponse'
  *       400:
  *         description: Bad request
  *       401:
@@ -28,8 +26,7 @@ const router = express.Router();
  */
 router.post(
   "/logout",
-  asyncHandler(tokenMiddleware.refreshTokenMiddleware),
-  asyncHandler(tokenMiddleware.authorizationMiddleware(role)),
+  ...userAuthorizationMiddlewares,
   asyncHandler(loginController.logOut.bind(loginController))
 );
 
@@ -49,7 +46,7 @@ router.post(
  *           type: string
  *     responses:
  *       200:
- *          $ref: '#/components/responses/BaseResponse'
+ *         $ref: '#/components/schemas/BaseResponse'
  *       400:
  *         description: Bad request
  *       500:

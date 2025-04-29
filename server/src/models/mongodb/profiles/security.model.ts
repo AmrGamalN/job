@@ -1,18 +1,37 @@
 import { Schema, model } from "mongoose";
 import { UserSecurityDtoType } from "../../../dto/profiles/security.dto";
-import { number } from "zod";
 
 const userSecuritySchema = new Schema(
   {
-    userId: { type: String, ref: "users", required: true, unique: true },
+    userId: { type: String, ref: "user_users", required: true, unique: true },
     email: { type: String, required: true, unique: true },
     phoneNumber: { type: String, unique: true, sparse: true },
     password: { type: String, required: true },
     role: {
       type: String,
-      // enum: ["client", "freelance", "company", "school", "admin", "manager"],
       enum: ["user", "admin", "manager"],
       default: "user",
+    },
+    company: {
+      companyId: { type: String, ref: "company_companies", default: "" },
+      memberId: { type: String, ref: "company_members", default: "" },
+      status: {
+        type: String,
+        enum: [
+          "active",
+          "inactive",
+          "pending",
+          "rejected",
+          "banned",
+          "no_company",
+        ],
+        default: "no_company",
+      },
+      companyRole: {
+        type: String,
+        enum: ["owner", "founder", "admin", "member", "viewer"],
+        default: "viewer",
+      },
     },
     status: { type: String, enum: ["active", "inactive"], default: "inactive" },
     isEmailVerified: { type: Boolean, default: false },
@@ -30,5 +49,8 @@ const userSecuritySchema = new Schema(
   { timestamps: true }
 );
 
-const Security = model<UserSecurityDtoType>("Securities", userSecuritySchema);
+const Security = model<UserSecurityDtoType>(
+  "user_securities",
+  userSecuritySchema
+);
 export default Security;
