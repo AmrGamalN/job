@@ -450,7 +450,7 @@
  *     ConnectionBaseComponents:
  *       type: object
  *       properties:
- *         ownerId:
+ *         actorId:
  *          type: string
  *          description: The ID of the user who owns the connection.
  *         ownerType:

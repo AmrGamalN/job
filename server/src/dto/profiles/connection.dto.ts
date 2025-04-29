@@ -3,7 +3,7 @@ import { ObjectId } from "mongodb";
 
 export const ConnectionDto = z.object({
   _id: z.union([z.string(), z.instanceof(ObjectId)]),
-  ownerId: z.string().min(1, "userId is required"),
+  actorId: z.string().min(1, "userId is required"),
   ownerType: z.enum(["user", "company", "school"]).default("user"),
   connectorId: z.string().min(1, "connectorId is required"),
   status: z.enum(["pending", "accepted", "blocked", "unBlocked"]).optional(),

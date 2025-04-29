@@ -122,4 +122,12 @@
  *       schema:
  *         type: string
  *         enum: ["word", "pdf","powerpoint","excel","spreadsheet","presentation","document"]
+ *     TargetType:
+ *       name: targetType
+ *       in: query
+ *       required: false
+ *       description: The target type
+ *       schema:
+ *         type: string
+ *         enum: ["user", "company", "school", "group", "post", "job"]
  */

@@ -3,7 +3,12 @@ import { postDtoType } from "../../../dto/post/post.dto";
 
 const PostSchema = new Schema(
   {
-    userId: { type: String, ref: "user_users", required: true },
+    actorId: { type: String, ref: "user_users", required: true },
+    actorType: {
+      type: String,
+      enum: ["user", "company", "school", "group", "post", "job"],
+      required: true,
+    },
     commentId: [
       {
         type: Schema.Types.ObjectId,
@@ -23,6 +28,11 @@ const PostSchema = new Schema(
       default: "",
     },
     content: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    postLink: {
       type: String,
       required: true,
       trim: true,

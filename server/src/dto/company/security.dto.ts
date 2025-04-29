@@ -29,7 +29,7 @@ export const CompanyAddDto = companyDto
   )
   .omit({
     _id: true,
-    ownerId: true,
+    actorId: true,
   });
 
 export const CompanyUpdateDto = companyDto

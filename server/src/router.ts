@@ -27,6 +27,10 @@ import CertificateRoutes from "./routes/company/certificate.routes";
 import FaqRoutes from "./routes/company/faq.routes";
 import FeedBackRoutes from "./routes/company/feedback.routes";
 import DocumentRoutes from "./routes/company/document.routes";
+
+// Save
+import SaveRoutes from "./routes/save/save.routes";
+
 const router = Router();
 
 router.get("/health-check", (req: Request, res: Response) => {
@@ -62,5 +66,8 @@ router.use("/company/faq", FaqRoutes);
 router.use("/company/feedback", FeedBackRoutes);
 router.use("/company/document", DocumentRoutes);
 router.use("/company", CompanyRoutes);
+
+// Save
+router.use("/save", SaveRoutes);
 
 export default router;

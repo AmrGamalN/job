@@ -2,7 +2,8 @@ import { Schema, model } from "mongoose";
 import { CompanyDtoType } from "../../../dto/company/company.dto";
 
 const basicInfo = {
-  ownerId: { type: String, required: true },
+  actorId: { type: String, required: true },
+  actorType: { type: String, default: "company" },
   companyName: { type: String, required: true },
   companyType: { type: String, required: true },
   companyIndustry: { type: String, required: true },
@@ -38,6 +39,7 @@ const socialLinks = {
   facebook: { type: String, default: "" },
   twitter: { type: String, default: "" },
   github: { type: String, default: "" },
+  companyLink: { type: String, default: "" },
 };
 
 const locations = {

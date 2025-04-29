@@ -4,25 +4,30 @@ import { UserDtoType } from "../../../dto/profiles/user.dto";
 const UserSchema = new Schema(
   {
     userId: { type: String, ref: "user_users", required: true, unique: true },
+    actorType: { type: String, default: "user" },
     userName: { type: String, required: true, unique: true },
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     profileImage: {
       imageUrl: {
-      type: String,
-      default: ""
+        type: String,
+        default: "",
+      },
+      imageKey: {
+        type: String,
+        default: "",
+      },
     },
-    imageKey: {
-      type: String,
-      default: "" }},
     coverImage: {
       imageUrl: {
-      type: String,
-      default: ""
+        type: String,
+        default: "",
+      },
+      imageKey: {
+        type: String,
+        default: "",
+      },
     },
-    imageKey: {
-      type: String,
-      default: "" }},
     prefixS3: { type: String, default: "" },
     account: {
       type: String,

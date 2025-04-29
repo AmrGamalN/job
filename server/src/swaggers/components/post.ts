@@ -49,6 +49,10 @@
  *         userId:
  *           type: string
  *           example: "user_123"
+ *         actorType:
+ *           type: string
+ *           enum: ["user", "company", "school", "group", "post", "job"]
+ *           default: user
  *         postId:
  *           type: string
  *           example: "661f0850e4f546d1a9c5ad34"

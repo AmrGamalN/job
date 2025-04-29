@@ -2,7 +2,7 @@ import { Schema, model } from "mongoose";
 import { InterestDtoType } from "../../../dto/profiles/interest.dto";
 const InterestSchema = new Schema(
   {
-    ownerId: {
+    actorId: {
       type: String,
       refPath: "ownerModel",
       required: true,

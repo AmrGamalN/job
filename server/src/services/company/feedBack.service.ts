@@ -70,7 +70,7 @@ class FeedBackService {
               companyId: CompanyDtoType;
             }>({
               path: "companyId",
-              select: "_id companyEmail ownerId",
+              select: "_id companyEmail actorId",
             })
             .lean();
 
@@ -79,7 +79,7 @@ class FeedBackService {
 
           if (data?.status === "active") {
             const getMember = await Member.exists({
-              userId: getCompany?.companyId.ownerId,
+              userId: getCompany?.companyId.actorId,
               companyId: getCompany?.companyId._id,
             });
             if (getMember)
@@ -95,7 +95,7 @@ class FeedBackService {
                 {
                   companyId: getCompany?.companyId._id,
                   email: getCompany?.companyId.companyEmail,
-                  userId: getCompany?.companyId.ownerId,
+                  userId: getCompany?.companyId.actorId,
                   status: data.status,
                   companyRole: "owner",
                 },
@@ -104,7 +104,7 @@ class FeedBackService {
             );
 
             await Security.updateOne(
-              { userId: getCompany?.companyId.ownerId },
+              { userId: getCompany?.companyId.actorId },
               {
                 $set: {
                   company: {
@@ -172,7 +172,7 @@ class FeedBackService {
         count.count ?? 0,
         { page: filters.page, limit: filters.limit },
         null,
-         this.filterFeedbacks(filters) 
+        this.filterFeedbacks(filters)
       );
     }
   );

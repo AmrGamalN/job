@@ -2,7 +2,7 @@ import { Schema, model } from "mongoose";
 
 const ActivitySchema = new Schema(
   {
-    ownerId: {
+    actorId: {
       type: String,
       refPath: "ownerModel",
       required: true,
@@ -11,7 +11,7 @@ const ActivitySchema = new Schema(
       type: String,
       required: true,
       enum: ["user", "company", "school"],
-      default:"user"
+      default: "user",
     },
     connections: { type: Number, default: 0 },
     followers: { type: Number, default: 0 },
