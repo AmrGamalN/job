@@ -3,7 +3,7 @@ import { ObjectId } from "mongodb";
 
 export const InterestDto = z.object({
   _id: z.union([z.string(), z.instanceof(ObjectId)]),
-  ownerId: z.string().min(1, "User ID is required"),
+  actorId: z.string().min(1, "User ID is required"),
   ownerType: z.enum(["user", "company", "school"]).default("user"),
   industries: z.array(z.string()).default([]).optional(),
   hobbies: z.array(z.string()).default([]).optional(),

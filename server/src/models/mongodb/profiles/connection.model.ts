@@ -2,7 +2,7 @@ import { Schema, model } from "mongoose";
 import { ConnectionDtoType } from "../../../dto/profiles/connection.dto";
 const ConnectionSchema = new Schema(
   {
-    ownerId: {
+    actorId: {
       type: String,
       refPath: "ownerModel",
       required: true,
@@ -34,7 +34,7 @@ const ConnectionSchema = new Schema(
   },
   { timestamps: true }
 );
-ConnectionSchema.index({ ownerId: 1, connectorId: 1 }, { unique: true });
+ConnectionSchema.index({ actorId: 1, connectorId: 1 }, { unique: true });
 ConnectionSchema.index({ connectorId: 1 });
 const Connection = model<ConnectionDtoType>(
   "user_connections",

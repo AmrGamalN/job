@@ -56,7 +56,7 @@ class CompanyService {
       try {
         const prefixS3 = uuidv4();
         await session.withTransaction(async () => {
-          const getCompany = await Company.findOne({ ownerId: userId }, null, {
+          const getCompany = await Company.findOne({ actorId: userId }, null, {
             session,
           });
           if (getCompany)
@@ -71,7 +71,7 @@ class CompanyService {
             [
               {
                 ...CompanyData,
-                ownerId: userId,
+                actorId: userId,
               },
             ],
             { session }
@@ -80,7 +80,7 @@ class CompanyService {
           await Activity.create(
             [
               {
-                ownerId: newCompany._id,
+                actorId: newCompany._id,
                 ownerModel: "company",
                 prefixS3,
               },
@@ -89,7 +89,7 @@ class CompanyService {
           );
 
           await Interest.create(
-            [{ ownerId: newCompany._id, ownerModel: "company" }],
+            [{ actorId: newCompany._id, ownerModel: "company" }],
             {
               session,
             }
@@ -120,7 +120,8 @@ class CompanyService {
           );
           if (newCompany) {
             const feedBackLink = await generateFeedbackLink(
-              newCompany.companyName.replace(/ /g, "_")
+              newCompany.companyName.replace(/ /g, "_"),
+              "company/feedback"
             );
 
             await Promise.all([

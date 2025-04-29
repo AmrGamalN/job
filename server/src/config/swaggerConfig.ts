@@ -28,7 +28,7 @@ export const swaggerOptions = (route: string): object => {
   };
 };
 
-const routes = ["profile", "post", "company", "auth"];
+const routes = ["profile", "post", "company", "auth", "save"];
 export const swaggerDoc = (app: Application) => {
   routes.forEach((routeName: string) => {
     const swaggerSpecs = swaggerJSDoc(swaggerOptions(routeName));

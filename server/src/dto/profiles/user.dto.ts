@@ -5,6 +5,7 @@ export const UserDto = z
   .object({
     _id: z.union([z.string(), z.instanceof(ObjectId)]),
     userId: z.string(),
+    actorType: z.string().default("user"),
     prefixS3: z.string().default(""),
     userName: z.string(),
     firstName: z.string(),

@@ -31,6 +31,13 @@ export const validateQueryParams = () => {
       .isIn(["owner", "founder", "admin", "member"])
       .withMessage("Role must be one of owner, founder, admin, member"),
 
+    query("targetType")
+      .optional({ checkFalsy: true })
+      .isIn(["user", "company", "school", "group", "post", "job"])
+      .withMessage(
+        "target type save must be one of , company, school, group, post, job"
+      ),
+
     query("status")
       .optional({ checkFalsy: true })
       .isIn(["active", "inactive", "pending", "rejected", "banned"])

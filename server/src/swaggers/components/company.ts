@@ -9,6 +9,10 @@
  *           type: string
  *           example: "Tech Innovators Ltd."
  *           default: ""
+ *         actorType:
+ *           type: string
+ *           example: "company"
+ *           default: "company"
  *         companyType:
  *           type: string
  *           example: "Private"

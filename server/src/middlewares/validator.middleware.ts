@@ -22,6 +22,7 @@ const validQueries = [
   "end",
   "title",
   "documentType",
+  "targetType",
 ];
 
 export const expressValidator = (validators: any[]) => {

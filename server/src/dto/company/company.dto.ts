@@ -3,7 +3,8 @@ import { ObjectId } from "mongodb";
 
 const basicInfoDto = z.object({
   _id: z.union([z.string(), z.instanceof(ObjectId)]),
-  ownerId: z.string(),
+  actorId: z.string(),
+  actorType: z.string().default("company"),
   companyName: z.string(),
   companyType: z.string(),
   companyIndustry: z.string(),
@@ -22,7 +23,7 @@ const mediaDto = z.object({
         imageUrl: z.string().default(""),
         imageKey: z.string().default(""),
       })
-      .optional()
+      .optional(),
   ]),
   profileImage: z.union([
     z.string(),
@@ -31,7 +32,7 @@ const mediaDto = z.object({
         imageUrl: z.string().default(""),
         imageKey: z.string().default(""),
       })
-      .optional()
+      .optional(),
   ]),
   coverImage: z.union([
     z.string(),
@@ -40,7 +41,7 @@ const mediaDto = z.object({
         imageUrl: z.string().default(""),
         imageKey: z.string().default(""),
       })
-      .optional()
+      .optional(),
   ]),
   introVideoUrl: z.string().default("").optional(),
 });
@@ -51,6 +52,7 @@ const socialLinksDto = z.object({
   facebook: z.string().default("").optional(),
   twitter: z.string().default("").optional(),
   github: z.string().default("").optional(),
+  companyLink: z.string().default("").optional(),
 });
 
 const tagsAndTechDto = z.object({

@@ -22,7 +22,6 @@ import { sendVerifyEmail } from "../../utils/emailMessage.util";
 import { ServiceResponseType, ResponseType } from "../../types/response.type";
 import { CustomError } from "../../utils/customErr.util";
 
-
 class RegisterService {
   private static instanceService: RegisterService;
   public static getInstance(): RegisterService {
@@ -239,7 +238,7 @@ class RegisterService {
         await Activity.create(
           [
             {
-              ownerId: userId,
+              actorId: userId,
               ownerModel: "user",
             },
           ],
@@ -248,7 +247,7 @@ class RegisterService {
         await Interest.create(
           [
             {
-              ownerId: userId,
+              actorId: userId,
               ownerModel: "user",
             },
           ],

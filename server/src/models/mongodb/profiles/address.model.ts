@@ -2,7 +2,7 @@ import { Schema, model } from "mongoose";
 import { AddressDtoType } from "../../../dto/profiles/address.dto";
 const AddressSchema = new Schema(
   {
-    ownerId: {
+    actorId: {
       type: String,
       refPath: "ownerModel",
       required: true,

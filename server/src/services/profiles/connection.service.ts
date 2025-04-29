@@ -25,9 +25,9 @@ class ConnectionService {
   addConnection = warpAsync(
     async (
       targetUid: ConnectionAddDtoType,
-      ownerId: string
+      actorId: string
     ): Promise<ServiceResponseType> => {
-      const validation = this.preventToConnect(ownerId, targetUid.userId);
+      const validation = this.preventToConnect(actorId, targetUid.userId);
       if (!validation?.success) return validation;
 
       const validationResult = validateAndFormatData(
@@ -37,11 +37,11 @@ class ConnectionService {
       if (!validationResult.success) return validationResult;
 
       const [getUser, getConnection] = await Promise.all([
-        Security.findOne({ ownerId: targetUid.userId }).lean(),
+        Security.findOne({ actorId: targetUid.userId }).lean(),
         Connection.findOne({
           $or: [
-            { ownerId, connectorId: targetUid.userId },
-            { ownerId: targetUid.userId, connectorId: ownerId },
+            { actorId, connectorId: targetUid.userId },
+            { actorId: targetUid.userId, connectorId: actorId },
           ],
         }).lean(),
       ]);
@@ -58,7 +58,7 @@ class ConnectionService {
         });
       await Connection.create({
         connectorId: targetUid.userId,
-        ownerId,
+        actorId,
         ownerType: targetUid.ownerType,
       });
       return serviceResponse({
@@ -69,17 +69,17 @@ class ConnectionService {
 
   getConnection = warpAsync(
     async (
-      ownerId: string,
+      actorId: string,
       targetUid: string,
       ownerType: string
     ): Promise<ServiceResponseType> => {
-      const validation = this.preventToConnect(ownerId, targetUid);
+      const validation = this.preventToConnect(actorId, targetUid);
       if (!validation?.success) return validation;
 
       const getConnection = await Connection.findOne({
         $or: [
-          { ownerId, connectorId: targetUid, ownerType },
-          { ownerId: targetUid, connectorId: ownerId, ownerType },
+          { actorId, connectorId: targetUid, ownerType },
+          { actorId: targetUid, connectorId: actorId, ownerType },
         ],
       });
       return validateAndFormatData(getConnection, ConnectionDto);
@@ -89,9 +89,9 @@ class ConnectionService {
   getAllConnection = warpAsync(
     async (
       args: { page: number; limit: number; status: string; ownerType: string },
-      ownerId: string
+      actorId: string
     ): Promise<ServiceResponseType> => {
-      const count = await this.countConnection(ownerId);
+      const count = await this.countConnection(actorId);
       return await paginate(
         Connection,
         ConnectionDto,
@@ -106,12 +106,12 @@ class ConnectionService {
   filterConnectionByStatus = warpAsync(
     async (
       status: object,
-      ownerId: string,
+      actorId: string,
       ownerType: string
     ): Promise<ServiceResponseType> => {
       const getConnection = await Connection.find({
         ...status,
-        ownerId,
+        actorId,
         ownerType,
       }).lean();
       return validateAndFormatData(getConnection, ConnectionDto, "getAll");
@@ -121,12 +121,12 @@ class ConnectionService {
   countConnection = warpAsync(
     async (
       status: object,
-      ownerId: string,
+      actorId: string,
       ownerType: string
     ): Promise<ServiceResponseType> => {
       return serviceResponse({
         count: await Connection.countDocuments({
-          ownerId,
+          actorId,
           ownerType,
           ...status,
         }),
@@ -136,19 +136,19 @@ class ConnectionService {
 
   deleteConnection = warpAsync(
     async (
-      ownerId: string,
+      actorId: string,
       targetUid: string,
       ownerType: string
     ): Promise<ServiceResponseType> => {
-      const validation = this.preventToConnect(ownerId, targetUid);
+      const validation = this.preventToConnect(actorId, targetUid);
       if (!validation?.success) return validation;
 
       return serviceResponse({
         deleteCount: (
           await Connection.deleteOne({
             $or: [
-              { ownerId, connectorId: targetUid, ownerType },
-              { ownerId: targetUid, connectorId: ownerId, ownerType },
+              { actorId, connectorId: targetUid, ownerType },
+              { actorId: targetUid, connectorId: actorId, ownerType },
             ],
           })
         ).deletedCount,
@@ -159,11 +159,11 @@ class ConnectionService {
   updateConnection = warpAsync(
     async (
       updatePayload: ConnectionUpdateDtoType,
-      ownerId: string,
+      actorId: string,
       targetUid: string,
       ownerType: string
     ): Promise<ServiceResponseType> => {
-      const validation = this.preventToConnect(ownerId, targetUid);
+      const validation = this.preventToConnect(actorId, targetUid);
       if (!validation?.success) return validation;
 
       const validationResult = validateAndFormatData(
@@ -174,7 +174,7 @@ class ConnectionService {
       if (!validationResult.success) return validationResult;
 
       const { statusTimestamps, idQuery, history } =
-        await this.prepareConnectionUpdate(updatePayload, ownerId, targetUid);
+        await this.prepareConnectionUpdate(updatePayload, actorId, targetUid);
 
       const updateConnection = await Connection.updateOne(
         { ownerType, ...idQuery },
@@ -192,8 +192,8 @@ class ConnectionService {
     }
   );
 
-  private preventToConnect(ownerId: string, targetUid: string) {
-    if (targetUid === ownerId)
+  private preventToConnect(actorId: string, targetUid: string) {
+    if (targetUid === actorId)
       return serviceResponse({
         statusText: "BadRequest",
         message: "Cannot connect to yourself",
@@ -203,7 +203,7 @@ class ConnectionService {
 
   private async prepareConnectionUpdate(
     updatePayload: ConnectionUpdateDtoType,
-    ownerId: string,
+    actorId: string,
     targetUid: string
   ) {
     const statusTimestamps =
@@ -215,14 +215,14 @@ class ConnectionService {
 
     const idQuery = {
       $or: [
-        { ownerId, connectorId: targetUid },
-        { ownerId: targetUid, connectorId: ownerId },
+        { actorId, connectorId: targetUid },
+        { actorId: targetUid, connectorId: actorId },
       ],
     };
 
     const history = {
       action: updatePayload.status,
-      actionBy: ownerId,
+      actionBy: actorId,
       actionAt: new Date(),
     };
 

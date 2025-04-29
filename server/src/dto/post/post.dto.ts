@@ -3,11 +3,13 @@ import { ObjectId } from "mongodb";
 
 export const postDto = z.object({
   _id: z.union([z.string(), z.instanceof(ObjectId)]),
-  userId: z.string(),
+  actorId: z.string(),
+  actorType: z.enum(["user", "company", "school", "group", "post", "job"]),
   commentId: z.array(z.union([z.string(), z.instanceof(ObjectId)])),
   reactionId: z.array(z.union([z.string(), z.instanceof(ObjectId)])),
   prefixS3: z.string().trim(),
   content: z.string().trim(),
+  postLink: z.string().trim(),
   media: z.array(
     z.object({
       type: z.enum(["image", "video", "document"]),

@@ -22,17 +22,18 @@ export const generateUniqueLink = async (
 };
 
 export const generateFeedbackLink = async (
-  companyName?: string
+  companyName?: string,
+  route?: string
 ): Promise<{ link: string; userName?: string }> => {
   let hash;
   let isLinkExist;
   do {
     hash = crypto.randomBytes(35).toString("hex");
     isLinkExist = await Profile.exists({
-      profileLink: `${process.env.BACKEND_URL}/api/v1/company/feedback/${companyName}-${hash}`,
+      profileLink: `${process.env.BACKEND_URL}/api/v1/${route}/${companyName}-${hash}`,
     });
   } while (isLinkExist);
   return {
-    link: `${process.env.BACKEND_URL}/api/v1/company/feedback/${companyName}-${hash}`,
+    link: `${process.env.BACKEND_URL}/api/v1/company/${route}/${companyName}-${hash}`,
   };
 };
