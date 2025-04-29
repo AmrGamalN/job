@@ -6,9 +6,10 @@ import {
   EducationAddDtoType,
   EducationUpdateDtoType,
 } from "../../dto/profiles/education.dto";
-import { warpAsync } from "../../utils/warpAsync";
-import { responseHandler, serviceResponse } from "../../utils/responseHandler";
-import { validateAndFormatData } from "../../utils/validateAndFormatData";
+import { warpAsync } from "../../utils/warpAsync.util";
+import { serviceResponse } from "../../utils/response.util";
+import { ServiceResponseType } from "../../types/response.type";
+import { validateAndFormatData } from "../../utils/validateData.util";
 
 class EducationService {
   private static instanceService: EducationService;
@@ -23,9 +24,12 @@ class EducationService {
     async (
       EducationData: EducationAddDtoType,
       userId: string
-    ): Promise<responseHandler> => {
-      const parsed = validateAndFormatData(EducationData, EducationAddDto);
-      if (!parsed.success) return parsed;
+    ): Promise<ServiceResponseType> => {
+      const validationResult = validateAndFormatData(
+        EducationData,
+        EducationAddDto
+      );
+      if (!validationResult.success) return validationResult;
       await Education.create({ userId, ...EducationData });
       return serviceResponse({
         statusText: "Created",
@@ -37,13 +41,13 @@ class EducationService {
     async (
       EducationData: EducationUpdateDtoType,
       query: object
-    ): Promise<responseHandler> => {
-      const parsed = validateAndFormatData(
+    ): Promise<ServiceResponseType> => {
+      const validationResult = validateAndFormatData(
         EducationData,
         EducationUpdateDto,
         "update"
       );
-      if (!parsed.success) return parsed;
+      if (!validationResult.success) return validationResult;
 
       const updateEducation = await Education.findOneAndUpdate(
         query,
@@ -62,13 +66,15 @@ class EducationService {
     }
   );
 
-  getEducation = warpAsync(async (query: object): Promise<responseHandler> => {
-    const getEducation = await Education.findOne(query).lean();
-    return validateAndFormatData(getEducation, EducationDto);
-  });
+  getEducation = warpAsync(
+    async (query: object): Promise<ServiceResponseType> => {
+      const getEducation = await Education.findOne(query).lean();
+      return validateAndFormatData(getEducation, EducationDto);
+    }
+  );
 
   getAllEducations = warpAsync(
-    async (userId: string): Promise<responseHandler> => {
+    async (userId: string): Promise<ServiceResponseType> => {
       const getEducations = await Education.find({
         userId,
       }).lean();
@@ -77,7 +83,7 @@ class EducationService {
   );
 
   deleteEducation = warpAsync(
-    async (query: object): Promise<responseHandler> => {
+    async (query: object): Promise<ServiceResponseType> => {
       return serviceResponse({
         data: (await Education.deleteOne(query)).deletedCount,
       });

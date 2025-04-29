@@ -1,14 +1,10 @@
 import { IResolvers } from "@graphql-tools/utils";
 import UserController from "../../../controllers/profiles/user.controller";
-import { applyMiddleware } from "../../../middleware/applyMiddleWare";
-import { asyncHandler } from "../../../middleware/handleError";
-import { validateOptionalUserIdMiddleware } from "../../../middleware/validatorMiddleware";
-import TokenMiddleware from "../../../middleware/token.middleware";
-const tokenMiddleware = TokenMiddleware.getInstance();
-const commonMiddlewares = [
-  asyncHandler(tokenMiddleware.refreshTokenMiddleware),
-  asyncHandler(tokenMiddleware.authorizationMiddleware(["admin", "manager"])),
-];
+import { applyMiddleware } from "../../../middlewares/apply.middleware";
+import { asyncHandler } from "../../../middlewares/handleError.middleware";
+import { validateOptionalUserIdMiddleware } from "../../../middlewares/validator.middleware";
+import { userAuthorizationMiddlewares } from "../../../utils/authorizationRole.util";
+
 const controller = UserController.getInstance();
 
 export const userResolver: IResolvers = {
@@ -16,13 +12,13 @@ export const userResolver: IResolvers = {
     getUser: applyMiddleware(
       asyncHandler(controller.getUser.bind(controller)),
       [
-        ...commonMiddlewares,
-        asyncHandler(asyncHandler(validateOptionalUserIdMiddleware())),
+        ...userAuthorizationMiddlewares,
+        asyncHandler(validateOptionalUserIdMiddleware()),
       ]
     ),
     getAllUsers: applyMiddleware(
       asyncHandler(controller.getAllUsers.bind(controller)),
-      [...commonMiddlewares]
+      [...userAuthorizationMiddlewares]
     ),
   },
 };

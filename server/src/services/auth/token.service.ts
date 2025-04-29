@@ -1,10 +1,12 @@
-import { warpAsync } from "../../utils/warpAsync";
-import { responseHandler, serviceResponse } from "../../utils/responseHandler";
+import { warpAsync } from "../../utils/warpAsync.util";
+import { serviceResponse } from "../../utils/response.util";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { UserSecurityDtoType } from "../../dto/profiles/security.dto";
 import User from "../../models/mongodb/profiles/user.model";
 import Profile from "../../models/mongodb/profiles/profile.model";
+import Security from "../../models/mongodb/profiles/security.model";
+import { ServiceResponseType } from "../../types/response.type";
 dotenv.config();
 
 class TokenService {
@@ -18,7 +20,7 @@ class TokenService {
 
   // Generate temporarily token when login with two factor authentication
   generateTempToken = warpAsync(
-    async (email: string, role: string): Promise<responseHandler> => {
+    async (email: string, role: string): Promise<ServiceResponseType> => {
       const payload = {
         email: email,
         role: role,
@@ -42,20 +44,27 @@ class TokenService {
 
   // Generate temporarily token when login with two factor authentication
   generateTokens = warpAsync(
-    async (userSecurity: UserSecurityDtoType): Promise<responseHandler> => {
-      const user = await User.findOne({ userId: userSecurity.userId })
-        .lean()
-        .select({
+    async (userSecurity: UserSecurityDtoType): Promise<ServiceResponseType> => {
+      const [user, profile, security] = await Promise.all([
+        User.findOne({ userId: userSecurity.userId }).lean().select({
           firstName: 1,
           lastName: 1,
           userName: 1,
           profileImage: 1,
-        });
-      const profile = await Profile.findOne({ userId: userSecurity.userId })
-        .lean()
-        .select({
+        }),
+        Profile.findOne({ userId: userSecurity.userId }).lean().select({
           profileLink: 1,
+        }),
+        Security.findOne({ userId: userSecurity.userId }).lean().select({
+          company: 1,
+        }),
+      ]);
+      if (!user || !profile || !security)
+        return serviceResponse({
+          statusText: "Unauthorized",
+          message: "Failed to login, please try again later",
         });
+
       const payload = {
         userId: userSecurity.userId,
         email: userSecurity.email,
@@ -67,11 +76,10 @@ class TokenService {
         profileImage: user?.profileImage?.imageUrl,
         dateToJoin: userSecurity.dateToJoin,
         lastSeen: new Date().toISOString(),
-        sign_up: userSecurity.sign_up_provider,
-        sign_in: userSecurity.sign_in_provider,
+        sign_with: userSecurity.sign_in_provider,
         emailVerified: userSecurity.isEmailVerified,
+        company: security?.company,
       };
-
       const accessToken = jwt.sign(
         payload,
         String(process.env.ACCESS_TOKEN_SECRET),
@@ -106,7 +114,7 @@ class TokenService {
 
   // Verify temporarily token
   verifyTempToken = warpAsync(
-    async (authHeader: string): Promise<responseHandler> => {
+    async (authHeader: string): Promise<ServiceResponseType> => {
       const token = authHeader.split(" ")[1];
       const decoded = jwt.verify(
         token,

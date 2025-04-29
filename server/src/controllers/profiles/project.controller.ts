@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import ProjectService from "../../services/profiles/project.service";
-import { controllerResponse } from "../../utils/responseHandler";
+import { controllerResponse } from "../../utils/response.util";
 
 class ProjectController {
   private static instance: ProjectController;

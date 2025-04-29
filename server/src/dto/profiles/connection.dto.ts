@@ -3,7 +3,8 @@ import { ObjectId } from "mongodb";
 
 export const ConnectionDto = z.object({
   _id: z.union([z.string(), z.instanceof(ObjectId)]),
-  userId: z.string().min(1, "userId is required"),
+  ownerId: z.string().min(1, "userId is required"),
+  ownerType: z.enum(["user", "company", "school"]).default("user"),
   connectorId: z.string().min(1, "connectorId is required"),
   status: z.enum(["pending", "accepted", "blocked", "unBlocked"]).optional(),
   acceptedAt: z.date().nullable().optional(),
@@ -18,8 +19,9 @@ export const ConnectionDto = z.object({
     .optional(),
 });
 
-export const ConnectionAddDto = ConnectionDto.pick({
-  userId: true,
+export const ConnectionAddDto = z.object({
+  userId: z.string().min(1, "userId is required"),
+  ownerType: z.enum(["user", "company", "school"]),
 });
 
 export const ConnectionUpdateDto = z.object({

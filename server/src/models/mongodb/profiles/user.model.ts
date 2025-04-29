@@ -3,7 +3,7 @@ import { UserDtoType } from "../../../dto/profiles/user.dto";
 
 const UserSchema = new Schema(
   {
-    userId: { type: String, ref: "users", required: true, unique: true },
+    userId: { type: String, ref: "user_users", required: true, unique: true },
     userName: { type: String, required: true, unique: true },
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
@@ -41,5 +41,5 @@ const UserSchema = new Schema(
   { timestamps: true }
 );
 
-const User = model<UserDtoType>("users", UserSchema);
+const User = model<UserDtoType>("user_users", UserSchema);
 export default User;

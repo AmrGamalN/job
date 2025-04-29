@@ -5,7 +5,7 @@ const ProfileSchema = new Schema(
   {
     userId: {
       type: String,
-      ref: "users",
+      ref: "user_users",
       required: true,
       unique: true,
     },
@@ -46,5 +46,5 @@ const ProfileSchema = new Schema(
   { timestamps: true }
 );
 
-const Profile = model<ProfileDtoType>("Profile", ProfileSchema);
+const Profile = model<ProfileDtoType>("user_Profiles", ProfileSchema);
 export default Profile;

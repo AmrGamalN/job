@@ -13,7 +13,7 @@ const employmentType = [
 const locationType = ["remote", "on-site", "hybrid"];
 const ExperienceSchema = new Schema(
   {
-    userId: { type: String, ref: "users", required: true },
+    userId: { type: String, ref: "user_users", required: true },
     companyName: { type: String, required: true },
     jobTitle: { type: String, required: true },
     description: { type: String, required: true },
@@ -27,5 +27,5 @@ const ExperienceSchema = new Schema(
   { timestamps: true }
 );
 
-const Experience = model<ExperienceDtoType>("Experience", ExperienceSchema);
+const Experience = model<ExperienceDtoType>("user_experiences", ExperienceSchema);
 export default Experience;

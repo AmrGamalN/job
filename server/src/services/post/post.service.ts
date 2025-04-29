@@ -1,3 +1,4 @@
+import { GraphQLResolveInfo } from "graphql";
 import Post from "../../models/mongodb/post/post.model";
 import {
   postDto,
@@ -6,11 +7,11 @@ import {
   postAddDtoType,
   postUpdateDtoType,
 } from "../../dto/post/post.dto";
-import { warpAsync } from "../../utils/warpAsync";
-import { responseHandler, serviceResponse } from "../../utils/responseHandler";
-import { validateAndFormatData } from "../../utils/validateAndFormatData";
-import { GraphQLResolveInfo } from "graphql";
-import { PaginationGraphQl } from "../../utils/pagination";
+import { warpAsync } from "../../utils/warpAsync.util";
+import { paginate } from "../../utils/pagination.util";
+import { serviceResponse } from "../../utils/response.util";
+import { validateAndFormatData } from "../../utils/validateData.util";
+import { ServiceResponseType } from "../../types/response.type";
 
 class PostService {
   private static instanceService: PostService;
@@ -22,16 +23,19 @@ class PostService {
   }
 
   addPost = warpAsync(
-    async (data: postAddDtoType, userId: string): Promise<responseHandler> => {
-      const parsed = validateAndFormatData(data, postAddDto);
-      await Post.create({ ...parsed.data, userId });
+    async (
+      data: postAddDtoType,
+      userId: string
+    ): Promise<ServiceResponseType> => {
+      const validationResult = validateAndFormatData(data, postAddDto);
+      await Post.create({ ...validationResult.data, userId });
       return serviceResponse({
         statusText: "Created",
       });
     }
   );
 
-  getPost = warpAsync(async (query: object): Promise<responseHandler> => {
+  getPost = warpAsync(async (query: object): Promise<ServiceResponseType> => {
     const getPost = await Post.findOne(query).lean();
     return validateAndFormatData(getPost, postDto);
   });
@@ -43,15 +47,9 @@ class PostService {
         limit: number;
       },
       info: GraphQLResolveInfo
-    ): Promise<responseHandler> => {
+    ): Promise<ServiceResponseType> => {
       const count = await this.countPost();
-      return await PaginationGraphQl(
-        Post,
-        postDto,
-        count.count ?? 0,
-        args,
-        info
-      );
+      return await paginate(Post, postDto, count.count ?? 0, args, info);
     }
   );
 
@@ -59,15 +57,19 @@ class PostService {
     async (
       data: postUpdateDtoType,
       query: object
-    ): Promise<responseHandler> => {
-      const parsed = validateAndFormatData(data, postUpdateDto, "update");
-      if (!parsed.success) return parsed;
+    ): Promise<ServiceResponseType> => {
+      const validationResult = validateAndFormatData(
+        data,
+        postUpdateDto,
+        "update"
+      );
+      if (!validationResult.success) return validationResult;
 
       const updatePost = await Post.updateOne(
         query,
         {
           $set: {
-            ...parsed.data,
+            ...validationResult.data,
           },
         },
         {
@@ -80,28 +82,32 @@ class PostService {
     }
   );
 
-  countPost = warpAsync(async (userId: string): Promise<responseHandler> => {
-    return serviceResponse({
-      count: await Post.countDocuments({ userId }),
-    });
-  });
+  countPost = warpAsync(
+    async (userId: string): Promise<ServiceResponseType> => {
+      return serviceResponse({
+        count: await Post.countDocuments({ userId }),
+      });
+    }
+  );
 
-  deletePost = warpAsync(async (query: object): Promise<responseHandler> => {
-    return serviceResponse({
-      deleteCount: (await Post.deleteOne(query)).deletedCount,
-    });
-  });
+  deletePost = warpAsync(
+    async (query: object): Promise<ServiceResponseType> => {
+      return serviceResponse({
+        deleteCount: (await Post.deleteOne(query)).deletedCount,
+      });
+    }
+  );
 
   searchWithHashtag = warpAsync(
     async (args: {
       page: number;
       limit: number;
       hashtag: string;
-    }): Promise<responseHandler> => {
+    }): Promise<ServiceResponseType> => {
       const search = {
         hashtags: { $regex: args.hashtag, $options: "i" },
       };
-      return await PaginationGraphQl(
+      return await paginate(
         Post,
         postDto,
         0,

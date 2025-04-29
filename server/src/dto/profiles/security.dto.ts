@@ -9,6 +9,23 @@ export const UserSecurityDto = z
     phoneNumber: z.string(),
     password: z.string(),
     role: z.enum(["user", "admin", "manager"]).default("user"),
+    company: z.object({
+      companyId: z.string(),
+      memberId: z.string(),
+      companyRole: z
+        .enum(["owner", "founder", "admin", "member", "viewer"])
+        .default("viewer"),
+      status: z
+        .enum([
+          "active",
+          "inactive",
+          "pending",
+          "rejected",
+          "banned",
+          "no_company",
+        ])
+        .default("no_company"),
+    }),
     status: z.enum(["active", "inactive"]).default("inactive"),
     isEmailVerified: z.boolean().default(false),
     isPasswordReset: z.boolean().default(false),

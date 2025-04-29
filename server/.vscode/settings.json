@@ -1,13 +1,26 @@
 {
-    "cSpell.words": [
-        "BADREQUEST",
-        "Gharbia",
-        "haha",
-        "HAHA",
-        "influencers",
-        "maxlength",
-        "otpauth",
-        "otps",
-        "totp"
-    ]
+  "cSpell.words": [
+    "Gamal",
+    "haha",
+    "Jobliences",
+    "Lineces",
+    "paymob",
+    "qrcode",
+    "uuidv",
+    "msword",
+    "spreadsheetml",
+    "openxmlformats",
+    "officedocument",
+    "spreadsheetml",
+    "wordprocessingml",
+    "presentationml",
+  ],
+  "editor.fontFamily": "'inter'",
+  "editor.fontLigatures": true,
+  "editor.fontSize": 15,
+  "editor.lineHeight": 22,
+  "editor.formatOnSave": true,
+  "editor.formatOnType": true,
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 300
 }

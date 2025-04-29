@@ -8,3 +8,4 @@ testimonials: [
     }
   ]
   
+  // type owner

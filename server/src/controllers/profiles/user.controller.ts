@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import UserService from "../../services/profiles/user.service";
 import { GraphQLResolveInfo } from "graphql";
-import { responseHandler, serviceResponse } from "../../utils/responseHandler";
-import { controllerResponse } from "../../utils/responseHandler";
+import { serviceResponse } from "../../utils/response.util";
+import { ServiceResponseType } from "../../types/response.type";
+import { controllerResponse } from "../../utils/response.util";
 
 class UserController {
   private static instance: UserController;
@@ -24,7 +25,7 @@ class UserController {
     },
     context: { req: Request; res: Response },
     info: GraphQLResolveInfo
-  ): Promise<responseHandler> {
+  ): Promise<ServiceResponseType> {
     const userId = args.userId ? args.userId : context.req.curUser?.userId;
     const result = await this.userService.getUser(userId, info);
     if (!result.success) return result;
@@ -39,7 +40,7 @@ class UserController {
     },
     context: { req: Request; res: Response },
     info: GraphQLResolveInfo
-  ): Promise<responseHandler> {
+  ): Promise<ServiceResponseType> {
     const result = await this.userService.getAllUsers(args, info);
     if (!result.success) result;
     return result;

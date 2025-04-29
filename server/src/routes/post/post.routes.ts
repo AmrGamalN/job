@@ -1,23 +1,17 @@
 import express from "express";
 import PostController from "../../controllers/post/post.controller";
-import { asyncHandler } from "../../middleware/handleError";
-import TokenMiddleware from "../../middleware/token.middleware";
+import { asyncHandler } from "../../middlewares/handleError.middleware";
+import { userAuthorizationMiddlewares } from "../../utils/authorizationRole.util";
 import {
   expressValidator,
-  validateParamMiddleware,
-} from "../../middleware/validatorMiddleware";
+  validateToggleParamMiddleware,
+} from "../../middlewares/validator.middleware";
 import {
   validatePostUpdate,
   validatePostAdd,
 } from "../../validation/post/post.validator";
-const tokenMiddleware = TokenMiddleware.getInstance();
 const controller = PostController.getInstance();
-import { role } from "../../utils/role";
 const router = express.Router();
-const commonMiddlewares = [
-  asyncHandler(tokenMiddleware.refreshTokenMiddleware),
-  asyncHandler(tokenMiddleware.authorizationMiddleware(role)),
-];
 
 /**
  * @swagger
@@ -34,7 +28,7 @@ const commonMiddlewares = [
  *             $ref: '#/components/schemas/PostAddComponents'
  *     responses:
  *       200:
- *         $ref: '#/components/responses/BaseResponse'
+ *         $ref: '#/components/schemas/BaseResponse'
  *       400:
  *         description: Failed to add post record
  *       403:
@@ -44,8 +38,8 @@ const commonMiddlewares = [
  */
 router.post(
   "/add",
-  ...commonMiddlewares,
-  asyncHandler(expressValidator(validatePostAdd)),
+  ...userAuthorizationMiddlewares,
+  expressValidator(validatePostAdd),
   asyncHandler(controller.addPost.bind(controller))
 );
 
@@ -58,7 +52,7 @@ router.post(
  *     description: Returns the total count of post
  *     responses:
  *       200:
- *         $ref: '#/components/responses/BaseResponse'
+ *         $ref: '#/components/schemas/BaseResponse'
  *       400:
  *         description: Failed to fetch post data
  *       403:
@@ -70,7 +64,7 @@ router.post(
  */
 router.get(
   "/count",
-  ...commonMiddlewares,
+  ...userAuthorizationMiddlewares,
   asyncHandler(controller.countPost.bind(controller))
 );
 
@@ -97,8 +91,8 @@ router.get(
  */
 router.get(
   "/get/:id?",
-  ...commonMiddlewares,
-  asyncHandler(validateParamMiddleware()),
+  ...userAuthorizationMiddlewares,
+  validateToggleParamMiddleware(),
   asyncHandler(controller.getPost.bind(controller))
 );
 
@@ -131,9 +125,9 @@ router.get(
  */
 router.put(
   "/update/:id?",
-  ...commonMiddlewares,
-  asyncHandler(validateParamMiddleware()),
-  asyncHandler(expressValidator(validatePostUpdate)),
+  ...userAuthorizationMiddlewares,
+  validateToggleParamMiddleware(),
+  expressValidator(validatePostUpdate),
   asyncHandler(controller.updatePost.bind(controller))
 );
 
@@ -148,7 +142,7 @@ router.put(
  *      - $ref: '#/components/parameters/Id'
  *     responses:
  *       200:
- *         $ref: '#/components/responses/BaseResponse'
+ *         $ref: '#/components/schemas/BaseResponse'
  *       400:
  *         description: Failed to delete post record
  *       403:
@@ -160,8 +154,8 @@ router.put(
  */
 router.delete(
   "/delete/:id?",
-  ...commonMiddlewares,
-  asyncHandler(validateParamMiddleware()),
+  ...userAuthorizationMiddlewares,
+  validateToggleParamMiddleware(),
   asyncHandler(controller.deletePost.bind(controller))
 );
 
@@ -183,7 +177,7 @@ router.delete(
  *      - $ref: '#/components/parameters/Limit'
  *     responses:
  *       200:
- *         $ref: '#/components/responses/BaseResponse'
+ *         $ref: '#/components/schemas/BaseResponse'
  *       400:
  *         description: Failed to get post record
  *       403:
@@ -195,7 +189,7 @@ router.delete(
  */
 router.get(
   "/search",
-  ...commonMiddlewares,
+  ...userAuthorizationMiddlewares,
   asyncHandler(controller.searchWithHashtag.bind(controller))
 );
 export default router;

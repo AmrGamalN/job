@@ -1,16 +1,16 @@
 import { IResolvers } from "@graphql-tools/utils";
-import { applyMiddleware } from "../../../middleware/applyMiddleWare";
+import { applyMiddleware } from "../../../middlewares/apply.middleware";
 import RegisterController from "../../../controllers/auth/register.controller";
-import { expressValidator } from "../../../middleware/validatorMiddleware";
+import { expressValidator } from "../../../middlewares/validator.middleware";
 import { registerValidator } from "../../../validation/auth/register.validator";
-import { asyncHandler } from "../../../middleware/handleError";
+import { asyncHandler } from "../../../middlewares/handleError.middleware";
 const controller = RegisterController.getInstance();
 
 export const registerResolver: IResolvers = {
   Mutation: {
     register: applyMiddleware(
       asyncHandler(controller.register.bind(controller)),
-      [asyncHandler(expressValidator(registerValidator))]
+      [expressValidator(registerValidator)]
     ),
   },
 };

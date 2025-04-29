@@ -1,8 +1,6 @@
 import bodyParser from "body-parser";
 import express, { Application, NextFunction, Response, Request } from "express";
-import swaggerJSDoc from "swagger-jsdoc";
-import swaggerUi from "swagger-ui-express";
-import swaggerOptions from "./src/config/swaggerConfig";
+import { swaggerDoc } from "./src/config/swaggerConfig";
 import connectToMongoDB from "./src/config/mongooseConfig";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -14,8 +12,7 @@ import { redisClient } from "./src/config/redisConfig";
 import { ApolloServer } from "apollo-server-express";
 import expressPlayground from "graphql-playground-middleware-express";
 import { schema } from "./src/graphql/schema";
-const swaggerDocs = swaggerJSDoc(swaggerOptions);
-import { errorMiddleware } from "./src/middleware/handleError";
+import { errorMiddleware } from "./src/middlewares/handleError.middleware";
 const app: Application = express();
 
 const corsOption: CorsOptions = {
@@ -33,7 +30,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(helmet());
 app.use(xssClean());
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+// Swagger option
+swaggerDoc(app);
 app.use("/api/v1", router);
 const startApolloServer = async () => {
   const server = new ApolloServer({

@@ -1,21 +1,27 @@
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
+import { v4 as uuidv4 } from "uuid";
+import dotenv from "dotenv";
+dotenv.config();
+import { auth } from "../../config/firebase";
+import { redisClient } from "../../config/redisConfig";
 import User from "../../models/mongodb/profiles/user.model";
 import Otp from "../../models/mongodb/profiles/otp.model";
 import Profile from "../../models/mongodb/profiles/profile.model";
 import Security from "../../models/mongodb/profiles/security.model";
-import { RegisterDtoType, RegisterDto } from "../../dto/auth/register.dto";
-import { validateAndFormatData } from "../../utils/validateAndFormatData";
-import { auth } from "../../config/firebase";
-import { redisClient } from "../../config/redisConfig";
-import { sendVerificationEmail } from "../../utils/sendEmail";
-import { generateVerificationToken } from "../../utils/generateCode";
-import { warpAsync } from "../../utils/warpAsync";
-import { responseHandler, serviceResponse } from "../../utils/responseHandler";
-import { generateUniqueProfile } from "../../utils/generateUniqueProfileLink";
-import { v4 as uuidv4 } from "uuid";
-import bcrypt from "bcrypt";
-import dotenv from "dotenv";
 import Interest from "../../models/mongodb/profiles/interest.model";
-dotenv.config();
+import Activity from "../../models/mongodb/Analytics/activity.model";
+import { RegisterDtoType, RegisterDto } from "../../dto/auth/register.dto";
+import { validateAndFormatData } from "../../utils/validateData.util";
+import { sendEmail } from "../../utils/sendEmail.util";
+import { generateVerificationToken } from "../../utils/generateCode.util";
+import { warpAsync } from "../../utils/warpAsync.util";
+import { serviceResponse } from "../../utils/response.util";
+import { generateUniqueLink } from "../../utils/generateUniqueLink.util";
+import { sendVerifyEmail } from "../../utils/emailMessage.util";
+import { ServiceResponseType, ResponseType } from "../../types/response.type";
+import { CustomError } from "../../utils/customErr.util";
+
 
 class RegisterService {
   private static instanceService: RegisterService;
@@ -28,15 +34,15 @@ class RegisterService {
 
   // register new user
   register = warpAsync(
-    async (userData: RegisterDtoType): Promise<responseHandler> => {
+    async (userData: RegisterDtoType): Promise<ServiceResponseType> => {
       if (userData.password !== userData.confirmPassword)
         return serviceResponse({
           statusText: "BadRequest",
           message: "Password and Confirm Password do not match.",
         });
 
-      const parsedSafe = validateAndFormatData(userData, RegisterDto);
-      if (!parsedSafe.success) return parsedSafe;
+      const validationResultSafe = validateAndFormatData(userData, RegisterDto);
+      if (!validationResultSafe.success) return validationResultSafe;
 
       const existingUser = await this.isUserExisting(
         userData.email,
@@ -46,7 +52,7 @@ class RegisterService {
 
       // Add user caching & send otp
       const resultRegister = await this.processUserRegistration(
-        parsedSafe.data
+        validationResultSafe.data
       );
       if (!resultRegister.success) return resultRegister;
 
@@ -56,7 +62,10 @@ class RegisterService {
 
   // Check user existing
   private isUserExisting = warpAsync(
-    async (email: string, phoneNumber: string): Promise<responseHandler> => {
+    async (
+      email: string,
+      phoneNumber: string
+    ): Promise<ServiceResponseType> => {
       const getUserByEmail = await auth.getUserByEmail(email).catch(() => null);
       const getUserByPhone = await auth
         .getUserByPhoneNumber(phoneNumber)
@@ -78,7 +87,7 @@ class RegisterService {
 
   // Update otp model to check user if verify email or not
   private processUserRegistration = warpAsync(
-    async (userData: RegisterDtoType): Promise<responseHandler> => {
+    async (userData: RegisterDtoType): Promise<ServiceResponseType> => {
       const token = await this.generateUniqueToken();
       const existingOtp = await Otp.findOne({ email: userData.email }).lean();
       if (existingOtp) {
@@ -97,11 +106,13 @@ class RegisterService {
 
       // If not verify and not exist in firebase so send verification link
       const verificationLink = `${process.env.BACKEND_URL}/api/v1/auth/verify-email/${token}`;
-      const resultSendEmail = await sendVerificationEmail(
-        String(userData.email),
-        verificationLink,
+      const resultSendEmail = await sendEmail(
+        userData.email!,
         "Verify Your Email",
-        "Please verify your email by clicking the following link."
+        sendVerifyEmail(
+          verificationLink,
+          userData.firstName + " " + userData.lastName
+        )
       );
       if (!resultSendEmail.success) return resultSendEmail;
 
@@ -130,7 +141,7 @@ class RegisterService {
     async (
       userData: RegisterDtoType,
       token: string
-    ): Promise<responseHandler> => {
+    ): Promise<ServiceResponseType> => {
       const result = await redisClient.setEx(
         `token: ${token}`,
         1200,
@@ -150,16 +161,11 @@ class RegisterService {
 
   // Add user in database after verification
   private addUserToDatabaseAndFirebase = warpAsync(
-    async (token: string): Promise<responseHandler> => {
-      const getOtp = await Otp.findOneAndDelete({ token });
+    async (token: string): Promise<ServiceResponseType> => {
+      const getOtp = await Otp.deleteOne({ token });
       const getUserFromCaching = await redisClient.get(`token: ${token}`);
 
-      if (
-        !getOtp ||
-        getOtp.token != token ||
-        !getUserFromCaching ||
-        getUserFromCaching?.length === 0
-      )
+      if (!getOtp.deletedCount || !getUserFromCaching)
         return serviceResponse({
           statusText: "BadRequest",
           message:
@@ -176,48 +182,105 @@ class RegisterService {
         gender,
         terms,
       } = userData;
-      const [firebaseUser] = await Promise.all([
-        auth.createUser({ email, password, phoneNumber }),
-      ]);
+
+      const firebaseUser = await auth.createUser({
+        email,
+        password,
+        ...(phoneNumber ? { phoneNumber } : {}),
+      });
+
       const userId = firebaseUser.uid;
       const prefixS3 = uuidv4();
-      const userUnique = await generateUniqueProfile(
+      const userUnique = await generateUniqueLink(
         userData.firstName,
         userData.lastName
       );
-      await Promise.all([
-        User.create({
-          prefixS3,
-          userId,
-          firstName,
-          lastName,
-          gender,
-          userName: userUnique.userName,
-        }),
-        Security.create({
-          userId,
-          email,
-          phoneNumber,
-          password: await bcrypt.hash(password, 10),
-          isEmailVerified: true,
-          dateToJoin: Date.now(),
-          terms,
-          sign_up_provider: "email",
-        }),
-        Profile.create({
-          userId,
-          profileLink: userUnique.profileLink,
-        }),
-        Interest.create({ userId }),
-        redisClient.del(`token: ${token}`),
-      ]);
-      return serviceResponse({
-        statusText: "Created",
-      });
+      const session = await mongoose.startSession();
+      try {
+        await session.withTransaction(async () => {
+          await User.create(
+            [
+              {
+                prefixS3,
+                userId,
+                firstName,
+                lastName,
+                gender,
+                userName: userUnique.userName,
+              },
+            ],
+            { session }
+          );
+        });
+        await Security.create(
+          [
+            {
+              userId,
+              email,
+              phoneNumber,
+              password: await bcrypt.hash(password, 10),
+              isEmailVerified: true,
+              dateToJoin: Date.now(),
+              terms,
+              sign_up_provider: "email",
+            },
+          ],
+          { session }
+        );
+        await Profile.create(
+          [
+            {
+              userId,
+              profileLink: userUnique.link,
+            },
+          ],
+          { session }
+        );
+        await Activity.create(
+          [
+            {
+              ownerId: userId,
+              ownerModel: "user",
+            },
+          ],
+          { session }
+        );
+        await Interest.create(
+          [
+            {
+              ownerId: userId,
+              ownerModel: "user",
+            },
+          ],
+          { session }
+        );
+        await redisClient.del(`token: ${token}`);
+        return serviceResponse({
+          statusText: "Created",
+        });
+      } catch (err: any) {
+        if (firebaseUser?.uid) {
+          await auth
+            .deleteUser(firebaseUser.uid)
+            .catch((e) => console.error("Failed to delete Firebase user:", e));
+        }
+        if (err instanceof CustomError)
+          return serviceResponse({
+            statusText: err.statusText as ResponseType,
+            message: err.message,
+          });
+
+        return serviceResponse({
+          statusText: "InternalServerError",
+          message: "Something went wrong. Please try again later.",
+        });
+      } finally {
+        await session.endSession();
+      }
     }
   );
 
-  async verifyEmail(token: string): Promise<responseHandler> {
+  async verifyEmail(token: string): Promise<ServiceResponseType> {
     const result = await this.addUserToDatabaseAndFirebase(token);
     if (!result.success) return result;
     return result;

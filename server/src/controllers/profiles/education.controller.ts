@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import EducationService from "../../services/profiles/education.service";
-import { controllerResponse } from "../../utils/responseHandler";
+import { controllerResponse } from "../../utils/response.util";
 
 class EducationController {
   private static instance: EducationController;

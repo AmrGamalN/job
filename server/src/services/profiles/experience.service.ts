@@ -6,9 +6,10 @@ import {
   ExperienceAddDtoType,
   ExperienceUpdateDtoType,
 } from "../../dto/profiles/experience.dto";
-import { warpAsync } from "../../utils/warpAsync";
-import { responseHandler, serviceResponse } from "../../utils/responseHandler";
-import { validateAndFormatData } from "../../utils/validateAndFormatData";
+import { warpAsync } from "../../utils/warpAsync.util";
+import { serviceResponse } from "../../utils/response.util";
+import { ServiceResponseType } from "../../types/response.type";
+import { validateAndFormatData } from "../../utils/validateData.util";
 
 class ExperienceService {
   private static instanceService: ExperienceService;
@@ -23,9 +24,12 @@ class ExperienceService {
     async (
       ExperienceData: ExperienceAddDtoType,
       userId: string
-    ): Promise<responseHandler> => {
-      const parsed = validateAndFormatData(ExperienceData, ExperienceAddDto);
-      if (!parsed.success) return parsed;
+    ): Promise<ServiceResponseType> => {
+      const validationResult = validateAndFormatData(
+        ExperienceData,
+        ExperienceAddDto
+      );
+      if (!validationResult.success) return validationResult;
       await Experience.create({ userId, ...ExperienceData });
       return serviceResponse({
         statusText: "Created",
@@ -37,13 +41,13 @@ class ExperienceService {
     async (
       ExperienceData: ExperienceUpdateDtoType,
       query: object
-    ): Promise<responseHandler> => {
-      const parsed = validateAndFormatData(
+    ): Promise<ServiceResponseType> => {
+      const validationResult = validateAndFormatData(
         ExperienceData,
         ExperienceUpdateDto,
         "update"
       );
-      if (!parsed.success) return parsed;
+      if (!validationResult.success) return validationResult;
 
       const updateExperience = await Experience.findOneAndUpdate(
         query,
@@ -62,13 +66,15 @@ class ExperienceService {
     }
   );
 
-  getExperience = warpAsync(async (query: object): Promise<responseHandler> => {
-    const getExperience = await Experience.findOne(query).lean();
-    return validateAndFormatData(getExperience, ExperienceDto);
-  });
+  getExperience = warpAsync(
+    async (query: object): Promise<ServiceResponseType> => {
+      const getExperience = await Experience.findOne(query).lean();
+      return validateAndFormatData(getExperience, ExperienceDto);
+    }
+  );
 
   getAllExperiences = warpAsync(
-    async (userId: string): Promise<responseHandler> => {
+    async (userId: string): Promise<ServiceResponseType> => {
       const getExperiences = await Experience.find({
         userId,
       }).lean();
@@ -77,7 +83,7 @@ class ExperienceService {
   );
 
   deleteExperience = warpAsync(
-    async (query: object): Promise<responseHandler> => {
+    async (query: object): Promise<ServiceResponseType> => {
       return serviceResponse({
         data: (await Experience.deleteOne(query)).deletedCount,
       });

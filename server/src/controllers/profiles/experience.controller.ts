@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import ExperienceService from "../../services/profiles/experience.service";
-import { controllerResponse } from "../../utils/responseHandler";
+import { controllerResponse } from "../../utils/response.util";
 
 class ExperienceController {
   private static instance: ExperienceController;

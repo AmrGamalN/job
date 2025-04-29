@@ -2,7 +2,18 @@ import { Schema, model } from "mongoose";
 import { InterestDtoType } from "../../../dto/profiles/interest.dto";
 const InterestSchema = new Schema(
   {
-    userId: { type: String, ref: "users", required: true, unique: true },
+    ownerId: {
+      type: String,
+      refPath: "ownerModel",
+      required: true,
+      unique: true,
+    },
+    ownerModel: {
+      type: String,
+      required: true,
+      enum: ["user", "company", "school"],
+      default: "user",
+    },
     industries: [{ type: String }],
     hobbies: [{ type: String }],
     influencers: [{ type: String }],
@@ -12,5 +23,5 @@ const InterestSchema = new Schema(
   { timestamps: true }
 );
 
-const Interest = model<InterestDtoType>("Interest", InterestSchema);
+const Interest = model<InterestDtoType>("user_interests", InterestSchema);
 export default Interest;

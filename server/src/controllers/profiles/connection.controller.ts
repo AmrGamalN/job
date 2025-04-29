@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import ConnectionService from "../../services/profiles/connection.service";
-import { controllerResponse } from "../../utils/responseHandler";
+import { controllerResponse } from "../../utils/response.util";
 
 class ConnectionController {
   private static instance: ConnectionController;
@@ -18,7 +18,8 @@ class ConnectionController {
   async addConnection(req: Request, res: Response): Promise<Response> {
     const result = await this.connectionService.addConnection(
       req.body,
-      req.curUser?.userId
+      req.curUser?.userId,
+      req.query.type
     );
     return controllerResponse(res, result);
   }
@@ -26,7 +27,8 @@ class ConnectionController {
   async getConnection(req: Request, res: Response): Promise<Response> {
     const result = await this.connectionService.getConnection(
       req.curUser?.userId,
-      req.body.userId
+      req.body.userId,
+      req.query.type
     );
     return controllerResponse(res, result);
   }
@@ -34,7 +36,8 @@ class ConnectionController {
   async getAllConnection(req: Request, res: Response): Promise<Response> {
     const result = await this.connectionService.getAllConnection(
       req.query,
-      req.curUser?.userId
+      req.curUser?.userId,
+      req.query.type
     );
     return controllerResponse(res, result);
   }
@@ -45,7 +48,8 @@ class ConnectionController {
   ): Promise<Response> {
     const result = await this.connectionService.filterConnectionByStatus(
       req.query,
-      req.curUser?.userId
+      req.curUser?.userId,
+      req.query.type
     );
     return controllerResponse(res, result);
   }
@@ -53,14 +57,16 @@ class ConnectionController {
   async countConnection(req: Request, res: Response): Promise<Response> {
     const result = await this.connectionService.countConnection(
       req.query,
-      req.curUser?.userId
+      req.curUser?.userId,
+      req.query.type
     );
     return controllerResponse(res, result);
   }
   async deleteConnection(req: Request, res: Response): Promise<Response> {
     const result = await this.connectionService.deleteConnection(
       req.curUser?.userId,
-      req.body.userId
+      req.body.userId,
+      req.query.type
     );
     return controllerResponse(res, result);
   }
@@ -69,7 +75,8 @@ class ConnectionController {
     const result = await this.connectionService.updateConnection(
       req.body,
       req.curUser?.userId,
-      req.body.userId
+      req.body.userId,
+      req.query.type
     );
     return controllerResponse(res, result);
   }

@@ -4,18 +4,20 @@ import {
   UserSecurityUpdateDto,
   UserSecurityUpdateDtoType,
 } from "../../dto/profiles/security.dto";
-import { warpAsync } from "../../utils/warpAsync";
-import { responseHandler, serviceResponse } from "../../utils/responseHandler";
-import { validateAndFormatData } from "../../utils/validateAndFormatData";
+import { warpAsync } from "../../utils/warpAsync.util";
+import { serviceResponse } from "../../utils/response.util";
+import { ServiceResponseType } from "../../types/response.type";
+import { validateAndFormatData } from "../../utils/validateData.util";
 import { GraphQLResolveInfo } from "graphql";
 import { auth } from "../../config/firebase";
-import { sendVerificationEmail } from "../../utils/sendEmail";
-import { generateVerificationToken } from "../../utils/generateCode";
+import { resetEmail, sendVerifyEmail } from "../../utils/emailMessage.util";
+import { sendEmail } from "../../utils/sendEmail.util";
+import { generateVerificationToken } from "../../utils/generateCode.util";
 import Otp from "../../models/mongodb/profiles/otp.model";
 import speakeasy from "speakeasy";
 import QRCode from "qrcode";
 import bcrypt from "bcrypt";
-import { PaginationGraphQl } from "../../utils/pagination";
+import { paginate } from "../../utils/pagination.util";
 const graphqlFields = require("graphql-fields");
 
 class SecurityService {
@@ -33,7 +35,7 @@ class SecurityService {
         userId: string;
       },
       info: any
-    ): Promise<responseHandler> => {
+    ): Promise<ServiceResponseType> => {
       const selectedFields = Object.keys(graphqlFields(info).data || {}).join(
         " "
       );
@@ -51,9 +53,9 @@ class SecurityService {
         limit: number;
       },
       info: GraphQLResolveInfo
-    ): Promise<responseHandler> => {
+    ): Promise<ServiceResponseType> => {
       const count = await this.countSecurity();
-      return await PaginationGraphQl(
+      return await paginate(
         Security,
         UserSecurityDto,
         count.count ?? 0,
@@ -67,13 +69,13 @@ class SecurityService {
     async (
       SecurityData: UserSecurityUpdateDtoType,
       userId: string
-    ): Promise<responseHandler> => {
-      const parsed = validateAndFormatData(
+    ): Promise<ServiceResponseType> => {
+      const validationResult = validateAndFormatData(
         SecurityData,
         UserSecurityUpdateDto,
         "update"
       );
-      if (!parsed.success) return parsed;
+      if (!validationResult.success) return validationResult;
 
       const updateSecurity = await Security.findOneAndUpdate(
         { userId },
@@ -92,14 +94,17 @@ class SecurityService {
     }
   );
 
-  countSecurity = warpAsync(async (): Promise<responseHandler> => {
+  countSecurity = warpAsync(async (): Promise<ServiceResponseType> => {
     return serviceResponse({
       count: await Security.countDocuments(),
     });
   });
 
   deleteBlockUser = warpAsync(
-    async (userId: string, processType: object): Promise<responseHandler> => {
+    async (
+      userId: string,
+      processType: object
+    ): Promise<ServiceResponseType> => {
       const getUser = await Security.findOneAndUpdate(
         { userId },
         {
@@ -115,34 +120,35 @@ class SecurityService {
     }
   );
 
-  resetPassword = warpAsync(async (email: string): Promise<responseHandler> => {
-    const passwordResetLink = await auth.generatePasswordResetLink(email);
-    if (!passwordResetLink)
-      return serviceResponse({
-        message: "Email not found",
-      });
-    const sendLink = await sendVerificationEmail(
-      email,
-      passwordResetLink,
-      "Reset password",
-      "The link to reset your password:"
-    );
+  resetPassword = warpAsync(
+    async (email: string): Promise<ServiceResponseType> => {
+      const passwordResetLink = await auth.generatePasswordResetLink(email);
+      if (!passwordResetLink)
+        return serviceResponse({
+          message: "Email not found",
+        });
+      const sendLink = await sendEmail(
+        email,
+        "Reset password",
+        resetEmail(passwordResetLink, email)
+      );
 
-    if (!sendLink.success)
-      return serviceResponse({
-        statusText: "BadRequest",
-        message: "Something error Please try aging",
-      });
+      if (!sendLink.success)
+        return serviceResponse({
+          statusText: "BadRequest",
+          message: "Something error Please try aging",
+        });
 
-    return serviceResponse({
-      statusText: "OK",
-      message:
-        "Send link to your email ,Please check your email to reset password",
-    });
-  });
+      return serviceResponse({
+        statusText: "OK",
+        message:
+          "Send link to your email ,Please check your email to reset password",
+      });
+    }
+  );
 
   updatePassword = warpAsync(
-    async (userId: string, body: any): Promise<responseHandler> => {
+    async (userId: string, body: any): Promise<ServiceResponseType> => {
       const getUser = await Security.findOne({ userId })
         .lean()
         .select({ password: 1 });
@@ -179,41 +185,38 @@ class SecurityService {
     }
   );
 
-  sendVerificationEmail = warpAsync(
-    async (email: string): Promise<responseHandler> => {
-      const token = await this.generateUniqueToken();
-      const existingOtp = await Otp.findOne({ email }).lean();
+  sendEmail = warpAsync(async (email: string): Promise<ServiceResponseType> => {
+    const token = await this.generateUniqueToken();
+    const existingOtp = await Otp.findOne({ email }).lean();
 
-      if (existingOtp) {
-        return serviceResponse({
-          statusText: "BadRequest",
-          message:
-            "verification link already exists or the email already register but not verify. Please check your email",
-        });
-      } else {
-        await Otp.create({
-          email,
-          token,
-          expiresAt: new Date(Date.now() + 20 * 60 * 1000),
-        });
-      }
-
-      // If not verify and not exist in firebase so send verification link
-      const verificationLink = `${process.env.BACKEND_URL}/api/v1/security/send/${token}`;
-      const resultSendEmail = await sendVerificationEmail(
-        String(email),
-        verificationLink,
-        "Verify Your Email",
-        "Please verify your email by clicking the following link."
-      );
-      if (!resultSendEmail.success) return resultSendEmail;
-
+    if (existingOtp) {
       return serviceResponse({
-        statusText: "OK",
-        message: `Otp sended successfully please check your email ${email}`,
+        statusText: "BadRequest",
+        message:
+          "verification link already exists or the email already register but not verify. Please check your email",
+      });
+    } else {
+      await Otp.create({
+        email,
+        token,
+        expiresAt: new Date(Date.now() + 20 * 60 * 1000),
       });
     }
-  );
+
+    // If not verify and not exist in firebase so send verification link
+    const verificationLink = `${process.env.BACKEND_URL}/api/v1/security/send/${token}`;
+    const resultSendEmail = await sendEmail(
+      email!,
+      "Verify Your Email",
+      sendVerifyEmail(verificationLink, email)
+    );
+    if (!resultSendEmail.success) return resultSendEmail;
+
+    return serviceResponse({
+      statusText: "OK",
+      message: `Otp sended successfully please check your email ${email}`,
+    });
+  });
 
   private async generateUniqueToken(): Promise<string> {
     let token;
@@ -224,7 +227,7 @@ class SecurityService {
   }
 
   generateTwoFactorAuth = warpAsync(
-    async (userId: string): Promise<responseHandler> => {
+    async (userId: string): Promise<ServiceResponseType> => {
       const secret = speakeasy.generateSecret({
         name: `Job ${userId}`,
         length: 20,
@@ -256,7 +259,10 @@ class SecurityService {
   );
 
   verifyTwoFactorAuth = warpAsync(
-    async (userId: string, twoFactorCode: string): Promise<responseHandler> => {
+    async (
+      userId: string,
+      twoFactorCode: string
+    ): Promise<ServiceResponseType> => {
       const userSecurity = await Security.findOne({
         userId,
       })

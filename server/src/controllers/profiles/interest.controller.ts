@@ -1,9 +1,7 @@
 import { Request, Response } from "express";
 import InterestService from "../../services/profiles/interest.service";
-import {
-  controllerResponse,
-  responseHandler,
-} from "../../utils/responseHandler";
+import { controllerResponse } from "../../utils/response.util";
+import { ServiceResponseType } from "../../types/response.type";
 import { GraphQLResolveInfo } from "graphql";
 
 class InterestController {
@@ -21,13 +19,13 @@ class InterestController {
 
   async getInterest(
     parent: any,
-    args: { id: string },
+    args: { id: string; ownerType: string },
     context: { req: Request; res: Response },
     info: GraphQLResolveInfo
-  ): Promise<responseHandler> {
+  ): Promise<ServiceResponseType> {
     const query = args.id
-      ? { _id: args.id }
-      : { userId: context.req.curUser?.userId };
+      ? { _id: args.id, ownerType: args.ownerType }
+      : { userId: context.req.curUser?.userId, ownerType: args.ownerType };
     const result = await this.interestService.getInterest(query, info);
     if (!result.success) return result;
     return result;
@@ -36,7 +34,8 @@ class InterestController {
   async updateInterest(req: Request, res: Response): Promise<Response> {
     const result = await this.interestService.updateInterest(
       req.body,
-      req.body.id
+      req.body.id,
+      req.query.ownerType
     );
     return controllerResponse(res, result);
   }
@@ -44,7 +43,8 @@ class InterestController {
   async deleteInterest(req: Request, res: Response): Promise<Response> {
     const result = await this.interestService.deleteInterest(
       req.body,
-      req.body.id
+      req.body.id,
+      req.query.ownerType
     );
     return controllerResponse(res, result);
   }

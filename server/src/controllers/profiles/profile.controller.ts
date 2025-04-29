@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import ProfileService from "../../services/profiles/profile.service";
 import { GraphQLResolveInfo } from "graphql";
-import { responseHandler } from "../../utils/responseHandler";
-import { controllerResponse } from "../../utils/responseHandler";
+import { ServiceResponseType } from "../../types/response.type";
+import { controllerResponse } from "../../utils/response.util";
 
 class ProfileController {
   private static instance: ProfileController;
@@ -24,7 +24,7 @@ class ProfileController {
     },
     context: { req: Request; res: Response },
     info: GraphQLResolveInfo
-  ): Promise<responseHandler> {
+  ): Promise<ServiceResponseType> {
     const userId = args.userId ? args.userId : context.req.curUser?.userId;
     const result = await this.profileService.getProfile(userId, info);
     if (!result.success) result;
@@ -39,7 +39,7 @@ class ProfileController {
     },
     context: { req: Request; res: Response },
     info: GraphQLResolveInfo
-  ): Promise<responseHandler> {
+  ): Promise<ServiceResponseType> {
     const result = await this.profileService.getAllProfiles(args, info);
     if (!result.success) result;
     return result;

@@ -2,11 +2,16 @@ import { Schema, model } from "mongoose";
 
 const ActivitySchema = new Schema(
   {
-    ownerId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    ownerType: {
+    ownerId: {
       type: String,
-      enum: ["users", "companies", "schools"],
+      refPath: "ownerModel",
       required: true,
+    },
+    ownerModel: {
+      type: String,
+      required: true,
+      enum: ["user", "company", "school"],
+      default:"user"
     },
     connections: { type: Number, default: 0 },
     followers: { type: Number, default: 0 },

@@ -4,11 +4,12 @@ import {
   UserUpdateDto,
   UserUpdateDtoType,
 } from "../../dto/profiles/user.dto";
-import { warpAsync } from "../../utils/warpAsync";
-import { responseHandler, serviceResponse } from "../../utils/responseHandler";
-import { validateAndFormatData } from "../../utils/validateAndFormatData";
+import { warpAsync } from "../../utils/warpAsync.util";
+import { serviceResponse } from "../../utils/response.util";
+import { ServiceResponseType } from "../../types/response.type";
+import { validateAndFormatData } from "../../utils/validateData.util";
 import { GraphQLResolveInfo } from "graphql";
-import { PaginationGraphQl } from "../../utils/pagination";
+import { paginate } from "../../utils/pagination.util";
 const graphqlFields = require("graphql-fields");
 
 class UserService {
@@ -24,7 +25,7 @@ class UserService {
     async (
       UserData: UserUpdateDtoType,
       query: object
-    ): Promise<responseHandler> => {
+    ): Promise<ServiceResponseType> => {
       const parseSafe = validateAndFormatData(UserData, UserUpdateDto);
       if (!parseSafe.success) return parseSafe;
 
@@ -51,7 +52,7 @@ class UserService {
         userId: string;
       },
       info: any
-    ): Promise<responseHandler> => {
+    ): Promise<ServiceResponseType> => {
       const selectedFields = Object.keys(graphqlFields(info).data || {}).join(
         " "
       );
@@ -74,19 +75,13 @@ class UserService {
         limit: number;
       },
       info: GraphQLResolveInfo
-    ): Promise<responseHandler> => {
+    ): Promise<ServiceResponseType> => {
       const count = await this.countUser();
-      return await PaginationGraphQl(
-        User,
-        UserDto,
-        count.count ?? 0,
-        args,
-        info
-      );
+      return await paginate(User, UserDto, count.count ?? 0, args, info);
     }
   );
 
-  countUser = warpAsync(async (): Promise<responseHandler> => {
+  countUser = warpAsync(async (): Promise<ServiceResponseType> => {
     return serviceResponse({
       count: await User.countDocuments(),
     });

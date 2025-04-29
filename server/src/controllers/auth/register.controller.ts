@@ -2,10 +2,8 @@ import { Request, Response } from "express";
 import RegisterService from "../../services/auth/register.service";
 import { RegisterDtoType } from "../../dto/auth/register.dto";
 import { GraphQLResolveInfo } from "graphql";
-import {
-  controllerResponse,
-  responseHandler,
-} from "../../utils/responseHandler";
+import { controllerResponse } from "../../utils/response.util";
+import { ServiceResponseType } from "../../types/response.type";
 
 class RegisterController {
   private static instance: RegisterController;
@@ -29,7 +27,7 @@ class RegisterController {
       res: Response;
     },
     info: GraphQLResolveInfo
-  ): Promise<responseHandler> {
+  ): Promise<ServiceResponseType> {
     const result = await this.registerService.register(args.input);
     if (!result.success) result;
     return result;

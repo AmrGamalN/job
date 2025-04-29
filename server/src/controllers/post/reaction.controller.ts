@@ -1,9 +1,7 @@
 import { Request, Response } from "express";
 import ReactionService from "../../services/post/reaction.service";
-import {
-  controllerResponse,
-  responseHandler,
-} from "../../utils/responseHandler";
+import { controllerResponse } from "../../utils/response.util";
+import { ServiceResponseType } from "../../types/response.type";
 import { GraphQLResolveInfo } from "graphql";
 
 class ReactionController {

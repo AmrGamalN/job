@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import SecurityService from "../../services/profiles/security.service";
 import { GraphQLResolveInfo } from "graphql";
-import { responseHandler } from "../../utils/responseHandler";
-import { controllerResponse } from "../../utils/responseHandler";
+import { ServiceResponseType } from "../../types/response.type";
+import { controllerResponse } from "../../utils/response.util";
 
 class SecurityController {
   private static instance: SecurityController;
@@ -24,7 +24,7 @@ class SecurityController {
     },
     context: { req: Request; res: Response },
     info: GraphQLResolveInfo
-  ): Promise<responseHandler> {
+  ): Promise<ServiceResponseType> {
     const result = await this.SecurityService.getSecurity(args, info);
     if (!result.success) return result;
     return result;
@@ -38,7 +38,7 @@ class SecurityController {
     },
     context: { req: Request; res: Response },
     info: GraphQLResolveInfo
-  ): Promise<responseHandler> {
+  ): Promise<ServiceResponseType> {
     const result = await this.SecurityService.getAllSecurities(args, info);
     if (!result.success) result;
     return result;
@@ -83,10 +83,8 @@ class SecurityController {
   }
 
   // Send verification again
-  async sendVerificationEmail(req: Request, res: Response): Promise<Response> {
-    const result = await this.SecurityService.sendVerificationEmail(
-      req.body.email
-    );
+  async sendEmail(req: Request, res: Response): Promise<Response> {
+    const result = await this.SecurityService.sendEmail(req.body.email);
     return controllerResponse(res, result);
   }
 

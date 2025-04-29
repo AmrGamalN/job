@@ -10,26 +10,24 @@ enum ReactionType {
   ANGRY = "angry",
 }
 
-const baseFields = {};
-
 const postReactionSchema = new Schema(
   {
-    userId: { type: String, ref: "users", required: true },
+    userId: { type: String, ref: "user_users", required: true },
     reactionType: {
       type: String,
       enum: Object.values(ReactionType),
       default: ReactionType.LIKE,
       required: true,
     },
-    id: { type: Schema.Types.ObjectId, ref: "posts", required: true },
+    id: { type: Schema.Types.ObjectId, ref: "post_posts", required: true },
   },
   { timestamps: true }
 );
 
 const commentReactionSchema = new Schema(
   {
-    userId: { type: String, ref: "users", required: true },
-    id: { type: Schema.Types.ObjectId, ref: "comments", required: true },
+    userId: { type: String, ref: "user_users", required: true },
+    id: { type: Schema.Types.ObjectId, ref: "post_comments", required: true },
     reactionType: {
       type: String,
       enum: Object.values(ReactionType),
@@ -43,10 +41,10 @@ const commentReactionSchema = new Schema(
 postReactionSchema.index({ userId: 1, id: 1 }, { unique: true });
 commentReactionSchema.index({ userId: 1, id: 1 }, { unique: true });
 export const PostReaction = model<ReactionDtoType>(
-  "post_reactions",
+  "post_postReactions",
   postReactionSchema
 );
 export const CommentReaction = model<ReactionDtoType>(
-  "comment_reactions",
+  "post_commentReactions",
   commentReactionSchema
 );

@@ -1,9 +1,7 @@
 import { Request, Response } from "express";
 import CommentService from "../../services/post/comment.service";
-import {
-  controllerResponse,
-  responseHandler,
-} from "../../utils/responseHandler";
+import { controllerResponse } from "../../utils/response.util";
+import { ServiceResponseType } from "../../types/response.type";
 import { GraphQLResolveInfo } from "graphql";
 
 class CommentController {
@@ -41,7 +39,7 @@ class CommentController {
     },
     context: { req: Request; res: Response },
     info: GraphQLResolveInfo
-  ): Promise<responseHandler> {
+  ): Promise<ServiceResponseType> {
     const result = await this.commentService.getAllComments(args, info);
     if (!result.success) result;
     return result;

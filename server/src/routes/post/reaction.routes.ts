@@ -1,21 +1,16 @@
 import express from "express";
 import ReactionController from "../../controllers/post/reaction.controller";
-import { asyncHandler } from "../../middleware/handleError";
-import TokenMiddleware from "../../middleware/token.middleware";
+import { asyncHandler } from "../../middlewares/handleError.middleware";
+import { validateReaction } from "../../validation/post/reaction.validator";
+import { userAuthorizationMiddlewares } from "../../utils/authorizationRole.util";
 import {
   expressValidator,
-  validateParamMiddleware,
+  validateToggleParamMiddleware,
   validateQueryMiddleware,
-} from "../../middleware/validatorMiddleware";
-import { validateReaction } from "../../validation/post/reaction.validator";
-const tokenMiddleware = TokenMiddleware.getInstance();
+} from "../../middlewares/validator.middleware";
+
 const controller = ReactionController.getInstance();
-import { role } from "../../utils/role";
 const router = express.Router();
-const commonMiddlewares = [
-  asyncHandler(tokenMiddleware.refreshTokenMiddleware),
-  asyncHandler(tokenMiddleware.authorizationMiddleware(role)),
-];
 
 /**
  * @swagger
@@ -44,7 +39,7 @@ const commonMiddlewares = [
  *           example: like
  *     responses:
  *       200:
- *         $ref: '#/components/responses/BaseResponse'
+ *         $ref: '#/components/schemas/BaseResponse'
  *       400:
  *         description: Failed to add reaction record
  *       403:
@@ -56,10 +51,10 @@ const commonMiddlewares = [
  */
 router.post(
   "/add/:id?",
-  ...commonMiddlewares,
-  asyncHandler(validateQueryMiddleware()),
-  asyncHandler(validateParamMiddleware()),
-  asyncHandler(expressValidator(validateReaction)),
+  ...userAuthorizationMiddlewares,
+  validateQueryMiddleware(),
+  validateToggleParamMiddleware(),
+  expressValidator(validateReaction),
   asyncHandler(controller.addReaction.bind(controller))
 );
 
@@ -82,7 +77,7 @@ router.post(
  *           example: post
  *     responses:
  *       200:
- *         $ref: '#/components/responses/BaseResponse'
+ *         $ref: '#/components/schemas/BaseResponse'
  *       400:
  *         description: Failed to fetch reaction data
  *       403:
@@ -94,8 +89,8 @@ router.post(
  */
 router.get(
   "/count/:id?",
-  ...commonMiddlewares,
-  asyncHandler(validateParamMiddleware()),
+  ...userAuthorizationMiddlewares,
+  validateToggleParamMiddleware(),
   asyncHandler(controller.countReaction.bind(controller))
 );
 
@@ -130,9 +125,9 @@ router.get(
  */
 router.get(
   "/get/:id?",
-  ...commonMiddlewares,
-  asyncHandler(validateQueryMiddleware()),
-  asyncHandler(validateParamMiddleware()),
+  ...userAuthorizationMiddlewares,
+  validateQueryMiddleware(),
+  validateToggleParamMiddleware(),
   asyncHandler(controller.getReaction.bind(controller))
 );
 
@@ -175,10 +170,10 @@ router.get(
  */
 router.put(
   "/update/:id?",
-  ...commonMiddlewares,
-  asyncHandler(validateQueryMiddleware()),
-  asyncHandler(validateParamMiddleware()),
-  asyncHandler(expressValidator(validateReaction)),
+  ...userAuthorizationMiddlewares,
+  validateQueryMiddleware(),
+  validateToggleParamMiddleware(),
+  expressValidator(validateReaction),
   asyncHandler(controller.updateReaction.bind(controller))
 );
 
@@ -213,10 +208,10 @@ router.put(
  */
 router.delete(
   "/delete/:id?",
-  ...commonMiddlewares,
-  asyncHandler(validateQueryMiddleware()),
-  asyncHandler(validateParamMiddleware()),
-  asyncHandler(expressValidator(validateReaction)),
+  ...userAuthorizationMiddlewares,
+  validateQueryMiddleware(),
+  validateToggleParamMiddleware(),
+  expressValidator(validateReaction),
   asyncHandler(controller.deleteReaction.bind(controller))
 );
 export default router;

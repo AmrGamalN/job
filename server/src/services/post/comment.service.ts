@@ -1,3 +1,5 @@
+import { GraphQLResolveInfo } from "graphql";
+import Post from "../../models/mongodb/post/post.model";
 import Comment from "../../models/mongodb/post/comment.model";
 import {
   commentDto,
@@ -6,12 +8,11 @@ import {
   commentAddDtoType,
   commentUpdateDtoType,
 } from "../../dto/post/comment.dto";
-import { responseHandler, serviceResponse } from "../../utils/responseHandler";
-import { warpAsync } from "../../utils/warpAsync";
-import { validateAndFormatData } from "../../utils/validateAndFormatData";
-import { GraphQLResolveInfo } from "graphql";
-import Post from "../../models/mongodb/post/post.model";
-import { PaginationGraphQl } from "../../utils/pagination";
+import { paginate } from "../../utils/pagination.util";
+import { warpAsync } from "../../utils/warpAsync.util";
+import { serviceResponse } from "../../utils/response.util";
+import { validateAndFormatData } from "../../utils/validateData.util";
+import { ServiceResponseType } from "../../types/response.type";
 
 class CommentService {
   private static instanceService: CommentService;
@@ -27,10 +28,10 @@ class CommentService {
       data: commentAddDtoType,
       postId: string,
       userId: string
-    ): Promise<responseHandler> => {
-      const parsed = validateAndFormatData(data, commentAddDto);
+    ): Promise<ServiceResponseType> => {
+      const validationResult = validateAndFormatData(data, commentAddDto);
       const comment = await Comment.create({
-        ...parsed.data,
+        ...validationResult.data,
         postId,
         userId,
       });
@@ -51,10 +52,12 @@ class CommentService {
     }
   );
 
-  getComment = warpAsync(async (query: object): Promise<responseHandler> => {
-    const getComment = await Comment.findOne(query).lean();
-    return validateAndFormatData(getComment, commentDto);
-  });
+  getComment = warpAsync(
+    async (query: object): Promise<ServiceResponseType> => {
+      const getComment = await Comment.findOne(query).lean();
+      return validateAndFormatData(getComment, commentDto);
+    }
+  );
 
   getAllComments = warpAsync(
     async (
@@ -63,15 +66,9 @@ class CommentService {
         limit: number;
       },
       info: GraphQLResolveInfo
-    ): Promise<responseHandler> => {
+    ): Promise<ServiceResponseType> => {
       const count = await this.countComment();
-      return await PaginationGraphQl(
-        Post,
-        commentDto,
-        count.count ?? 0,
-        args,
-        info
-      );
+      return await paginate(Post, commentDto, count.count ?? 0, args, info);
     }
   );
 
@@ -79,15 +76,19 @@ class CommentService {
     async (
       data: commentUpdateDtoType,
       query: object
-    ): Promise<responseHandler> => {
-      const parsed = validateAndFormatData(data, commentUpdateDto, "update");
-      if (!parsed.success) return parsed;
+    ): Promise<ServiceResponseType> => {
+      const validationResult = validateAndFormatData(
+        data,
+        commentUpdateDto,
+        "update"
+      );
+      if (!validationResult.success) return validationResult;
 
       const updateComment = await Comment.updateOne(
         query,
         {
           $set: {
-            ...parsed.data,
+            ...validationResult.data,
             isEdited: true,
           },
         },
@@ -101,36 +102,40 @@ class CommentService {
     }
   );
 
-  countComment = warpAsync(async (postId: string): Promise<responseHandler> => {
-    return serviceResponse({
-      count: await Comment.countDocuments({ postId }),
-    });
-  });
-
-  deleteComment = warpAsync(async (query: object): Promise<responseHandler> => {
-    const deleteComment = await Comment.findOneAndDelete(query)
-      .lean()
-      .select({ _id: 1, postId: 1 });
-    if (!deleteComment)
+  countComment = warpAsync(
+    async (postId: string): Promise<ServiceResponseType> => {
       return serviceResponse({
-        data: deleteComment,
+        count: await Comment.countDocuments({ postId }),
       });
+    }
+  );
 
-    await Post.updateOne(
-      { _id: deleteComment.postId },
-      {
-        $pull: {
-          commentId: deleteComment._id,
-        },
-        $inc: {
-          commentCount: -1,
-        },
-      }
-    );
-    return serviceResponse({
-      statusText: "OK",
-    });
-  });
+  deleteComment = warpAsync(
+    async (query: object): Promise<ServiceResponseType> => {
+      const deleteComment = await Comment.findOneAndDelete(query)
+        .lean()
+        .select({ _id: 1, postId: 1 });
+      if (!deleteComment)
+        return serviceResponse({
+          data: deleteComment,
+        });
+
+      await Post.updateOne(
+        { _id: deleteComment.postId },
+        {
+          $pull: {
+            commentId: deleteComment._id,
+          },
+          $inc: {
+            commentCount: -1,
+          },
+        }
+      );
+      return serviceResponse({
+        statusText: "OK",
+      });
+    }
+  );
 }
 
 export default CommentService;
