@@ -7,8 +7,8 @@ export const DocumentDto = z.object({
   name: z.string().default(""),
   description: z.string().default(""),
   documentFile: z.object({
-    documentUrl: z.string().default(""),
-    documentType: z
+    url: z.string().default(""),
+    type: z
       .enum([
         "pdf",
         "word",

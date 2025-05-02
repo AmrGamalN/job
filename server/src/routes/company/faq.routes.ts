@@ -4,7 +4,7 @@ import { asyncHandler } from "../../middlewares/handleError.middleware";
 import {
   expressValidator,
   validateQueryMiddleware,
-  validateRequiredParamMiddleware,
+  requiredParamMiddleware,
 } from "../../middlewares/validator.middleware";
 import {
   validateFaqAdd,
@@ -14,7 +14,10 @@ import {
   companyAdminRoleMiddlewares,
   companyViewerRoleMiddlewares,
 } from "../../utils/authorizationRole.util";
-import { validateQueryParams } from "../../validation/query/query.validator";
+import {
+  validateQueryFaqCount,
+  validateQueryFaqGetAll,
+} from "../../validation/query/company/faq.validator";
 const controller = FaqController.getInstance();
 const router = express.Router();
 
@@ -45,7 +48,7 @@ const router = express.Router();
 router.get(
   "/count",
   ...companyAdminRoleMiddlewares,
-    expressValidator(validateQueryParams()),
+  expressValidator(validateQueryFaqCount()),
   asyncHandler(controller.countFaq.bind(controller))
 );
 
@@ -103,7 +106,7 @@ router.post(
 router.get(
   "/get/:id",
   ...companyViewerRoleMiddlewares,
-  validateRequiredParamMiddleware(),
+  requiredParamMiddleware(),
   asyncHandler(controller.getFaq.bind(controller))
 );
 
@@ -117,6 +120,8 @@ router.get(
  *     parameters:
  *      - $ref: '#/components/parameters/Page'
  *      - $ref: '#/components/parameters/Limit'
+ *      - $ref: '#/components/parameters/Start'
+ *      - $ref: '#/components/parameters/End'
  *      - $ref: '#/components/parameters/UserType'
  *      - $ref: '#/components/parameters/QuestionType'
  *      - $ref: '#/components/parameters/Status'
@@ -137,7 +142,7 @@ router.get(
   "/",
   ...companyViewerRoleMiddlewares,
   validateQueryMiddleware(),
-    expressValidator(validateQueryParams()),
+  expressValidator(validateQueryFaqGetAll()),
   asyncHandler(controller.getAllFaqs.bind(controller))
 );
 
@@ -171,7 +176,7 @@ router.get(
 router.put(
   "/update/:id",
   ...companyViewerRoleMiddlewares,
-  validateRequiredParamMiddleware(),
+  requiredParamMiddleware(),
   expressValidator(validateFaqUpdate),
   asyncHandler(controller.updateFaq.bind(controller))
 );
@@ -200,7 +205,7 @@ router.put(
 router.delete(
   "/delete/:id",
   ...companyViewerRoleMiddlewares,
-  validateRequiredParamMiddleware(),
+  requiredParamMiddleware(),
   asyncHandler(controller.deleteFaq.bind(controller))
 );
 export default router;

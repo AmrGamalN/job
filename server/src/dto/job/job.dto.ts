@@ -1,46 +1,30 @@
 import { z } from "zod";
 import { ObjectId } from "mongodb";
+import {
+  ApplicantTypes,
+  JobExperiences,
+  JobTypes,
+  WorkplaceTypes,
+} from "../../types/job.type";
 
 export const JobDto = z.object({
   _id: z.union([z.string(), z.instanceof(ObjectId)]),
   companyId: z.string(),
   actorType: z.string().default("job"),
-  title: z.string(),
+  jobTitle: z.string(),
   department: z.array(z.string()),
-  applicantTypes: z.array(
-    z.enum([
-      "student",
-      "graduate",
-      "entry-level",
-      "mid-level",
-      "senior",
-      "manager",
-      "executive",
-      "freelancer",
-      "intern",
-      "career-shifter",
-    ])
-  ),
-  jobType: z.array(
-    z.enum([
-      "full-time",
-      "part-time",
-      "internship",
-      "freelance",
-      "self-employed",
-      "seasonal",
-      "apprenticeship",
-      "contract",
-    ])
-  ),
-  workplaceType: z.array(z.enum(["remote", "on-site", "hybrid"])),
-  requirementsText: z.string(),
+  applicantTypes: z.array(z.enum(ApplicantTypes)),
+  jobType: z.array(z.enum(JobTypes)),
+  jobExperience: z.enum(JobExperiences),
+  workplaceType: z.array(z.enum(WorkplaceTypes)),
+  jobDescription: z.string(),
+  jobRequirements: z.string(),
   skills: z.array(z.string()),
-  location: z.string().default(""),
+  location: z.string(),
   email: z.string().email(),
-  status: z.enum(["active", "inactive"]),
-  createdByUserId: z.string(),
-  salaryRange: z
+  createdBy: z.string(),
+  updatedBy: z.string(),
+  salary: z
     .object({
       min: z.number().optional(),
       max: z.number().optional(),
@@ -59,12 +43,13 @@ export const JobAddDto = JobDto.omit({
   updatedAt: true,
   viewsCount: true,
   jobLink: true,
-  createdByUserId: true,
+  createdBy: true,
+  updatedBy: true,
   companyId: true,
   actorType: true,
 });
-export const JobUpdateDto = JobAddDto.partial();
 
+export const JobUpdateDto = JobAddDto.partial();
 export type JobDtoType = z.infer<typeof JobDto>;
 export type JobAddDtoType = z.infer<typeof JobAddDto>;
 export type JobUpdateDtoType = z.infer<typeof JobUpdateDto>;

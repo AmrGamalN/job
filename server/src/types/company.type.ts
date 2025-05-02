@@ -19,7 +19,7 @@ export type CompanyFiltersType = CompanyMainType & {
 };
 
 export type DocumentFiltersType = CompanyMainType & {
-  documentType?: string;
+  type?: string;
   name?: string;
 };
 

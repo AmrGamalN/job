@@ -4,7 +4,7 @@ import { asyncHandler } from "../../middlewares/handleError.middleware";
 import {
   expressValidator,
   validateQueryMiddleware,
-  validateRequiredParamMiddleware,
+  requiredParamMiddleware,
 } from "../../middlewares/validator.middleware";
 import {
   validateDocumentAdd,
@@ -14,12 +14,15 @@ import {
   companyAdminRoleMiddlewares,
   companyViewerRoleMiddlewares,
 } from "../../utils/authorizationRole.util";
-import { validateQueryParams } from "../../validation/query/query.validator";
 import { companyUploadDocument } from "../../middlewares/uploadFile.middleware";
 import {
   checkFilesMiddleware,
   parserImagesMiddleware,
 } from "../../middlewares/parseFields.middleware";
+import {
+  validateQueryDocumentCount,
+  validateQueryDocumentGetAll,
+} from "../../validation/query/company/document.validator";
 const controller = DocumentController.getInstance();
 const router = express.Router();
 
@@ -81,7 +84,7 @@ router.post(
 router.get(
   "/count",
   ...companyAdminRoleMiddlewares,
-  expressValidator(validateQueryParams()),
+  expressValidator(validateQueryDocumentCount()),
   asyncHandler(controller.countDocument.bind(controller))
 );
 
@@ -109,7 +112,7 @@ router.get(
 router.get(
   "/get/:id",
   ...companyViewerRoleMiddlewares,
-  validateRequiredParamMiddleware(),
+  requiredParamMiddleware(),
   asyncHandler(controller.getDocument.bind(controller))
 );
 
@@ -143,7 +146,7 @@ router.get(
   "/",
   ...companyViewerRoleMiddlewares,
   validateQueryMiddleware(),
-  expressValidator(validateQueryParams()),
+  expressValidator(validateQueryDocumentGetAll()),
   asyncHandler(controller.getAllDocuments.bind(controller))
 );
 
@@ -177,7 +180,7 @@ router.get(
 router.put(
   "/update/:id",
   ...companyAdminRoleMiddlewares,
-  validateRequiredParamMiddleware(),
+  requiredParamMiddleware(),
   companyUploadDocument,
   parserImagesMiddleware(),
   expressValidator(validateDocumentUpdate),
@@ -208,7 +211,7 @@ router.put(
 router.delete(
   "/delete/:id",
   ...companyAdminRoleMiddlewares,
-  validateRequiredParamMiddleware(),
+  requiredParamMiddleware(),
   asyncHandler(controller.deleteDocument.bind(controller))
 );
 export default router;

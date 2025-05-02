@@ -20,8 +20,9 @@ const mediaDto = z.object({
     z.string(),
     z
       .object({
-        imageUrl: z.string().default(""),
-        imageKey: z.string().default(""),
+        url: z.string().default(""),
+        key: z.string().default(""),
+        type: z.string().default(""),
       })
       .optional(),
   ]),
@@ -29,8 +30,9 @@ const mediaDto = z.object({
     z.string(),
     z
       .object({
-        imageUrl: z.string().default(""),
-        imageKey: z.string().default(""),
+        url: z.string().default(""),
+        key: z.string().default(""),
+        type: z.string().default(""),
       })
       .optional(),
   ]),
@@ -38,8 +40,9 @@ const mediaDto = z.object({
     z.string(),
     z
       .object({
-        imageUrl: z.string().default(""),
-        imageKey: z.string().default(""),
+        url: z.string().default(""),
+        key: z.string().default(""),
+        type: z.string().default(""),
       })
       .optional(),
   ]),

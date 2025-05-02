@@ -11,11 +11,10 @@ export const ExperienceDto = z.object({
   description: z.string().min(5, "Description must have at least 5 characters"),
   employmentType: z.enum(
     [
-      "full-time",
-      "part-time",
+      "full_time",
+      "part_time",
       "internship",
       "freelance",
-      "self-employed",
       "seasonal",
       "apprenticeship",
       "contract",

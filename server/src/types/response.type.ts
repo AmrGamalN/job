@@ -10,7 +10,7 @@ export type ServiceResponseType = {
   refreshToken?: string;
   tempToken?: string;
   userId?: string;
-  deleteCount?: number;
+  deletedCount?: number;
 };
 
 export type ResponseType =
@@ -20,6 +20,7 @@ export type ResponseType =
   | "NotFound"
   | "Conflict"
   | "Unauthorized"
+  | "Forbidden"
   | "InternalServerError";
 
 export type ResponseOptions = {
@@ -28,5 +29,5 @@ export type ResponseOptions = {
   data?: any;
   error?: any;
   count?: number;
-  deleteCount?: number;
+  deletedCount?: number;
 };

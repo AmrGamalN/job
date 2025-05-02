@@ -7,8 +7,9 @@ const DocumentSchema: Schema = new Schema(
     name: { type: String, default: "" },
     description: { type: String, default: "" },
     documentFile: {
-      documentUrl: { type: String, default: "" },
-      documentType: {
+      url: { type: String, default: "" },
+      key: { type: String, default: "" },
+      type: {
         type: String,
         enum: [
           "pdf",
@@ -22,6 +23,7 @@ const DocumentSchema: Schema = new Schema(
         ],
         default: "",
       },
+
     },
     uploadBy: { type: String, default: "" },
     updatedBy: { type: String, default: "" },

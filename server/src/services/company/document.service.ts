@@ -135,8 +135,8 @@ class DocumentService {
       filters["createdAt"] = { $gte: queries.start, $lte: queries.end };
     }
 
-    if (queries.documentType) {
-      filters["documentFile.documentType"] = queries.documentType;
+    if (queries.type) {
+      filters["documentFile.type"] = queries.type;
     }
 
     for (const key of filtersOption) {

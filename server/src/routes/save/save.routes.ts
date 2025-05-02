@@ -4,7 +4,7 @@ import { asyncHandler } from "../../middlewares/handleError.middleware";
 import {
   expressValidator,
   validateQueryMiddleware,
-  validateRequiredParamMiddleware,
+  requiredParamMiddleware,
 } from "../../middlewares/validator.middleware";
 import { saveValidate } from "../../validation/save/save.validator";
 import { validateQueryParams } from "../../validation/query/query.validator";
@@ -94,7 +94,7 @@ router.post(
 router.get(
   "/get/:id",
   ...userAuthorizationMiddlewares,
-  validateRequiredParamMiddleware(),
+  requiredParamMiddleware(),
   asyncHandler(controller.getSave.bind(controller))
 );
 
@@ -155,7 +155,7 @@ router.get(
 router.delete(
   "/delete/:id",
   ...userAuthorizationMiddlewares,
-  validateRequiredParamMiddleware(),
+  requiredParamMiddleware(),
   asyncHandler(controller.deleteSave.bind(controller))
 );
 export default router;

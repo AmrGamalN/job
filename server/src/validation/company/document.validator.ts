@@ -15,8 +15,9 @@ const documentValidate = (isUpdate: boolean) => {
     body("documentFile").optional({ checkFalsy: true }).isObject(),
     Field("name").optional({ checkFalsy: true }),
     Field("description").optional({ checkFalsy: true }),
-    Field("documentFile.documentUrl").optional({ checkFalsy: true }),
-    Field("documentFile.documentType").optional({ checkFalsy: true }),
+    Field("documentFile.url").optional({ checkFalsy: true }),
+    Field("documentFile.type").optional({ checkFalsy: true }),
+    Field("documentFile.key").optional({ checkFalsy: true }),
   ];
 };
 

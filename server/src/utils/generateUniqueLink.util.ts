@@ -1,6 +1,7 @@
 import Profile from "../models/mongodb/profiles/profile.model";
 import crypto from "crypto";
 import dotenv from "dotenv";
+import mongoose from "mongoose";
 dotenv.config();
 
 export const generateUniqueLink = async (
@@ -21,19 +22,18 @@ export const generateUniqueLink = async (
   };
 };
 
-export const generateFeedbackLink = async (
-  companyName?: string,
-  route?: string
+export const generateLink = async (
+  route?: string,
 ): Promise<{ link: string; userName?: string }> => {
   let hash;
   let isLinkExist;
   do {
     hash = crypto.randomBytes(35).toString("hex");
     isLinkExist = await Profile.exists({
-      profileLink: `${process.env.BACKEND_URL}/api/v1/${route}/${companyName}-${hash}`,
+      profileLink: `${process.env.BACKEND_URL}/api/v1/${route}/${hash}`,
     });
   } while (isLinkExist);
   return {
-    link: `${process.env.BACKEND_URL}/api/v1/company/${route}/${companyName}-${hash}`,
+    link: `${process.env.BACKEND_URL}/api/v1/${route}/${hash}`,
   };
 };

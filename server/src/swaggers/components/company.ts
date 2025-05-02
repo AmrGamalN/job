@@ -481,7 +481,7 @@
  *             fileUrl:
  *               type: string
  *               description: URL to the uploaded file
- *             documentType:
+ *             type:
  *               type: string
  *               description: Type/category of the document
  *         uploadBy:

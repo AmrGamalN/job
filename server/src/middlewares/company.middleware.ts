@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { CustomError } from "../utils/customErr.util";
+import { CustomError } from "../utils/customError.util";
 import { asyncHandler } from "./handleError.middleware";
 import CompanySecurity from "../models/mongodb/company/security.model";
 

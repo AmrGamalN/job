@@ -28,6 +28,12 @@ import FaqRoutes from "./routes/company/faq.routes";
 import FeedBackRoutes from "./routes/company/feedback.routes";
 import DocumentRoutes from "./routes/company/document.routes";
 
+// Job
+import JobRoutes from "./routes/job/job.routes";
+import JobAnalyticsRoutes from "./routes/job/jobAnalytics.routes";
+import JobAppRoutes from "./routes/job/jobApplication.routes";
+import InterviewRoutes from "./routes/job/interview.routes";
+
 // Save
 import SaveRoutes from "./routes/save/save.routes";
 
@@ -66,6 +72,12 @@ router.use("/company/faq", FaqRoutes);
 router.use("/company/feedback", FeedBackRoutes);
 router.use("/company/document", DocumentRoutes);
 router.use("/company", CompanyRoutes);
+
+// Job
+router.use("/company/job", JobRoutes);
+router.use("/company/job/analytics", JobAnalyticsRoutes);
+router.use("/company/job/application", JobAppRoutes);
+router.use("/company/job/interview", InterviewRoutes);
 
 // Save
 router.use("/save", SaveRoutes);

@@ -1,11 +1,10 @@
 import { Schema, model } from "mongoose";
 import { ExperienceDtoType } from "../../../dto/profiles/experience.dto";
 const employmentType = [
-  "full-time",
-  "part-time",
+  "full_time",
+  "part_time",
   "internship",
   "freelance",
-  "self-employed",
   "seasonal",
   "apprenticeship",
   "contract",
@@ -27,5 +26,8 @@ const ExperienceSchema = new Schema(
   { timestamps: true }
 );
 
-const Experience = model<ExperienceDtoType>("user_experiences", ExperienceSchema);
+const Experience = model<ExperienceDtoType>(
+  "user_experiences",
+  ExperienceSchema
+);
 export default Experience;

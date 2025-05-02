@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 import { encryptToken, decryptToken } from "../utils/encryptToken.util";
-import { CustomError } from "../utils/customErr.util";
+import { CustomError } from "../utils/customError.util";
 import { asyncHandler } from "./handleError.middleware";
 import { UserRequestType } from "../types/request.type";
 dotenv.config();

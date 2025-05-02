@@ -74,14 +74,17 @@ const companyValidate = (isUpdate: boolean) => {
     // Media
     FieldString("introVideoUrl"),
     FieldObject("companyLogo"),
-    FieldString("companyLogo.imageUrl"),
-    FieldString("companyLogo.imageKey"),
+    FieldString("companyLogo.url"),
+    FieldString("companyLogo.key"),
+    FieldString("companyLogo.type"),
     FieldObject("profileImage"),
-    FieldString("profileImage.imageUrl"),
-    FieldString("profileImage.imageKey"),
+    FieldString("profileImage.url"),
+    FieldString("profileImage.key"),
+    FieldString("profileImage.type"),
     FieldObject("coverImage"),
-    FieldString("coverImage.imageUrl"),
-    FieldString("coverImage.imageKey"),
+    FieldString("coverImage.url"),
+    FieldString("coverImage.key"),
+    FieldString("coverImage.type"),
 
     // Social Links
     FieldString("website").isURL(),

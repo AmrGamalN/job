@@ -16,7 +16,7 @@ const ProfileSchema = new Schema(
     jobCompany: { type: String, default: "" },
     jobType: {
       type: String,
-      enum: ["full-time", "part-time", "freelance", ""],
+      enum: ["full_time", "part_time", "freelance", ""],
       default: "",
     },
     projectPreference: {
@@ -26,7 +26,7 @@ const ProfileSchema = new Schema(
     },
     experienceLevel: {
       type: String,
-      enum: ["entry-level", "Intermediate", "expert", ""],
+      enum: ["entry_level", "Intermediate", "expert", ""],
       default: "",
     },
     categories: { type: [String], default: [] },
@@ -35,9 +35,9 @@ const ProfileSchema = new Schema(
       {
         language: { type: String, required: true },
         level: {
-          type:String,
-          enum: ["beginner", "intermediate", "advanced","fluent"],
-          default:"fluent"
+          type: String,
+          enum: ["beginner", "intermediate", "advanced", "fluent"],
+          default: "fluent",
         },
       },
     ],

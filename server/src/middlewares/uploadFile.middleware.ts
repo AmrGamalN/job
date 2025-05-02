@@ -2,7 +2,7 @@ import multer, { MulterError } from "multer";
 import { NextFunction, Request, Response } from "express";
 import path from "path";
 import { asyncHandler } from "./handleError.middleware";
-import { CustomError } from "../utils/customErr.util";
+import { CustomError } from "../utils/customError.util";
 const uploadDir = path.join(__dirname, "../upload");
 const mimeTypesImages = ["image/jpeg", "image/png", "image/jpg"];
 const mimeTypesDocuments = [
@@ -47,6 +47,11 @@ const fileFilterValidator = (
         400
       )
     );
+  }
+
+  if (file.fieldname === "cv") {
+    if (type == "application/pdf") return callback(null, true);
+    return callback(new CustomError("Only .pdf", "BadRequest", false, 400));
   }
 
   if (mimeTypesImages.includes(type)) return callback(null, true);
@@ -100,4 +105,12 @@ export const companyUploadImage = asyncHandler(
 
 export const companyUploadDocument = asyncHandler(
   uploadFile(upload.single("documentFile"))
+);
+export const jobAppUpload = asyncHandler(
+  uploadFile(
+    upload.fields([
+      { maxCount: 1, name: "cv" },
+      { maxCount: 1, name: "idImage" },
+    ])
+  )
 );

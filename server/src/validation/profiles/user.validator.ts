@@ -1,6 +1,6 @@
 import { check } from "express-validator";
 
-const validateUser = (isOptional: boolean = false)=> [
+const validateUser = (isOptional: boolean = false) => [
   check("firstName")
     .if(() => !isOptional)
     .bail()
@@ -41,16 +41,14 @@ const validateUser = (isOptional: boolean = false)=> [
     .optional({ nullable: true }),
 
   check("profileImage").trim().isObject().optional(),
-
-  check("profileImage.*.imageUrl").trim().isURL().isString(),
-
-  check("profileImage.*.imageKey").trim().isString(),
+  check("profileImage.url").trim().isURL().isString(),
+  check("profileImage.key").trim().isString(),
+  check("profileImage.type").trim().isString(),
 
   check("coverImage").trim().isObject().optional(),
-
-  check("coverImage.*.imageUrl").trim().isURL().isString(),
-
-  check("coverImage.*.imageKey").trim().isString(),
+  check("coverImage.url").trim().isURL().isString(),
+  check("coverImage.key").trim().isString(),
+  check("coverImage.type").trim().isString(),
 
   check("linkedIn")
     .optional({ nullable: true })
