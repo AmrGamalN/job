@@ -9,21 +9,29 @@ const UserSchema = new Schema(
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     profileImage: {
-      imageUrl: {
+      url: {
         type: String,
         default: "",
       },
-      imageKey: {
+      key: {
+        type: String,
+        default: "",
+      },
+      type: {
         type: String,
         default: "",
       },
     },
     coverImage: {
-      imageUrl: {
+      url: {
         type: String,
         default: "",
       },
-      imageKey: {
+      key: {
+        type: String,
+        default: "",
+      },
+      type: {
         type: String,
         default: "",
       },

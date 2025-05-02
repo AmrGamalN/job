@@ -6,7 +6,7 @@ import AuthenticationMiddleware from "../../middlewares/authentication.middlewar
 import {
   expressValidator,
   validateQueryMiddleware,
-  validateRequiredParamMiddleware,
+  requiredParamMiddleware,
 } from "../../middlewares/validator.middleware";
 import {
   validateCompanyAdd,
@@ -23,7 +23,10 @@ import {
   companyViewerRoleMiddlewares,
   userAuthorizationMiddlewares,
 } from "../../utils/authorizationRole.util";
-import { validateQueryParams } from "../../validation/query/query.validator";
+import {
+  validateQueryCompanyCount,
+  validateQueryCompanyGetAll,
+} from "../../validation/query/company/company.validator";
 const authMiddleware = AuthenticationMiddleware.getInstance();
 const companyMiddleware = CompanyMiddleware.getInstance();
 const controller = CompanyController.getInstance();
@@ -97,7 +100,7 @@ router.get(
   authMiddleware.refreshTokenMiddleware,
   authMiddleware.authorizationMiddleware(["admin", "manager"]),
   validateQueryMiddleware(),
-    expressValidator(validateQueryParams()),
+  expressValidator(validateQueryCompanyCount()),
   asyncHandler(controller.countCompany.bind(controller))
 );
 
@@ -125,7 +128,7 @@ router.get(
 router.get(
   "/get/:id",
   ...companyViewerRoleMiddlewares,
-  validateRequiredParamMiddleware(),
+  requiredParamMiddleware(),
   companyMiddleware.activeCompanyMiddleware(),
   asyncHandler(controller.getCompany.bind(controller))
 );
@@ -161,7 +164,7 @@ router.get(
   "/",
   ...companyViewerRoleMiddlewares,
   validateQueryMiddleware(),
-  expressValidator(validateQueryParams()),
+  expressValidator(validateQueryCompanyGetAll()),
   asyncHandler(controller.getAllCompanies.bind(controller))
 );
 
@@ -195,7 +198,7 @@ router.get(
 router.put(
   "/update/:id",
   ...companyAdminRoleMiddlewares,
-  validateRequiredParamMiddleware(),
+  requiredParamMiddleware(),
   companyUploadImage,
   parseFieldsMiddleware(),
   parserImagesMiddleware(),
@@ -228,7 +231,7 @@ router.put(
 router.delete(
   "/delete/:id",
   ...companyAdminRoleMiddlewares,
-  validateRequiredParamMiddleware(),
+  requiredParamMiddleware(),
   companyMiddleware.activeCompanyMiddleware(),
   asyncHandler(controller.deleteCompany.bind(controller))
 );

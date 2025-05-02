@@ -19,16 +19,19 @@ const basicInfo = {
 
 const media = {
   companyLogo: {
-    imageUrl: { type: String, default: "" },
-    imageKey: { type: String, default: "" },
+    url: { type: String, default: "" },
+    key: { type: String, default: "" },
+    type: { type: String, default: "" },
   },
   profileImage: {
-    imageUrl: { type: String, default: "" },
-    imageKey: { type: String, default: "" },
+    url: { type: String, default: "" },
+    key: { type: String, default: "" },
+    type: { type: String, default: "" },
   },
   coverImage: {
-    imageUrl: { type: String, default: "" },
-    imageKey: { type: String, default: "" },
+    url: { type: String, default: "" },
+    key: { type: String, default: "" },
+    type: { type: String, default: "" },
   },
   introVideoUrl: { type: String, default: "" },
 };

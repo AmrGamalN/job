@@ -35,17 +35,16 @@ const experienceValidator = (isOptional: boolean = false) => [
     .bail()
     .isString()
     .isIn([
-      "full-time",
-      "part-time",
+      "full_time",
+      "part_time",
       "internship",
       "freelance",
-      "self-employed",
       "seasonal",
       "apprenticeship",
       "contract",
     ])
     .withMessage(
-      "Employment type must be one of the following: full-time, part-time, internship, freelance, self-employed, seasonal, apprenticeship, contract"
+      "Employment type must be one of the following: full_time, part_time, internship, freelance, seasonal, apprenticeship, contract"
     )
     .notEmpty()
     .withMessage("Employment type is required")

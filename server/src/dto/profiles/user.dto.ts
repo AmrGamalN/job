@@ -11,12 +11,14 @@ export const UserDto = z
     firstName: z.string(),
     lastName: z.string(),
     profileImage: z.object({
-      imageUrl: z.string(),
-      imageKey: z.string(),
+      url: z.string(),
+      key: z.string(),
+      type: z.string(),
     }),
     coverImage: z.object({
-      imageUrl: z.string(),
-      imageKey: z.string(),
+      url: z.string(),
+      key: z.string(),
+      type: z.string(),
     }),
     account: z.enum(["user", "admin", "manager"]).default("user"),
     visibility: z

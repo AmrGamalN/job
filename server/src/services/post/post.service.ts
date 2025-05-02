@@ -12,7 +12,7 @@ import { paginate } from "../../utils/pagination.util";
 import { serviceResponse } from "../../utils/response.util";
 import { validateAndFormatData } from "../../utils/validateData.util";
 import { ServiceResponseType } from "../../types/response.type";
-import { generateFeedbackLink } from "../../utils/generateUniqueLink.util";
+import { generateLink } from "../../utils/generateUniqueLink.util";
 
 class PostService {
   private static instanceService: PostService;
@@ -29,7 +29,7 @@ class PostService {
       userId: string
     ): Promise<ServiceResponseType> => {
       const validationResult = validateAndFormatData(data, postAddDto);
-      const postLink = await generateFeedbackLink("post", "post/get-by-link");
+      const postLink = await generateLink("post/get-by-link");
       await Post.create({ ...validationResult.data, userId, postLink });
       return serviceResponse({
         statusText: "Created",
@@ -95,7 +95,7 @@ class PostService {
   deletePost = warpAsync(
     async (query: object): Promise<ServiceResponseType> => {
       return serviceResponse({
-        deleteCount: (await Post.deleteOne(query)).deletedCount,
+        deletedCount: (await Post.deleteOne(query)).deletedCount,
       });
     }
   );

@@ -1,6 +1,6 @@
 import { check } from "express-validator";
 
-export const validateProfileUpdate =  [
+export const validateProfileUpdate = [
   check("about")
     .isString()
     .trim()
@@ -38,9 +38,9 @@ export const validateProfileUpdate =  [
   check("jobType")
     .isString()
     .trim()
-    .isIn(["full-time", "part-time", "freelance", ""])
+    .isIn(["full_time", "part_time", "freelance", ""])
     .withMessage(
-      "Job type must be one of the value  `full-time`, `part-time`, `freelance` , empty "
+      "Job type must be one of the value  `full_time`, `part_time`, `freelance` , empty "
     )
     .optional(),
 
@@ -56,9 +56,9 @@ export const validateProfileUpdate =  [
   check("experienceLevel")
     .isString()
     .trim()
-    .isIn(["entry-level", "Intermediate", "expert", ""])
+    .isIn(["entry_level", "Intermediate", "expert", ""])
     .withMessage(
-      "Experience level must be one of the value  `entry-level`, `Intermediate`, `expert` , empty  "
+      "Experience level must be one of the value  `entry_level`, `Intermediate`, `expert` , empty  "
     )
     .optional(),
 

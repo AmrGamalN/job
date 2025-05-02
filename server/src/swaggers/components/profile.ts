@@ -17,19 +17,19 @@
  *         profileImage:
  *           type: object
  *           properties:
- *             imageUrl:
+ *             url:
  *               type: string
  *               description: The user profile image url
- *             imageKey:
+ *             key:
  *               type: string
  *               description: The user profile image key
  *         coverImage:
  *           type: object
  *           properties:
- *             imageUrl:
+ *             url:
  *               type: string
  *               description: The user cover image url
- *             imageKey:
+ *             key:
  *               type: string
  *               description: The user cover image key
  *         linkedIn:
@@ -142,7 +142,7 @@
  *         jobType:
  *           type: string
  *           description: The user job type
- *           enum: ["full-time", "part-time", "freelance", ""]
+ *           enum: ["full_time", "part_time", "freelance", ""]
  *           default: ""
  *         projectPreference:
  *           type: string
@@ -152,7 +152,7 @@
  *         experienceLevel:
  *           type: string
  *           description: The user experience level
- *           enum: ["entry-level", "Intermediate", "expert", ""]
+ *           enum: ["entry_level", "Intermediate", "expert", ""]
  *           default: ""
  *         categories:
  *           type: array
@@ -332,15 +332,14 @@
  *           type: string
  *           description: Type of employment
  *           enum:
- *             - full-time
- *             - part-time
+ *             - full_time
+ *             - part_time
  *             - internship
  *             - freelance
- *             - self-employed
  *             - seasonal
  *             - apprenticeship
  *             - contract
- *           example: "full-time"
+ *           example: "full_time"
  *         location:
  *           type: string
  *           description: Work location (city or address)

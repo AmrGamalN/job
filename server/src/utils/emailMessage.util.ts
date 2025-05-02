@@ -1,9 +1,19 @@
 const emailHeader = () => `
-  <div style="display: flex; align-items: center; background-color: rgb(0, 0, 0); color: white; padding: 10px; font-size: 24px; font-weight: bold; text-align: center;">
-    <a href="${process.env.JOBLIENCES_FRONT_END_URL}" style="display: inline-block; margin-right: 10px;">
-      <img src="${process.env.SEND_EMAIL_IMAGE}" alt="Jobliences" style="max-width: 150px;" />
-    </a>
-    <span>Jobliences</span>
+  <div style="background-color: rgb(0, 0, 0); padding: 10px;">
+    <table align="center" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+      <tr>
+        <td style="vertical-align: middle;">
+          <a href="${process.env.JOBLIENCES_FRONT_END_URL}">
+            <img src="${process.env.SEND_EMAIL_IMAGE}" alt="Jobliences" style="max-width: 120px; display: block;" />
+          </a>
+        </td>
+        <td style="vertical-align: middle; padding-left: 10px;">
+          <div style="color: white; font-size: 24px; font-weight: bold;">
+            Jobliences
+          </div>
+        </td>
+      </tr>
+    </table>
   </div>
 `;
 
@@ -11,20 +21,18 @@ const emailFooter = () => `
   <div style="width: 100%; margin-top: 30px; font-size: 12px; color: gray; text-align: center;">
     <p>Jobliences 2025 ©</p>
     <p>Jobliences is a registered trademark of Jobliences.</p>
-    <div style="margin-top: 10px;">
-      <strong>Follow us on:</strong>
-      <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 5px;">
-        <a href="${process.env.JOBLIENCES_FACEBOOK_URL}">
-          <img src="https://cdn-icons-png.flaticon.com/24/174/174848.png" alt="Facebook" style="width: 20px;" />
-        </a>
-        <a href="${process.env.JOBLIENCES_INSTAGRAM_URL}">
-          <img src="https://cdn-icons-png.flaticon.com/24/174/174855.png" alt="Instagram" style="width: 20px;" />
-        </a>
-        <a href="${process.env.JOBLIENCES_TWITTER_URL}">
-          <img src="https://cdn-icons-png.flaticon.com/24/733/733579.png" alt="Twitter" style="width: 20px;" />
-        </a>
-      </div>
-    </div>
+    <p style="margin-top: 10px;">
+      <strong>Follow us on: </strong>
+      <a href="${process.env.JOBLIENCES_FACEBOOK_URL}" style="margin: 0 5px;">
+        <img src="https://cdn-icons-png.flaticon.com/24/174/174848.png" alt="Facebook" style="width: 16px; vertical-align: middle;" />
+      </a>
+      <a href="${process.env.JOBLIENCES_INSTAGRAM_URL}" style="margin: 0 5px;">
+        <img src="https://cdn-icons-png.flaticon.com/24/174/174855.png" alt="Instagram" style="width: 16px; vertical-align: middle;" />
+      </a>
+      <a href="${process.env.JOBLIENCES_TWITTER_URL}" style="margin: 0 5px;">
+        <img src="https://cdn-icons-png.flaticon.com/24/733/733579.png" alt="Twitter" style="width: 16px; vertical-align: middle;" />
+      </a>
+    </p>
   </div>
 `;
 
@@ -169,3 +177,26 @@ export const sendCompanyStatusMessage = (
   }
 };
 //#endRegion
+
+//#region job
+export const sendInterviewEmail = (
+  interviewLink: string,
+  applicantName: string
+) => `
+  ${emailHeader()}
+  <div style="font-family: Arial, sans-serif; color: #333;">
+    <h2 style="color: #0073e6;">Dear ${applicantName},</h2>
+    <p>We are excited to inform you that you have been selected for an interview as part of your application process on <strong>Jobliences</strong>.</p>
+    <p>This is a great opportunity to showcase your skills and learn more about the company you applied to.</p>
+    <p>To view the interview details and schedule, please click the button below:</p>
+    <div style="margin: 20px 0; text-align: center;">
+      <a href="${interviewLink}" style="background-color: #28a745; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px;">
+        View Interview Details
+      </a>
+    </div>
+    <p>We wish you the best of luck!</p>
+    <p>Best regards,<br/>The Jobliences Team</p>
+  </div>
+  ${emailFooter()}
+`;
+//#endregion

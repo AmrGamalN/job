@@ -1,8 +1,8 @@
 export const userTypeDefs = `
 
 type Image  {
-  imageUrl: String!
-  imageKey: String!
+  url: String!
+  key: String!
 }
 
 type user {

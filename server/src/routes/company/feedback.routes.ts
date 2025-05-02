@@ -4,14 +4,17 @@ import { asyncHandler } from "../../middlewares/handleError.middleware";
 import {
   expressValidator,
   validateQueryMiddleware,
-  validateRequiredParamMiddleware,
+  requiredParamMiddleware,
 } from "../../middlewares/validator.middleware";
 import { feedBackValidate } from "../../validation/company/feedBack.validator";
 import {
   companyAdminRoleMiddlewares,
   companyViewerRoleMiddlewares,
 } from "../../utils/authorizationRole.util";
-import { validateQueryParams } from "../../validation/query/query.validator";
+import {
+  validateQueryFeedbackCount,
+  validateQueryFeedbackGetAll,
+} from "../../validation/query/company/feedback.validator";
 const controller = FeedBackController.getInstance();
 const router = express.Router();
 
@@ -23,7 +26,7 @@ const router = express.Router();
  *     summary: Update feedBack record
  *     description: Update specific feedBack information by id
  *     parameters:
- *      - $ref: '#/components/parameters/requiredId'
+ *      - $ref: '#/components/parameters/RequiredId'
  *     requestBody:
  *       required: true
  *       content:
@@ -45,7 +48,7 @@ const router = express.Router();
 router.put(
   "/update/:id",
   ...companyAdminRoleMiddlewares,
-  validateRequiredParamMiddleware(),
+  requiredParamMiddleware(),
   expressValidator(feedBackValidate()),
   asyncHandler(controller.updateFeedBackStatus.bind(controller))
 );
@@ -76,7 +79,7 @@ router.get(
   "/count",
   ...companyAdminRoleMiddlewares,
   validateQueryMiddleware(),
-  expressValidator(validateQueryParams()),
+  expressValidator(validateQueryFeedbackCount()),
   asyncHandler(controller.countFeedBack.bind(controller))
 );
 
@@ -88,7 +91,7 @@ router.get(
  *     summary: Get feedBack data by id
  *     description: Retrieve feedBack record by its id
  *     parameters:
- *      - $ref: '#/components/parameters/requiredId'
+ *      - $ref: '#/components/parameters/RequiredId'
  *     responses:
  *       200:
  *         $ref: '#/components/responses/FeedBackResponse'
@@ -104,7 +107,7 @@ router.get(
 router.get(
   "/get/:id",
   ...companyAdminRoleMiddlewares,
-  validateRequiredParamMiddleware(),
+  requiredParamMiddleware(),
   asyncHandler(controller.getFeedBack.bind(controller))
 );
 
@@ -116,7 +119,7 @@ router.get(
  *     summary: Get feedBack data by link
  *     description: Retrieve feedBack record by link
  *     parameters:
- *      - $ref: '#/components/parameters/requiredId'
+ *      - $ref: '#/components/parameters/RequiredId'
  *     responses:
  *       200:
  *         $ref: '#/components/responses/FeedBackResponse'
@@ -165,7 +168,7 @@ router.get(
   "/",
   ...companyAdminRoleMiddlewares,
   validateQueryMiddleware(),
-  expressValidator(validateQueryParams()),
+  expressValidator(validateQueryFeedbackGetAll()),
   asyncHandler(controller.getAllFeedBack.bind(controller))
 );
 
@@ -177,7 +180,7 @@ router.get(
  *     summary: Delete feedBack record
  *     description: Delete specific feedBack record by id
  *     parameters:
- *      - $ref: '#/components/parameters/requiredId'
+ *      - $ref: '#/components/parameters/RequiredId'
  *     responses:
  *       200:
  *         $ref: '#/components/schemas/BaseResponse'
@@ -193,7 +196,7 @@ router.get(
 router.delete(
   "/delete/:id",
   ...companyAdminRoleMiddlewares,
-  validateRequiredParamMiddleware(),
+  requiredParamMiddleware(),
   asyncHandler(controller.deleteFeedBack.bind(controller))
 );
 export default router;

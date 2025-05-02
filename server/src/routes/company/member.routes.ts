@@ -4,7 +4,7 @@ import { asyncHandler } from "../../middlewares/handleError.middleware";
 import {
   expressValidator,
   validateQueryMiddleware,
-  validateRequiredParamMiddleware,
+  requiredParamMiddleware,
 } from "../../middlewares/validator.middleware";
 import {
   validateMemberAdd,
@@ -14,7 +14,10 @@ import {
   companyAdminRoleMiddlewares,
   companyViewerRoleMiddlewares,
 } from "../../utils/authorizationRole.util";
-import { validateQueryParams } from "../../validation/query/query.validator";
+import {
+  validateQueryMemberCount,
+  validateQueryMemberGetAll,
+} from "../../validation/query/company/member.validator";
 const controller = MemberController.getInstance();
 const router = express.Router();
 
@@ -47,7 +50,7 @@ router.get(
   "/count",
   ...companyAdminRoleMiddlewares,
   validateQueryMiddleware(),
-  expressValidator(validateQueryParams()),
+  expressValidator(validateQueryMemberCount()),
   asyncHandler(controller.countMember.bind(controller))
 );
 
@@ -105,7 +108,7 @@ router.post(
 router.get(
   "/get/:id",
   ...companyViewerRoleMiddlewares,
-  validateRequiredParamMiddleware(),
+  requiredParamMiddleware(),
   asyncHandler(controller.getMember.bind(controller))
 );
 
@@ -140,6 +143,7 @@ router.get(
   "/",
   ...companyViewerRoleMiddlewares,
   validateQueryMiddleware(),
+  expressValidator(validateQueryMemberGetAll()),
   asyncHandler(controller.getAllMembers.bind(controller))
 );
 
@@ -173,7 +177,7 @@ router.get(
 router.put(
   "/update/:id",
   ...companyAdminRoleMiddlewares,
-  validateRequiredParamMiddleware(),
+  requiredParamMiddleware(),
   expressValidator(validateMemberUpdate),
   asyncHandler(controller.updateMember.bind(controller))
 );
@@ -202,7 +206,7 @@ router.put(
 router.delete(
   "/delete/:id",
   ...companyAdminRoleMiddlewares,
-  validateRequiredParamMiddleware(),
+  requiredParamMiddleware(),
   asyncHandler(controller.deleteMember.bind(controller))
 );
 export default router;

@@ -10,12 +10,12 @@ export const profileDto = z
     jobDescription: z.string(),
     jobLocation: z.string(),
     jobCompany: z.string(),
-    jobType: z.enum(["full-time", "part-time", "freelance", ""]).default(""),
+    jobType: z.enum(["full_time", "part_time", "freelance", ""]).default(""),
     projectPreference: z
       .enum(["Long-term", "Short-term", "both", ""])
       .default(""),
     experienceLevel: z
-      .enum(["entry-level", "Intermediate", "expert", ""])
+      .enum(["entry_level", "Intermediate", "expert", ""])
       .default(""),
     categories: z.array(z.string()).default([]),
     skills: z.array(z.string()).default([]),

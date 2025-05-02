@@ -13,7 +13,7 @@ import { warpAsync } from "../../utils/warpAsync.util";
 import { serviceResponse } from "../../utils/response.util";
 import { validateAndFormatData } from "../../utils/validateData.util";
 import { paginate } from "../../utils/pagination.util";
-import { CustomError } from "../../utils/customErr.util";
+import { CustomError } from "../../utils/customError.util";
 import { ServiceResponseType, ResponseType } from "../../types/response.type";
 import { FeedbackFiltersType } from "../../types/company.type";
 import mongoose from "mongoose";
@@ -188,7 +188,7 @@ class FeedBackService {
   deleteFeedBack = warpAsync(
     async (feedBackId: string): Promise<ServiceResponseType> => {
       return serviceResponse({
-        deleteCount: (await FeedBack.deleteOne({ _id: feedBackId }))
+        deletedCount: (await FeedBack.deleteOne({ _id: feedBackId }))
           .deletedCount,
       });
     }

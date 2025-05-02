@@ -144,7 +144,7 @@ class ConnectionService {
       if (!validation?.success) return validation;
 
       return serviceResponse({
-        deleteCount: (
+        deletedCount: (
           await Connection.deleteOne({
             $or: [
               { actorId, connectorId: targetUid, ownerType },

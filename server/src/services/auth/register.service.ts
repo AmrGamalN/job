@@ -20,7 +20,7 @@ import { serviceResponse } from "../../utils/response.util";
 import { generateUniqueLink } from "../../utils/generateUniqueLink.util";
 import { sendVerifyEmail } from "../../utils/emailMessage.util";
 import { ServiceResponseType, ResponseType } from "../../types/response.type";
-import { CustomError } from "../../utils/customErr.util";
+import { CustomError } from "../../utils/customError.util";
 
 class RegisterService {
   private static instanceService: RegisterService;

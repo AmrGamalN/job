@@ -7,7 +7,7 @@ export const swaggerOptions = (route: string): object => {
     definition: {
       openapi: "3.0.0",
       info: {
-        title: "JobLineces",
+        title: "JobLaneces",
         version: "1.0.0",
         description: `API documentation for the ${route}`,
       },
@@ -28,7 +28,7 @@ export const swaggerOptions = (route: string): object => {
   };
 };
 
-const routes = ["profile", "post", "company", "auth", "save"];
+const routes = ["profile", "post", "company", "auth", "save", "job"];
 export const swaggerDoc = (app: Application) => {
   routes.forEach((routeName: string) => {
     const swaggerSpecs = swaggerJSDoc(swaggerOptions(routeName));

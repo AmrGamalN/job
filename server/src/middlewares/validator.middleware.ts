@@ -4,7 +4,7 @@ import { asyncHandler } from "./handleError.middleware";
 const validQueries = [
   "reactionType",
   "questionType",
-  "documentType",
+  "type",
   "userType",
   "post",
   "comment",
@@ -21,8 +21,29 @@ const validQueries = [
   "start",
   "end",
   "title",
-  "documentType",
+  "type",
   "targetType",
+  "salaryMin",
+  "salaryMax",
+  "location",
+  "skills",
+
+  "jobExperience",
+  "applicantTypes",
+  "jobType",
+  "workplaceType",
+  "jobTitle",
+  "salary",
+  "views",
+  "createdAt",
+  
+  "resetByName",
+
+  "currentAddress",
+
+  "interviewResult",
+  "interviewStatus",
+  "interviewPlatform",
 ];
 
 export const expressValidator = (validators: any[]) => {
@@ -33,7 +54,6 @@ export const expressValidator = (validators: any[]) => {
       next: NextFunction
     ): Promise<Response | void> => {
       req.body = req.body.variables?.input || req.body.variables || req.body;
-
       for (const validator of validators) {
         await validator?.run(req);
       }
@@ -59,8 +79,8 @@ export const expressValidator = (validators: any[]) => {
   );
 };
 
-// Required params
-export const validateRequiredParamMiddleware = () => {
+// Required params [param name => id]
+export const requiredParamMiddleware = () => {
   return async (req: Request, res: Response, next: NextFunction) => {
     if (!req.params?.id || !/^[a-fA-F0-9]{24}$/.test(req.params?.id)) {
       return res.status(404).json({
@@ -73,7 +93,7 @@ export const validateRequiredParamMiddleware = () => {
 };
 
 // If no identifier is sent such as profile ID, take it from curUserId,
-// in this case this is the current user's profile
+// In this case this is the current user's profile
 export const validateToggleParamMiddleware = () => {
   return async (req: Request, res: Response, next: NextFunction) => {
     if (!req.params?.id) {

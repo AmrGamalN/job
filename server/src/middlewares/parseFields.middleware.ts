@@ -1,19 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 const parserFieldArray = ["tags", "technologies", "department", "legalInfo"];
 const parserFieldObject = ["legalInfo"];
-const parserImages = ["companyLogo", "profileImage", "coverImage"];
-const mimeTypesDocuments: Record<string, string> = {
-  "application/pdf": "pdf",
-  "application/msword": "word",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-    "document",
-  "application/vnd.ms-powerpoint": "powerpoint",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation":
-    "presentation",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
-    "spreadsheet",
-  "application/vnd.ms-excel": "excel",
-};
 
 export const parseFieldsMiddleware = () => {
   return (req: Request, res: Response, next: NextFunction): Response | void => {
@@ -49,8 +36,13 @@ export const checkFilesMiddleware = (fields: string[]) => {
   return (req: Request, res: Response, next: NextFunction): Response | void => {
     if (req.file && fields.includes(req.file.fieldname)) {
       return next();
+    } else if (req.files) {
+      for (const field in req.files) {
+        if (fields.includes(field)) {
+          return next();
+        }
+      }
     }
-
     return res.status(400).json({
       success: false,
       message: `${fields} is required`,
@@ -64,27 +56,27 @@ export const parserImagesMiddleware = () => {
       return next();
     }
 
-    if (req.file?.fieldname == "documentFile") {
-      req.body.documentFile = {
-        documentUrl: req.file?.filename,
-        documentType: mimeTypesDocuments[req.file?.mimetype],
+    if (req.file?.fieldname) {
+      req.body[req.file?.fieldname] = {
+        url: req.file?.filename,
+        type: req.file?.mimetype,
+        key: req.file?.path,
       };
       return next();
     }
 
     for (const field in req.files) {
-      if (parserImages.includes(field)) {
-        const images = req.files as {
-          [fieldname: string]: Express.Multer.File[];
-        };
+      const images = req.files as {
+        [fieldname: string]: Express.Multer.File[];
+      };
 
-        req.body[field] = images[field].reduce((acc, currentFile) => {
-          return {
-            imageUrl: currentFile.filename,
-            imageKey: currentFile.filename,
-          };
-        }, {});
-      }
+      req.body[field] = images[field].reduce((acc, currentFile) => {
+        return {
+          url: currentFile.filename,
+          type: currentFile.mimetype,
+          key: currentFile.path,
+        };
+      }, {});
     }
     return next();
   };

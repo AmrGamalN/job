@@ -16,18 +16,15 @@ import { warpAsync } from "../../utils/warpAsync.util";
 import { paginate } from "../../utils/pagination.util";
 import { sendEmail } from "../../utils/sendEmail.util";
 import { serviceResponse } from "../../utils/response.util";
-import { generateFeedbackLink } from "../../utils/generateUniqueLink.util";
+import { generateLink } from "../../utils/generateUniqueLink.util";
 import { validateAndFormatData } from "../../utils/validateData.util";
-import { CustomError } from "../../utils/customErr.util";
+import { CustomError } from "../../utils/customError.util";
 import {
   sendCompanyEmail,
   sendCompanyStatusMessage,
 } from "../../utils/emailMessage.util";
 import { ServiceResponseType, ResponseType } from "../../types/response.type";
-import {
-  CompanyFiltersType,
-  CompanyStatusType,
-} from "../../types/company.type";
+import { CompanyFiltersType } from "../../types/company.type";
 import { v4 as uuidv4 } from "uuid";
 import mongoose from "mongoose";
 
@@ -119,11 +116,7 @@ class CompanyService {
             { session }
           );
           if (newCompany) {
-            const feedBackLink = await generateFeedbackLink(
-              newCompany.companyName.replace(/ /g, "_"),
-              "company/feedback"
-            );
-
+            const feedBackLink = await generateLink("company/feedback");
             await Promise.all([
               FeedBack.create({
                 companyId: newCompany._id,
@@ -135,7 +128,7 @@ class CompanyService {
                 ),
                 feedBackLink: feedBackLink.link,
               }),
-              sendEmail(
+              await sendEmail(
                 String(newCompany.companyEmail),
                 "Jobliences: We've Received Your Join Request",
                 sendCompanyEmail(feedBackLink.link, newCompany.companyName)
@@ -295,7 +288,7 @@ class CompanyService {
         Company.deleteOne({ _id: companyId }),
       ]);
       return serviceResponse({
-        deleteCount: deletedCount.deletedCount,
+        deletedCount: deletedCount.deletedCount,
       });
     }
   );

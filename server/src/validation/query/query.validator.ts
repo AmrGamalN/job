@@ -1,5 +1,4 @@
 import { query } from "express-validator";
-import Request from "express";
 export const validateQueryParams = () => {
   const fields = (field: string) => {
     return query(field)
@@ -45,17 +44,12 @@ export const validateQueryParams = () => {
         "Status must be one of active, inactive, pending, rejected, banned"
       ),
 
-    query("tags")
-      .optional({ checkFalsy: true })
-      .isArray()
-      .withMessage("Tags must be an array of strings"),
-
     query("userType")
       .optional({ checkFalsy: true })
       .isIn(["user", "member", "other"])
       .withMessage("User type must be one of user, member, other"),
 
-    query("documentType")
+    query("type")
       .optional({ checkFalsy: true })
       .isIn([
         "pdf",
@@ -87,7 +81,7 @@ export const validateQueryParams = () => {
 
         return true;
       }),
-    ,
+
     query("end")
       .optional({ checkFalsy: true })
       .isISO8601()
@@ -101,12 +95,41 @@ export const validateQueryParams = () => {
         return true;
       }),
 
+    fields("currentAddress"),
     fields("title"),
     fields("name"),
     fields("position"),
-    fields("department"),
     fields("questionType"),
     fields("companyName"),
     fields("tags.*"),
+
+    fields("salary").isIn([1, -1]).withMessage("salary must be 1 or -1"),
+    fields("createdAt").isIn([1, -1]).withMessage("salary must be 1 or -1"),
+    fields("views").isIn([1, -1]).withMessage("salary must be 1 or -1"),
+    fields("department"),
+    fields("location"),
+    fields("skills"),
+    fields("jobExperience"),
+    fields("applicantTypes"),
+    fields("jobType"),
+    fields("workplaceType"),
+    fields("jobTitle"),
+    query("salaryMin")
+      .optional({ checkFalsy: true })
+      .isNumeric()
+      .withMessage("salary min must be a number")
+      .custom((value, { req }) => {
+        if (req.query?.salaryMin > req.query?.salaryMax) {
+          throw new Error("salary min must be less than salary max");
+        }
+        return true;
+      })
+      .toInt(),
+
+    query("salaryMax")
+      .optional({ checkFalsy: true })
+      .isNumeric()
+      .withMessage("salary min must be a number")
+      .toInt(),
   ];
 };

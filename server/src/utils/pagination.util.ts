@@ -8,7 +8,11 @@ export const paginate = async (
   model: Model<any>,
   dto: any,
   totalCount: number,
-  paginationOptions?: { page: number; limit: number },
+  paginationOptions?: {
+    sort?: any;
+    page: number;
+    limit: number;
+  },
   graphqlInfo?: GraphQLResolveInfo | null,
   fieldSearch?: any,
   populatePath?: any,
@@ -26,18 +30,25 @@ export const paginate = async (
     .skip(skip)
     .limit(limit)
     .select(selectedFields);
+
   if (populatePath) {
     query = query.populate({
       path: populatePath,
       match: populateFilter,
     });
   }
+
+  if (paginationOptions?.sort) {
+    query = query.sort(paginationOptions?.sort);
+  }
   const documents = await query.lean();
 
+  // Filter undefined populate
   const filteredDocuments = populatePath
     ? documents.filter((doc) => !!doc[populatePath])
     : documents;
 
+  // Validate data format
   const validatedData = validateAndFormatData(
     filteredDocuments,
     dto,

@@ -12,7 +12,7 @@ export const serviceResponse = ({
   data,
   error,
   count,
-  deleteCount,
+  deletedCount,
 }: ResponseOptions): ServiceResponseType => {
   switch (statusText) {
     case "BadRequest":
@@ -27,13 +27,13 @@ export const serviceResponse = ({
 
     case "OK":
     default:
-      if (statusText == "OK" || data || count || deleteCount)
+      if (statusText == "OK" || data || count || deletedCount)
         return response({
           statusText: "OK",
           message,
           data,
           count,
-          deleteCount,
+          deletedCount,
         });
       return response({ statusText: "NotFound", message });
   }
@@ -45,7 +45,7 @@ const response = ({
   data,
   error,
   count,
-  deleteCount,
+  deletedCount,
 }: ResponseOptions): ServiceResponseType => {
   const defaultMessages = {
     OK: "Operation successfully",
@@ -75,7 +75,7 @@ const response = ({
         message: message ?? defaultMessages.OK,
         data,
         count,
-        deleteCount,
+        deletedCount,
       };
 
     case "BadRequest":

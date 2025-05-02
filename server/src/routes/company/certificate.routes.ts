@@ -4,7 +4,7 @@ import { asyncHandler } from "../../middlewares/handleError.middleware";
 import {
   expressValidator,
   validateQueryMiddleware,
-  validateRequiredParamMiddleware,
+  requiredParamMiddleware,
 } from "../../middlewares/validator.middleware";
 import {
   validateCertificateAdd,
@@ -15,6 +15,10 @@ import {
   companyViewerRoleMiddlewares,
 } from "../../utils/authorizationRole.util";
 import { validateQueryParams } from "../../validation/query/query.validator";
+import {
+  validateQueryCertificateCount,
+  validateQueryCertificateGetAll,
+} from "../../validation/query/company/certificate.validator";
 const controller = CertificateController.getInstance();
 const router = express.Router();
 
@@ -70,7 +74,7 @@ router.post(
 router.get(
   "/count",
   ...companyAdminRoleMiddlewares,
-  expressValidator(validateQueryParams()),
+  expressValidator(validateQueryCertificateCount()),
   asyncHandler(controller.countCertificate.bind(controller))
 );
 
@@ -98,7 +102,7 @@ router.get(
 router.get(
   "/get/:id",
   ...companyViewerRoleMiddlewares,
-  validateRequiredParamMiddleware(),
+  requiredParamMiddleware(),
   asyncHandler(controller.getCertificate.bind(controller))
 );
 
@@ -129,7 +133,7 @@ router.get(
   "/",
   ...companyViewerRoleMiddlewares,
   validateQueryMiddleware(),
-  expressValidator(validateQueryParams()),
+  expressValidator(validateQueryCertificateGetAll()),
   asyncHandler(controller.getAllCertificates.bind(controller))
 );
 
@@ -163,7 +167,7 @@ router.get(
 router.put(
   "/update/:id",
   ...companyAdminRoleMiddlewares,
-  validateRequiredParamMiddleware(),
+  requiredParamMiddleware(),
   expressValidator(validateCertificateUpdate),
   asyncHandler(controller.updateCertificate.bind(controller))
 );
@@ -192,7 +196,7 @@ router.put(
 router.delete(
   "/delete/:id",
   ...companyAdminRoleMiddlewares,
-  validateRequiredParamMiddleware(),
+  requiredParamMiddleware(),
   asyncHandler(controller.deleteCertificate.bind(controller))
 );
 export default router;
