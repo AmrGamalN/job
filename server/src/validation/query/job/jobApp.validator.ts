@@ -1,21 +1,11 @@
-import { query } from "express-validator";
 import { validatorPagination } from "../pagination.validator";
-export const validateQueryJobAppGetAll = () => {
-  return [...validatorPagination(), ...validatorCustomQuery()];
-};
+import { validateNumber, validateString } from "../../helperFunction.validator";
 
-export const validateQueryJobAppCount = () => {
-  return [...validatorCustomQuery()];
-};
-
-const validatorFields = (fields: string[]) => {
-  return fields.map((field) =>
-    query(field)
-      .optional({ checkFalsy: true })
-      .isString()
-      .withMessage(`${field} must be a string`)
-  );
-};
+export const validateQueryJobAppGetAll = () => [
+  ...validatorPagination(),
+  ...validatorCustomQuery(),
+];
+export const validateQueryJobAppCount = () => [...validatorCustomQuery()];
 
 const validatorCustomQuery = () => [
   ...validatorFields([
@@ -26,5 +16,19 @@ const validatorCustomQuery = () => [
     "workplaceType",
     "jobTitle",
   ]),
-  query("createdAt").isIn([1, -1]).withMessage("salary must be 1 or -1"),
+  validateNumber("createdAt", true, {
+    location: "query",
+    isIn: [1, -1],
+  }),
 ];
+
+// Helper for validating multiple string fields
+const validatorFields = (fields: string[]) => {
+  return fields.map((field) =>
+    validateString(field, true, {
+      location: "query",
+      min: 1,
+      max: 100,
+    })
+  );
+};

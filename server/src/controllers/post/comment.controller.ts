@@ -27,7 +27,7 @@ class CommentController {
   }
 
   async getComment(req: Request, res: Response): Promise<Response> {
-    const result = await this.commentService.getComment(req.body.id);
+    const result = await this.commentService.getComment(req.params.id);
     return controllerResponse(res, result);
   }
 
@@ -48,7 +48,7 @@ class CommentController {
   async updateComment(req: Request, res: Response): Promise<Response> {
     const result = await this.commentService.updateComment(
       req.body,
-      req.body.id
+      req.params.id
     );
     return controllerResponse(res, result);
   }
@@ -59,7 +59,7 @@ class CommentController {
   }
 
   async deleteComment(req: Request, res: Response): Promise<Response> {
-    const result = await this.commentService.deleteComment(req.body.id);
+    const result = await this.commentService.deleteComment(req.params.id);
     return controllerResponse(res, result);
   }
 }

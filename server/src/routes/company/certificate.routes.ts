@@ -14,7 +14,6 @@ import {
   companyAdminRoleMiddlewares,
   companyViewerRoleMiddlewares,
 } from "../../utils/authorizationRole.util";
-import { validateQueryParams } from "../../validation/query/query.validator";
 import {
   validateQueryCertificateCount,
   validateQueryCertificateGetAll,
@@ -27,8 +26,8 @@ const router = express.Router();
  * /company/certificate/add:
  *   post:
  *     tags: [Certificate]
- *     summary: Add certificate record
- *     description: Add a new certificate record
+ *     summary: Add certificate
+ *     description: Add a new certificate
  *     requestBody:
  *       required: true
  *       content:
@@ -39,7 +38,7 @@ const router = express.Router();
  *       200:
  *         $ref: '#/components/schemas/BaseResponse'
  *       400:
- *         description: Failed to add certificate record
+ *         description: Failed to add certificate
  *       403:
  *         description: Unauthorized
  *       500:
@@ -65,7 +64,7 @@ router.post(
  *       200:
  *         $ref: '#/components/schemas/BaseResponse'
  *       400:
- *         description: Failed to fetch certificate data
+ *         description: Failed to get count certificate
  *       403:
  *         description: Unauthorized
  *       500:
@@ -83,8 +82,8 @@ router.get(
  * /company/certificate/get/{id}:
  *   get:
  *     tags: [Certificate]
- *     summary: Get certificate data by id
- *     description: Retrieve certificate record by its id
+ *     summary: Get certificate
+ *     description: Get certificate data by id
  *     parameters:
  *      - $ref: '#/components/parameters/Id'
  *     responses:
@@ -112,7 +111,7 @@ router.get(
  *   get:
  *     tags: [Certificate]
  *     summary: Get all certificate
- *     description: Retrieve certificate record by its id
+ *     description: Retrieve certificate  by its id
  *     parameters:
  *      - $ref: '#/components/parameters/Page'
  *      - $ref: '#/components/parameters/Limit'
@@ -142,7 +141,7 @@ router.get(
  * /company/certificate/update/{id}:
  *   put:
  *     tags: [Certificate]
- *     summary: Update certificate record
+ *     summary: Update certificate
  *     description: Update specific certificate information by id
  *     parameters:
  *      - $ref: '#/components/parameters/Id'
@@ -156,7 +155,7 @@ router.get(
  *       200:
  *         $ref: '#/components/schemas/BaseResponse'
  *       400:
- *         description: Failed to update certificate record
+ *         description: Failed to update certificate
  *       403:
  *         description: Unauthorized
  *       404:
@@ -177,15 +176,15 @@ router.put(
  * /company/certificate/delete/{id}:
  *   delete:
  *     tags: [Certificate]
- *     summary: Delete certificate record
- *     description: Delete specific certificate record by id
+ *     summary: Delete certificate
+ *     description: Delete specific certificate  by id
  *     parameters:
  *      - $ref: '#/components/parameters/Id'
  *     responses:
  *       200:
  *         $ref: '#/components/schemas/BaseResponse'
  *       400:
- *         description: Failed to delete certificate record
+ *         description: Failed to delete certificate
  *       403:
  *         description: Unauthorized
  *       404:

@@ -1,10 +1,10 @@
 import { Schema, model } from "mongoose";
 import { JobAppDtoType } from "../../../dto/job/jobApplication.dto";
 import {
-  ApplicantTypes,
-  JobExperiences,
-  JobTypes,
-  WorkplaceTypes,
+  ApplicantEnum,
+  JobEnum,
+  WorkplaceEnum,
+  JobExperiencesEnum
 } from "../../../types/job.type";
 
 const jobDetails = {
@@ -30,22 +30,23 @@ const jobDetails = {
   },
   applicantTypes: {
     type: [String],
-    enum: ApplicantTypes,
+    enum: ApplicantEnum,
     required: true,
   },
   jobType: {
     type: [String],
-    enum: JobTypes,
+    enum: JobEnum,
     required: true,
   },
   workplaceType: {
     type: [String],
-    enum: WorkplaceTypes,
+    enum: WorkplaceEnum,
     required: true,
   },
   jobExperience: {
-    type: String,
-    enum: JobExperiences,
+    type: [String],
+    enum: JobExperiencesEnum,
+    required: true,
   },
   salary: {
     min: { type: Number },

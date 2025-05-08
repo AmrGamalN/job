@@ -1,4 +1,4 @@
-import Security from "../../models/mongodb/profiles/security.model";
+import Security from "../../models/mongodb/client/security.model";
 import {
   auth,
   authentication,
@@ -8,7 +8,7 @@ import { warpAsync } from "../../utils/warpAsync.util";
 import { serviceResponse } from "../../utils/response.util";
 import { ServiceResponseType } from "../../types/response.type";
 import dotenv from "dotenv";
-import { UserSecurityDtoType } from "../../dto/profiles/security.dto";
+import { SecurityDtoType } from "../../dto/client/security.dto";
 import TokenService from "../../services/auth/token.service";
 import speakeasy from "speakeasy";
 import bcrypt from "bcrypt";
@@ -38,23 +38,21 @@ class LoginService {
         ? { email: email }
         : { phoneNumber: phoneNumber };
 
-      const isUserExisting = await this.isUserExisting(credential);
-      if (isUserExisting.success === false) return isUserExisting;
+      const isExisting = await this.checkUser(credential);
+      if (isExisting.success === false) return isExisting;
 
-      const userSecurity = await Security.findOne(credential).lean();
-      if (!userSecurity)
+      const checkUser = await Security.findOne(credential).lean();
+      if (!checkUser)
         return serviceResponse({
           statusText: "NotFound",
           message: "Account not found",
         });
 
-      const checkAccountStatus = await this.checkAccountStatusBeforeLogin(
-        userSecurity
-      );
-      if (!checkAccountStatus.success) return checkAccountStatus;
+      const checkAccount = await this.checkStatusAccount(checkUser);
+      if (!checkAccount.success) return checkAccount;
 
       const checkAttemptsLogin = await this.checkAttemptsLogin(
-        userSecurity,
+        checkUser,
         credential
       );
       if (!checkAttemptsLogin.success) return checkAttemptsLogin;
@@ -68,33 +66,33 @@ class LoginService {
       if (phoneNumber) {
         userCredential = await this.signWithPasswordAndPhone(
           password,
-          userSecurity.password,
+          checkUser.password,
           phoneNumber
         );
         if (!userCredential.success) return userCredential;
       }
 
-      const checkEnable2FA = await this.checkApplyTwoFactorAuth(userSecurity);
-      if (checkEnable2FA.success) {
+      const check2FA = await this.checkApplyTwoFactorAuth(checkUser);
+      if (check2FA.success) {
         const tempToken = await this.tokenService.generateTempToken(
           credential,
-          userSecurity.role
+          checkUser.role
         );
         return {
-          ...checkEnable2FA,
+          ...check2FA,
           tempToken: tempToken.tempToken,
-          userId: userSecurity.userId,
+          userId: checkUser.userId,
         };
       }
 
-      const tokens = await this.tokenService.generateTokens(userSecurity);
+      const tokens = await this.tokenService.generateTokens(checkUser);
       return serviceResponse({
         statusText: "OK",
         message: "Login successful",
         data: {
           accessToken: tokens.accessToken,
           refreshToken: tokens.refreshToken,
-          userId: userSecurity.userId,
+          userId: checkUser.userId,
         },
       });
     }
@@ -121,8 +119,7 @@ class LoginService {
     }
   );
 
-  // Check user existing
-  private isUserExisting = warpAsync(
+  private checkUser = warpAsync(
     async (credential: any): Promise<ServiceResponseType> => {
       let getUser;
       let provider;
@@ -145,7 +142,6 @@ class LoginService {
     }
   );
 
-  // Login with email and password
   private signWithPasswordAndEmail = warpAsync(
     async (email: string, password: string): Promise<ServiceResponseType> => {
       let userCredential;
@@ -173,7 +169,6 @@ class LoginService {
     }
   );
 
-  // Login with phone and password
   private signWithPasswordAndPhone = warpAsync(
     async (
       plainPassword: string,
@@ -196,26 +191,24 @@ class LoginService {
     }
   );
 
-  // Check user account delete | block | verify
-  private checkAccountStatusBeforeLogin = warpAsync(
-    async (userSecurity: UserSecurityDtoType): Promise<ServiceResponseType> => {
+  private checkStatusAccount = warpAsync(
+    async (data: SecurityDtoType): Promise<ServiceResponseType> => {
       const statusMessage =
-        (userSecurity.isAccountDeleted && "Account is deleted") ||
-        (userSecurity.isAccountBlocked && "Account is blocked") ||
-        (!userSecurity.isEmailVerified && "Email is not verified");
+        (data.isAccountDeleted && "Account is deleted") ||
+        (data.isAccountBlocked && "Account is blocked") ||
+        (!data.isEmailVerified && "Email is not verified");
       if (statusMessage)
         return { success: false, status: 400, message: statusMessage };
       return { success: true };
     }
   );
 
-  // Check number attempts failed Login
   private checkAttemptsLogin = warpAsync(
-    async (userSecurity: UserSecurityDtoType): Promise<ServiceResponseType> => {
-      if (Number(userSecurity.numberLogin) >= 4) {
+    async (data: SecurityDtoType): Promise<ServiceResponseType> => {
+      if (Number(data.numberLogin) >= 4) {
         const currentTime = Date.now();
         const lastFailedTime = new Date(
-          userSecurity.lastFailedLoginTime as Date
+          data.lastFailedLoginTime as Date
         ).getTime();
         const timeDifference = (currentTime - lastFailedTime) / (1000 * 60);
 
@@ -228,7 +221,7 @@ class LoginService {
         }
 
         await Security.updateOne(
-          { email: userSecurity.email },
+          { email: data.email },
           { $set: { numberLogin: 0, lastFailedLoginTime: null } }
         );
       }
@@ -236,7 +229,6 @@ class LoginService {
     }
   );
 
-  // Update number of failed login
   private trackFailedLoginAttempt = warpAsync(
     async (email: string): Promise<ServiceResponseType> => {
       await Security.updateOne(
@@ -251,8 +243,8 @@ class LoginService {
   );
 
   private checkApplyTwoFactorAuth = warpAsync(
-    async (userSecurity: UserSecurityDtoType): Promise<ServiceResponseType> => {
-      if (userSecurity.isTwoFactorAuth)
+    async (data: SecurityDtoType): Promise<ServiceResponseType> => {
+      if (data.isTwoFactorAuth)
         return serviceResponse({
           statusText: "OK",
           message: "2FA required",
@@ -266,8 +258,7 @@ class LoginService {
       email: string,
       twoFactorCode: string
     ): Promise<ServiceResponseType> => {
-      // Get user security details
-      const userSecurity = await Security.findOne({
+      const data = await Security.findOne({
         email,
         isTwoFactorAuth: { $eq: true },
       })
@@ -283,14 +274,14 @@ class LoginService {
         })
         .lean();
 
-      if (!userSecurity)
+      if (!data)
         return serviceResponse({
           statusText: "BadRequest",
           message: "Invalid code",
         });
 
       const verified = speakeasy.totp.verify({
-        secret: String(userSecurity.twoFactorCode),
+        secret: String(data.twoFactorCode),
         token: twoFactorCode,
         encoding: "base32",
         window: 1,
@@ -303,14 +294,14 @@ class LoginService {
         });
 
       // Generate access token and refresh token
-      const tokens = await this.tokenService.generateTokens(userSecurity);
+      const tokens = await this.tokenService.generateTokens(data);
       return serviceResponse({
         statusText: "OK",
         message: "Login successful",
         data: {
           accessToken: tokens.accessToken,
           refreshToken: tokens.refreshToken,
-          userId: userSecurity.userId,
+          userId: data.userId,
         },
       });
     }

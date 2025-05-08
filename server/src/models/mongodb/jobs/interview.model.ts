@@ -1,5 +1,10 @@
 import { Schema, model } from "mongoose";
 import { InterviewDtoType } from "../../../dto/job/interview.dto";
+import {
+  InterviewPlatformEnum,
+  InterviewResultEnum,
+  InterviewStatusEnum,
+} from "../../../types/job.type";
 
 const InterviewSchema = new Schema(
   {
@@ -9,20 +14,20 @@ const InterviewSchema = new Schema(
     jobApplicationId: { type: String, required: true },
     interviewStatus: {
       type: String,
-      enum: ["pending", "rejected", "shortlisted", "passed"],
+      enum: InterviewStatusEnum,
       default: "pending",
     },
     interviewDate: { type: Date, required: true },
     interviewPlatform: {
       type: String,
-      enum: ["zoom", "google_meet", "on_site", "microsoftTeams"],
+      enum: InterviewPlatformEnum,
       required: true,
     },
     hrNotes: { type: String, default: "" },
     address: { type: String, default: "" },
     interviewResult: {
       type: String,
-      enum: ["failed", "on_hold", "hired"],
+      enum: InterviewResultEnum,
       default: "on_hold",
     },
     interviewLink: { type: String, required: true },

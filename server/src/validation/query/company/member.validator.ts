@@ -1,36 +1,32 @@
-import { query } from "express-validator";
-import {
-  validatorPagination,
-} from "../pagination.validator";
-export const validateQueryMemberGetAll = () => {
-  return [...validatorPagination(), ...validatorCustomQuery()];
-};
-
-export const validateQueryMemberCount = () => {
-  return [...validatorCustomQuery()];
-};
-
+import { validatorPagination } from "../pagination.validator";
+import { validateString } from "../../helperFunction.validator";
+export const validateQueryMemberGetAll = () => [
+  ...validatorPagination(),
+  ...validatorCustomQuery(),
+];
+export const validateQueryMemberCount = () => [...validatorCustomQuery()];
 const validatorCustomQuery = () => [
-  query("name")
-    .optional({ checkFalsy: true })
-    .isString()
-    .withMessage("Question type must be a string"),
-  query("department")
-    .optional({ checkFalsy: true })
-    .isString()
-    .withMessage("Question type must be a string"),
-  query("position")
-    .optional({ checkFalsy: true })
-    .isString()
-    .withMessage("Question type must be a string"),
-  query("role")
-    .optional({ checkFalsy: true })
-    .isIn(["owner", "founder", "admin", "member"])
-    .withMessage("Role must be one of owner, founder, admin, member"),
-  query("status")
-    .optional({ checkFalsy: true })
-    .isIn(["active", "inactive", "pending", "rejected", "banned"])
-    .withMessage(
-      "Status must be one of active, inactive, pending, rejected, banned"
-    ),
+  validateString("name", true, {
+    location: "query",
+    min: 1,
+    max: 100,
+  }),
+  validateString("department", true, {
+    location: "query",
+    min: 1,
+    max: 100,
+  }),
+  validateString("position", true, {
+    location: "query",
+    min: 1,
+    max: 100,
+  }),
+  validateString("role", true, {
+    location: "query",
+    isIn: ["owner", "founder", "admin", "member"],
+  }),
+  validateString("status", true, {
+    location: "query",
+    isIn: ["active", "inactive", "pending", "rejected", "banned"],
+  }),
 ];

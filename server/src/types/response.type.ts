@@ -11,6 +11,13 @@ export type ServiceResponseType = {
   tempToken?: string;
   userId?: string;
   deletedCount?: number;
+  paginateOptions?: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    remainPages: number;
+    itemsPerPage: number;
+  };
 };
 
 export type ResponseType =

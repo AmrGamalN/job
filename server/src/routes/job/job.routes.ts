@@ -61,8 +61,8 @@ router.get(
  * /company/job/add:
  *   post:
  *     tags: [Job]
- *     summary: Add job 
- *     description: Add a new job 
+ *     summary: Add job
+ *     description: Add a new job
  *     requestBody:
  *       required: true
  *       content:
@@ -73,7 +73,7 @@ router.get(
  *       200:
  *         $ref: '#/components/schemas/BaseResponse'
  *       400:
- *         description: Failed to add job 
+ *         description: Failed to add job
  *       403:
  *         description: Unauthorized
  *       500:
@@ -94,7 +94,7 @@ router.post(
  *     summary: Get job data by id
  *     description: Retrieve job by id
  *     parameters:
- *      - $ref: '#/components/parameters/RequiredId'
+ *      - $ref: '#/components/parameters/Id'
  *     responses:
  *       200:
  *         $ref: '#/components/schemas/JobResponse'
@@ -167,7 +167,7 @@ router.get(
  *     summary: Update job
  *     description: Update job by id
  *     parameters:
- *      - $ref: '#/components/parameters/RequiredId'
+ *      - $ref: '#/components/parameters/Id'
  *     requestBody:
  *       required: false
  *       content:
@@ -178,7 +178,7 @@ router.get(
  *       200:
  *         $ref: '#/components/schemas/BaseResponse'
  *       400:
- *         description: Failed to update job 
+ *         description: Failed to update job
  *       403:
  *         description: Unauthorized
  *       404:
@@ -199,15 +199,15 @@ router.put(
  * /company/job/delete/{id}:
  *   delete:
  *     tags: [Job]
- *     summary: Delete job 
+ *     summary: Delete job
  *     description: Delete job by id
  *     parameters:
- *      - $ref: '#/components/parameters/RequiredId'
+ *      - $ref: '#/components/parameters/Id'
  *     responses:
  *       200:
  *         $ref: '#/components/schemas/BaseResponse'
  *       400:
- *         description: Failed to delete job 
+ *         description: Failed to delete job
  *       403:
  *         description: Unauthorized
  *       404:

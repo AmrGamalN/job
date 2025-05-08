@@ -8,11 +8,13 @@ import {
   postUpdateDtoType,
 } from "../../dto/post/post.dto";
 import { warpAsync } from "../../utils/warpAsync.util";
-import { paginate } from "../../utils/pagination.util";
+import { generatePagination } from "../../utils/generatePagination.util";
 import { serviceResponse } from "../../utils/response.util";
 import { validateAndFormatData } from "../../utils/validateData.util";
 import { ServiceResponseType } from "../../types/response.type";
 import { generateLink } from "../../utils/generateUniqueLink.util";
+import { PostFiltersType } from "../../types/post.types";
+import { generateFilters } from "../../utils/generateFilters&Sort.util";
 
 class PostService {
   private static instanceService: PostService;
@@ -28,7 +30,10 @@ class PostService {
       data: postAddDtoType,
       userId: string
     ): Promise<ServiceResponseType> => {
-      const validationResult = validateAndFormatData(data, postAddDto);
+      const validationResult = validateAndFormatData({
+        data,
+        userDto: postAddDto,
+      });
       const postLink = await generateLink("post/get-by-link");
       await Post.create({ ...validationResult.data, userId, postLink });
       return serviceResponse({
@@ -37,21 +42,46 @@ class PostService {
     }
   );
 
-  getPost = warpAsync(async (query: object): Promise<ServiceResponseType> => {
-    const getPost = await Post.findOne(query).lean();
-    return validateAndFormatData(getPost, postDto);
+  getPost = warpAsync(async (_id: string): Promise<ServiceResponseType> => {
+    return validateAndFormatData({
+      data: await Post.findOne({ _id }).lean(),
+      userDto: postDto,
+    });
   });
 
   getAllPosts = warpAsync(
     async (
-      args: {
-        page: number;
-        limit: number;
-      },
-      info: GraphQLResolveInfo
+      queries: PostFiltersType,
+      info: GraphQLResolveInfo,
+      userId: string
     ): Promise<ServiceResponseType> => {
-      const count = await this.countPost();
-      return await paginate(Post, postDto, count.count ?? 0, args, info);
+      const filters = generateFilters<PostFiltersType>(queries);
+      const count = await this.countPost(userId, filters, true);
+      return await generatePagination({
+        model: Post,
+        userDto: postDto,
+        totalCount: count.count,
+        paginationOptions: {
+          page: queries.page,
+          limit: queries.limit,
+        },
+        graphqlInfo: info,
+      });
+    }
+  );
+
+  countPost = warpAsync(
+    async (
+      userId: string,
+      queries: PostFiltersType,
+      filtered?: boolean
+    ): Promise<ServiceResponseType> => {
+      const filters = filtered
+        ? queries
+        : generateFilters<PostFiltersType>(queries);
+      return serviceResponse({
+        count: await Post.countDocuments({ userId, ...filters }),
+      });
     }
   );
 
@@ -60,11 +90,11 @@ class PostService {
       data: postUpdateDtoType,
       query: object
     ): Promise<ServiceResponseType> => {
-      const validationResult = validateAndFormatData(
+      const validationResult = validateAndFormatData({
         data,
-        postUpdateDto,
-        "update"
-      );
+        userDto: postUpdateDto,
+        actionType: "update",
+      });
       if (!validationResult.success) return validationResult;
 
       const updatePost = await Post.updateOne(
@@ -74,20 +104,9 @@ class PostService {
             ...validationResult.data,
           },
         },
-        {
-          new: true,
-        }
       );
       return serviceResponse({
         data: updatePost.matchedCount,
-      });
-    }
-  );
-
-  countPost = warpAsync(
-    async (userId: string): Promise<ServiceResponseType> => {
-      return serviceResponse({
-        count: await Post.countDocuments({ userId }),
       });
     }
   );
@@ -97,26 +116,6 @@ class PostService {
       return serviceResponse({
         deletedCount: (await Post.deleteOne(query)).deletedCount,
       });
-    }
-  );
-
-  searchWithHashtag = warpAsync(
-    async (args: {
-      page: number;
-      limit: number;
-      hashtag: string;
-    }): Promise<ServiceResponseType> => {
-      const search = {
-        hashtags: { $regex: args.hashtag, $options: "i" },
-      };
-      return await paginate(
-        Post,
-        postDto,
-        0,
-        { page: args.page, limit: args.limit },
-        null,
-        search
-      );
     }
   );
 }

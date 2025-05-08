@@ -1,9 +1,14 @@
+// Sort
 export type JobSortType = {
   salary?: number;
   views?: number;
   createdAt?: number;
 };
+export type SortType = {
+  createdAt?: number;
+};
 
+// Job filter
 export type JobFiltersType = {
   page: number;
   limit: number;
@@ -21,6 +26,7 @@ export type JobFiltersType = {
   jobTitle?: string;
 };
 
+// Job application filter
 export type JobAppFiltersType = {
   page: number;
   limit: number;
@@ -34,10 +40,7 @@ export type JobAppFiltersType = {
   jobTitle?: string;
 };
 
-export type SortType = {
-  createdAt?: number;
-};
-
+// Interview filter
 export type InterviewFiltersType = {
   page: number;
   limit: number;
@@ -48,6 +51,7 @@ export type InterviewFiltersType = {
   interviewResult?: string;
 };
 
+// Analytics field
 export const analyticsFields = [
   // Job Application
   "totalJobAppCreated",
@@ -94,7 +98,8 @@ export const analyticsFields = [
   "totalHired",
 ];
 
-export const ApplicantTypes = [
+// Job Enum
+export const ApplicantEnum = [
   "student",
   "graduate",
   "joiner",
@@ -106,8 +111,7 @@ export const ApplicantTypes = [
   "intern",
   "career_shifter",
 ] as const;
-
-export const JobTypes = [
+export const JobEnum = [
   "full_time",
   "part_time",
   "internship",
@@ -116,8 +120,7 @@ export const JobTypes = [
   "apprenticeship",
   "contract",
 ] as const;
-
-export const JobExperiences = [
+export const JobExperiencesEnum = [
   "fresh-grad",
   "less-than-1-year",
   "1-2-years",
@@ -130,5 +133,19 @@ export const JobExperiences = [
   "8-9-years",
   "9-10-years",
 ] as const;
+export const WorkplaceEnum = ["remote", "on-site", "hybrid"] as const;
 
-export const WorkplaceTypes = ["remote", "on-site", "hybrid"] as const;
+// Interview Enum
+export const InterviewStatusEnum = [
+  "pending",
+  "rejected",
+  "shortlisted",
+  "passed",
+] as const;
+export const InterviewResultEnum = ["hired", "failed", "on_hold"] as const;
+export const InterviewPlatformEnum = [
+  "zoom",
+  "google_meet",
+  "microsoftTeams",
+  "on_site",
+] as const;

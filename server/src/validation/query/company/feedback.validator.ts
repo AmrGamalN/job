@@ -1,30 +1,28 @@
-import { query } from "express-validator";
 import {
   validatorCreatedAt,
   validatorPagination,
 } from "../pagination.validator";
+import { validateString } from "../../helperFunction.validator";
 
-export const validateQueryFeedbackGetAll = () => {
-  return [
-    ...validatorPagination(),
-    ...validatorCreatedAt(),
-    ...validatorCustomQuery(),
-  ];
-};
+export const validateQueryFeedbackGetAll = () => [
+  ...validatorPagination(),
+  ...validatorCreatedAt(),
+  ...validatorCustomQuery(),
+];
 
-export const validateQueryFeedbackCount = () => {
-  return [...validatorCreatedAt(), ...validatorCustomQuery()];
-};
+export const validateQueryFeedbackCount = () => [
+  ...validatorCreatedAt(),
+  ...validatorCustomQuery(),
+];
 
 const validatorCustomQuery = () => [
-  query("companyName")
-    .optional({ checkFalsy: true })
-    .isString()
-    .withMessage("company name must be a string"),
-  query("status")
-    .optional({ checkFalsy: true })
-    .isIn(["active", "inactive", "pending", "rejected", "banned"])
-    .withMessage(
-      "Status must be one of active, inactive, pending, rejected, banned"
-    ),
+  validateString("companyName", true, {
+    location: "query",
+    min: 1,
+    max: 100,
+  }),
+  validateString("status", true, {
+    location: "query",
+    isIn: ["active", "inactive", "pending", "rejected", "banned"],
+  }),
 ];

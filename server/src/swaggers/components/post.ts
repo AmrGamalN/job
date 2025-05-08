@@ -17,10 +17,15 @@
  *           type: string
  *           description: The ID of the user reacting
  *           example: "661f1ccebd0b62ad3e6e8a9f"
- *         postId:
+ *         targetId:
  *           type: string
  *           description: The ID of the post being reacted to
  *           example: "661f1d8dbd0b62ad3e6e8af3"
+ *         targetType:
+ *           type: string
+ *           description: The target type
+ *           enum: ["post", "comment", "school", "group", "post", "job"]
+ *           example: "post"
  *         reactionType:
  *           type: string
  *           enum: [like, love, haha, wow, sad, angry]
@@ -34,6 +39,28 @@
  *           type: string
  *           format: date-time
  *           description: Date the reaction was last updated
+ *
+ *     ReactionAddComponents:
+ *       type: object
+ *       properties:
+ *         targetId:
+ *           type: string
+ *           description: The ID of the post being reacted to
+ *           example: "661f1d8dbd0b62ad3e6e8af3"
+ *         targetType:
+ *           type: string
+ *           description: The target type
+ *           enum: ["post", "comment", "school", "group", "post", "job"]
+ *           example: "post"
+ *         reactionType:
+ *           type: string
+ *           enum: [like, love, haha, wow, sad, angry]
+ *           example: like
+ *           description: Type of reaction
+ *
+ *     ReactionUpdateComponents:
+ *       allOf:
+ *         - $ref: '#/components/schemas/ReactionAddComponents'
  */
 
 /**

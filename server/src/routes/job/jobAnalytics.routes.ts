@@ -42,13 +42,13 @@ router.get(
  *     summary: Reset job analytics by field name
  *     description: Reset job analytics by field name
  *     parameters:
- *      - $ref: '#/components/parameters/RequiredId'
+ *      - $ref: '#/components/parameters/Id'
  *      - $ref: '#/components/parameters/ResetByName'
  *     responses:
  *       200:
  *         $ref: '#/components/schemas/BaseResponse'
  *       400:
- *         description: Failed to reset job analytics  
+ *         description: Failed to reset job analytics
  *       403:
  *         description: Unauthorized
  *       404:
@@ -68,15 +68,15 @@ router.put(
  * /company/job/analytics/reset-all/{id}:
  *   put:
  *     tags: [JobAnalytics]
- *     summary: Reset all job analytics 
- *     description: Reset all job analytics 
+ *     summary: Reset all job analytics
+ *     description: Reset all job analytics
  *     parameters:
- *      - $ref: '#/components/parameters/RequiredId'
+ *      - $ref: '#/components/parameters/Id'
  *     responses:
  *       200:
  *         $ref: '#/components/schemas/BaseResponse'
  *       400:
- *         description: Failed to reset  job analytics  
+ *         description: Failed to reset  job analytics
  *       403:
  *         description: Unauthorized
  *       404:
@@ -96,15 +96,15 @@ router.put(
  * /company/job/analytics/delete/{id}:
  *   delete:
  *     tags: [JobAnalytics]
- *     summary: Delete job analytics 
+ *     summary: Delete job analytics
  *     description: Delete specific job analytics by id
  *     parameters:
- *      - $ref: '#/components/parameters/RequiredId'
+ *      - $ref: '#/components/parameters/Id'
  *     responses:
  *       200:
  *         $ref: '#/components/schemas/BaseResponse'
  *       400:
- *         description: Failed to delete job analytics 
+ *         description: Failed to delete job analytics
  *       403:
  *         description: Unauthorized
  *       404:

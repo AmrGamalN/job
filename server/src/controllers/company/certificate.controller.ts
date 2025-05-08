@@ -52,7 +52,6 @@ export default class CertificateController {
       req.body,
       req.params.id,
       req.curUser?.userId,
-      req.curUser?.company.companyId
     );
     return controllerResponse(res, result);
   };
@@ -60,7 +59,6 @@ export default class CertificateController {
   deleteCertificate = async (req: Request, res: Response) => {
     const result = await this.certificateService.deleteCertificate(
       req.params.id,
-      req.curUser?.company.companyId
     );
     return controllerResponse(res, result);
   };

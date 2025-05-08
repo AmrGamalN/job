@@ -93,7 +93,7 @@ const uploadFile =
     });
   };
 
-export const companyUploadImage = asyncHandler(
+export const uploadImageProfile = asyncHandler(
   uploadFile(
     upload.fields([
       { maxCount: 1, name: "profileImage" },
@@ -106,6 +106,7 @@ export const companyUploadImage = asyncHandler(
 export const companyUploadDocument = asyncHandler(
   uploadFile(upload.single("documentFile"))
 );
+
 export const jobAppUpload = asyncHandler(
   uploadFile(
     upload.fields([

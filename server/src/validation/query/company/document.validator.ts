@@ -1,29 +1,29 @@
-import { query } from "express-validator";
 import {
   validatorCreatedAt,
   validatorPagination,
 } from "../pagination.validator";
+import { validateString } from "../../helperFunction.validator";
 
-export const validateQueryDocumentGetAll = () => {
-  return [
-    ...validatorPagination(),
-    ...validatorCreatedAt(),
-    ...validatorCustomQuery(),
-  ];
-};
+export const validateQueryDocumentGetAll = () => [
+  ...validatorPagination(),
+  ...validatorCreatedAt(),
+  ...validatorCustomQuery(),
+];
 
-export const validateQueryDocumentCount = () => {
-  return [...validatorCreatedAt(), ...validatorCustomQuery()];
-};
+export const validateQueryDocumentCount = () => [
+  ...validatorCreatedAt(),
+  ...validatorCustomQuery(),
+];
 
 const validatorCustomQuery = () => [
-  query("name")
-    .optional({ checkFalsy: true })
-    .isString()
-    .withMessage("company name must be a string"),
-  query("type")
-    .optional({ checkFalsy: true })
-    .isIn([
+  validateString("name", true, {
+    location: "query",
+    min: 1,
+    max: 100,
+  }),
+  validateString("type", true, {
+    location: "query",
+    isIn: [
       "pdf",
       "word",
       "excel",
@@ -31,8 +31,6 @@ const validatorCustomQuery = () => [
       "presentation",
       "spreadsheet",
       "document",
-    ])
-    .withMessage(
-      "Document type must be one of pdf, word, excel, powerpoint, presentation, spreadsheet, document"
-    ),
+    ],
+  }),
 ];

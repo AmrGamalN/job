@@ -3,7 +3,7 @@ import { ObjectId } from "mongodb";
 
 export const postDto = z.object({
   _id: z.union([z.string(), z.instanceof(ObjectId)]),
-  actorId: z.string(),
+  userId: z.string(),
   actorType: z.enum(["user", "company", "school", "group", "post", "job"]),
   commentId: z.array(z.union([z.string(), z.instanceof(ObjectId)])),
   reactionId: z.array(z.union([z.string(), z.instanceof(ObjectId)])),

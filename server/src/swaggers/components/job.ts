@@ -212,11 +212,11 @@
  *           description: Required qualifications or experience
  *           example: "Basic knowledge in JavaScript and REST APIs"
  *         jobExperience:
- *           type: string
- *           description: Job experience
- *           enum: ["fresh-grad", "less-than-1-year", "1-2-years", "2-3-years", "3-4-years", "4-5-years", "5-6-years", "6-7-years", "7-8-years", "8-9-years", "9-10-years"]
- *           example: "1-2-years"
- *           default: "1-2-years"
+ *           type: array
+ *           items:
+ *             type: string
+ *             description: Job experience
+ *             example: ["fresh-grad"]
  *         skills:
  *           type: array
  *           items:

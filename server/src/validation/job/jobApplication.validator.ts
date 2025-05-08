@@ -1,50 +1,61 @@
-import { check } from "express-validator";
-import { ApplicantTypes, JobTypes, WorkplaceTypes } from "../../types/job.type";
+import {
+  ApplicantEnum,
+  JobEnum,
+  JobExperiencesEnum,
+  WorkplaceEnum,
+} from "../../types/job.type";
+import {
+  validateArray,
+  validateObject,
+  validateString,
+} from "../helperFunction.validator";
 
-const validateJobAppToUser = (isUpdate: boolean = false) => {
-  const fieldString = (field: string) => {
-    const validator = check(field)
-      .trim()
-      .isString()
-      .withMessage(`${field} must be string`)
-      .bail();
+const stringLength = { min: 1, max: 50 };
+export const jobAppValidator = (isOptional: boolean) => [
+  validateString("jobTitle", isOptional, stringLength),
+  validateString("currentAddress", isOptional, stringLength),
+  validateString("email", isOptional, { isEmail: true }),
+  validateString("phone", isOptional, { isPhone: true }),
 
-    return isUpdate
-      ? validator.optional({ checkFalsy: true }).toLowerCase()
-      : validator.notEmpty().withMessage(`${field} is required`).toLowerCase();
-  };
+  ...validateArray("department", isOptional, {
+    minLength: 1,
+    elementType: "string",
+  }),
+  ...validateArray("applicantTypes", isOptional, {
+    minLength: 1,
+    elementType: "string",
+    isIn: ApplicantEnum,
+  }),
+  ...validateArray("jobType", isOptional, {
+    minLength: 1,
+    elementType: "string",
+    isIn: JobEnum,
+  }),
+  ...validateArray("jobExperience", isOptional, {
+    minLength: 1,
+    elementType: "string",
+    isIn: JobExperiencesEnum,
+  }),
+  ...validateArray("workplaceType", isOptional, {
+    minLength: 1,
+    elementType: "string",
+    isIn: WorkplaceEnum,
+  }),
+  ...validateArray("skills", isOptional, {
+    minLength: 1,
+    elementType: "string",
+  }),
 
-  return [
-    fieldString("email").isEmail().normalizeEmail(),
-    fieldString("phone").isMobilePhone("any"),
-    fieldString("jobTitle").isLength({ min: 3, max: 50 }),
-    fieldString("currentAddress").isLength({ min: 3, max: 50 }),
+  validateObject("cv", isOptional),
+  validateString("cv.url", true, { isUrl: true }),
+  validateString("cv.key", true),
+  validateString("cv.type", true),
 
-    fieldString("applicantTypes")
-      .isIn(ApplicantTypes)
-      .withMessage(
-        "student, graduate, joiner, senior, manager, executive, entry_level, mid_level, freelancer, intern, career_shifter"
-      ),
+  validateObject("idImage", isOptional),
+  validateString("idImage.url", true, { isUrl: true }),
+  validateString("idImage.key", true),
+  validateString("idImage.type", true),
+];
 
-    fieldString("jobType")
-      .isIn(JobTypes)
-      .withMessage(
-        "full_time, part-full, internship, freelance, seasonal, apprenticeship, contract"
-      ),
-
-    fieldString("workplaceType")
-      .isIn(WorkplaceTypes)
-      .withMessage("workplaceType must be remote, on-site, hybrid"),
-
-    fieldString("cv.url"),
-    fieldString("cv.key"),
-    fieldString("cv.type"),
-
-    fieldString("idImage.url"),
-    fieldString("idImage.key"),
-    fieldString("idImage.type"),
-  ];
-};
-
-export const validateJobAppAdd = validateJobAppToUser(false);
-export const validateJobAppUpdate = validateJobAppToUser(true);
+export const validateJobAppAdd = jobAppValidator(false);
+export const validateJobAppUpdate = jobAppValidator(true);

@@ -3,7 +3,8 @@ import { ObjectId } from "mongodb";
 export const ReactionDto = z.object({
   _id: z.union([z.string(), z.instanceof(ObjectId)]),
   userId: z.string(),
-  postId: z.union([z.string(), z.instanceof(ObjectId)]),
+  targetId: z.string(),
+  targetType: z.enum(["post", "comment"]),
   reactionType: z
     .enum(["like", "love", "haha", "wow", "sad", "angry"])
     .default("like"),
@@ -12,10 +13,13 @@ export const ReactionDto = z.object({
 });
 
 export const ReactionAddDto = ReactionDto.pick({
+  targetId:true,
+  targetType: true,
   reactionType: true,
 });
 
 export const ReactionUpdateDto = ReactionDto.pick({
+  targetType: true,
   reactionType: true,
 });
 

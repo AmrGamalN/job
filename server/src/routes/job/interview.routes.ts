@@ -7,8 +7,8 @@ import {
   requiredParamMiddleware,
 } from "../../middlewares/validator.middleware";
 import {
-  validateInterviewAdd,
-  validateInterviewUpdate,
+  interviewValidatorAdd,
+  interviewValidatorUpdate,
 } from "../../validation/job/interview.validator";
 import {
   companyAdminRoleMiddlewares,
@@ -29,7 +29,7 @@ const router = express.Router();
  *     summary: Get the count of interview
  *     description: Returns the total count of interview
  *     parameters:
- *      - $ref: '#/components/parameters/RequiredId'
+ *      - $ref: '#/components/parameters/Id'
  *      - $ref: '#/components/parameters/InterviewStatus'
  *      - $ref: '#/components/parameters/InterviewPlatform'
  *      - $ref: '#/components/parameters/InterviewResult'
@@ -78,7 +78,7 @@ router.get(
 router.post(
   "/add",
   ...companyAdminRoleMiddlewares,
-  expressValidator(validateInterviewAdd),
+  expressValidator(interviewValidatorAdd),
   asyncHandler(controller.addInterview.bind(controller))
 );
 
@@ -90,7 +90,7 @@ router.post(
  *     summary: Get interview data
  *     description: Retrieve interview by id
  *     parameters:
- *      - $ref: '#/components/parameters/RequiredId'
+ *      - $ref: '#/components/parameters/Id'
  *     responses:
  *       200:
  *         $ref: '#/components/schemas/InterviewResponse'
@@ -143,7 +143,7 @@ router.get(
  *     summary: Get all interview
  *     description: Retrieve interview by id
  *     parameters:
- *      - $ref: '#/components/parameters/RequiredId'
+ *      - $ref: '#/components/parameters/Id'
  *      - $ref: '#/components/parameters/Page'
  *      - $ref: '#/components/parameters/Limit'
  *      - $ref: '#/components/parameters/Start'
@@ -181,7 +181,7 @@ router.get(
  *     summary: Update interview
  *     description: Update interview by id
  *     parameters:
- *      - $ref: '#/components/parameters/RequiredId'
+ *      - $ref: '#/components/parameters/Id'
  *     requestBody:
  *       required: false
  *       content:
@@ -204,7 +204,7 @@ router.put(
   "/update/:id",
   ...companyAdminRoleMiddlewares,
   requiredParamMiddleware(),
-  expressValidator(validateInterviewUpdate),
+  expressValidator(interviewValidatorUpdate),
   asyncHandler(controller.updateInterview.bind(controller))
 );
 
@@ -216,7 +216,7 @@ router.put(
  *     summary: Delete interview
  *     description: Delete interview by id
  *     parameters:
- *      - $ref: '#/components/parameters/RequiredId'
+ *      - $ref: '#/components/parameters/Id'
  *     responses:
  *       200:
  *         $ref: '#/components/schemas/BaseResponse'

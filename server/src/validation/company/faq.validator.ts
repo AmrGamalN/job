@@ -1,28 +1,13 @@
-import { body } from "express-validator";
+import { validateString } from "../helperFunction.validator";
+const stringLength = { min: 1, max: 50 };
+const faqValidator = (isOptional: boolean) => [
+  validateString("question", isOptional, { min: 3, max: 500 }),
+  validateString("questionType", isOptional, stringLength),
+  validateString("department", isOptional, stringLength),
+  validateString("answer", true, stringLength),
+  validateString("answerBy", true, stringLength),
+  validateString("role", true, stringLength),
+];
 
-const requiredFields = ["question", "questionType", "department"];
-
-const faqValidate = (isOptional: boolean) => {
-  const Field = (field: string) => {
-    const validator = body(field)
-      .trim()
-      .isString()
-      .withMessage(`${field} must be string`);
-
-    return requiredFields.includes(field) && !isOptional
-      ? validator.notEmpty().withMessage(`${field} is required`)
-      : validator.optional({ checkFalsy: true });
-  };
-
-  return [
-    Field("question"),
-    Field("questionType"),
-    Field("department"),
-    Field("answer"),
-    Field("answerBy"),
-    Field("role"),
-  ];
-};
-
-export const validateFaqAdd = faqValidate(false);
-export const validateFaqUpdate = faqValidate(true);
+export const validateFaqAdd = faqValidator(false);
+export const validateFaqUpdate = faqValidator(true);

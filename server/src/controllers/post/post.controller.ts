@@ -26,7 +26,7 @@ class PostController {
   }
 
   async getPost(req: Request, res: Response): Promise<Response> {
-    const result = await this.postService.getPost(req.body.id);
+    const result = await this.postService.getPost(req.params.id);
     return controllerResponse(res, result);
   }
 
@@ -39,28 +39,30 @@ class PostController {
     context: { req: Request; res: Response },
     info: GraphQLResolveInfo
   ): Promise<ServiceResponseType> {
-    const result = await this.postService.getAllPosts(args, info);
+    const result = await this.postService.getAllPosts(
+      args,
+      info,
+      context.req.curUser?.userId
+    );
     if (!result.success) result;
     return result;
   }
 
-  async updatePost(req: Request, res: Response): Promise<Response> {
-    const result = await this.postService.updatePost(req.body, req.body.id);
+  async countPost(req: Request, res: Response): Promise<Response> {
+    const result = await this.postService.countPost(
+      req.curUser?.userId,
+      req.query
+    );
     return controllerResponse(res, result);
   }
 
-  async countPost(req: Request, res: Response): Promise<Response> {
-    const result = await this.postService.countPost(req.curUser?.userId);
+  async updatePost(req: Request, res: Response): Promise<Response> {
+    const result = await this.postService.updatePost(req.body, req.params.id);
     return controllerResponse(res, result);
   }
 
   async deletePost(req: Request, res: Response): Promise<Response> {
-    const result = await this.postService.deletePost(req.body.id);
-    return controllerResponse(res, result);
-  }
-
-  async searchWithHashtag(req: Request, res: Response): Promise<Response> {
-    const result = await this.postService.searchWithHashtag(req.query);
+    const result = await this.postService.deletePost(req.params.id);
     return controllerResponse(res, result);
   }
 }

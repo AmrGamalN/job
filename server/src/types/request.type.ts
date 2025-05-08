@@ -13,6 +13,7 @@ export type UserRequestType = {
   lastSeen: string;
   sign_with?: string;
   emailVerified?: boolean;
+  visibility?: string;
   company: {
     companyId: string;
     memberId: string;

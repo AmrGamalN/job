@@ -1,14 +1,10 @@
 import { z } from "zod";
 import { ObjectId } from "mongodb";
-
-const statusEnum = ["pending", "shortlisted", "rejected", "passed"] as const;
-const interviewPlatformEnum = [
-  "zoom",
-  "google_meet",
-  "microsoftTeams",
-  "on_site",
-] as const;
-const interviewResultEnum = ["failed", "on_hold", "hired"] as const;
+import {
+  InterviewPlatformEnum,
+  InterviewResultEnum,
+  InterviewStatusEnum,
+} from "../../types/job.type";
 
 export const InterviewDto = z.object({
   _id: z.union([z.string(), z.instanceof(ObjectId)]),
@@ -16,11 +12,11 @@ export const InterviewDto = z.object({
   companyId: z.string(),
   jobId: z.string(),
   jobApplicationId: z.string(),
-  interviewStatus: z.enum(statusEnum).default("pending"),
+  interviewStatus: z.enum(InterviewStatusEnum).default("pending"),
   hrNotes: z.string().optional().default(""),
-  interviewResult: z.enum(interviewResultEnum).default("on_hold"),
+  interviewResult: z.enum(InterviewResultEnum).default("on_hold"),
   interviewDate: z.date(),
-  interviewPlatform: z.enum(interviewPlatformEnum),
+  interviewPlatform: z.enum(InterviewPlatformEnum),
   address: z.string().optional(),
   interviewLink: z.string(),
   createdBy: z.string(),
@@ -39,12 +35,12 @@ export const InterviewAddDto = InterviewDto.omit({
   createdAt: true,
   updatedAt: true,
 }).extend({
-  interviewResult: z.enum(interviewResultEnum).optional().default("on_hold"),
+  interviewResult: z.enum(InterviewResultEnum).optional().default("on_hold"),
 });
 
 export const InterviewUpdateDto = InterviewAddDto.partial().extend({
-  status: z.enum(statusEnum).default("pending"),
-  interviewResult: z.enum(interviewResultEnum).default("on_hold"),
+  status: z.enum(InterviewStatusEnum).default("pending"),
+  interviewResult: z.enum(InterviewResultEnum).default("on_hold"),
 });
 export type InterviewDtoType = z.infer<typeof InterviewDto>;
 export type InterviewAddDtoType = z.infer<typeof InterviewAddDto>;

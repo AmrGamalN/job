@@ -1,4 +1,4 @@
-import Profile from "../models/mongodb/profiles/profile.model";
+import Profile from "../models/mongodb/client/profile.model";
 import crypto from "crypto";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
@@ -23,7 +23,7 @@ export const generateUniqueLink = async (
 };
 
 export const generateLink = async (
-  route?: string,
+  route?: string
 ): Promise<{ link: string; userName?: string }> => {
   let hash;
   let isLinkExist;

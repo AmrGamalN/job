@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import Member from "../../models/mongodb/company/member.model";
-import Security from "../../models/mongodb/profiles/security.model";
+import Security from "../../models/mongodb/client/security.model";
 import {
   MemberDto,
   MemberAddDto,
@@ -8,7 +8,7 @@ import {
   MemberAddDtoType,
   MemberUpdateDtoType,
 } from "../../dto/company/member.dto";
-import { paginate } from "../../utils/pagination.util";
+import { generatePagination } from "../../utils/generatePagination.util";
 import { sendEmail } from "../../utils/sendEmail.util";
 import { warpAsync } from "../../utils/warpAsync.util";
 import { CustomError } from "../../utils/customError.util";
@@ -17,6 +17,7 @@ import { sendMemberEmail } from "../../utils/emailMessage.util";
 import { validateAndFormatData } from "../../utils/validateData.util";
 import { MemberFiltersType } from "../../types/company.type";
 import { ServiceResponseType, ResponseType } from "../../types/response.type";
+import { generateFilters } from "../../utils/generateFilters&Sort.util";
 
 class MemberService {
   private static instanceService: MemberService;
@@ -29,21 +30,24 @@ class MemberService {
 
   addMember = warpAsync(
     async (
-      memberData: MemberAddDtoType,
+      data: MemberAddDtoType,
       adminId: string,
       companyId: string
     ): Promise<ServiceResponseType> => {
-      const validationResult = validateAndFormatData(memberData, MemberAddDto);
+      const validationResult = validateAndFormatData({
+        data,
+        userDto: MemberAddDto,
+      });
       if (!validationResult.success) return validationResult;
 
       const session = await mongoose.startSession();
       try {
         await session.withTransaction(async () => {
           const [existingMember, existingUser] = await Promise.all([
-            Member.findOne({ userId: memberData.userId, companyId }, null, {
+            Member.findOne({ userId: data.userId, companyId }, null, {
               session,
             }),
-            Security.findOne({ userId: memberData.userId }, null, {
+            Security.findOne({ userId: data.userId }, null, {
               session,
             }),
           ]);
@@ -62,7 +66,7 @@ class MemberService {
           const [createdMember] = await Member.create(
             [
               {
-                ...memberData,
+                ...data,
                 addedBy: adminId,
               },
             ],
@@ -70,7 +74,7 @@ class MemberService {
           );
 
           await Security.updateOne(
-            { userId: memberData.userId },
+            { userId: data.userId },
             {
               $set: {
                 company: {
@@ -84,9 +88,9 @@ class MemberService {
           );
 
           const resultEmail = await sendEmail(
-            String(memberData.email),
+            String(data.email),
             "Jobliences: We've Received Your Join Request",
-            sendMemberEmail(memberData.name)
+            sendMemberEmail(data.name)
           );
 
           if (!resultEmail.success)
@@ -119,44 +123,47 @@ class MemberService {
     }
   );
 
-  getMember = warpAsync(
-    async (memberId: string): Promise<ServiceResponseType> => {
-      const getMember = await Member.findOne({
-        _id: memberId,
-      }).lean();
-      return validateAndFormatData(getMember, MemberDto);
-    }
-  );
+  getMember = warpAsync(async (_id: string): Promise<ServiceResponseType> => {
+    const getMember = await Member.findById({ _id }).lean();
+    return validateAndFormatData({
+      data: getMember,
+      userDto: MemberDto,
+    });
+  });
 
   getAllMembers = warpAsync(
     async (
-      filters: MemberFiltersType,
+      queries: MemberFiltersType,
       companyId: string
     ): Promise<ServiceResponseType> => {
-      const count = await this.countMember(filters, companyId);
-      return await paginate(
-        Member,
-        MemberDto,
-        count.count ?? 0,
-        {
-          page: filters.page,
-          limit: filters.limit,
+      const filters = generateFilters<MemberFiltersType>(queries);
+      const count = await this.countMember(filters, companyId, true);
+      return await generatePagination({
+        model: Member,
+        userDto: MemberDto,
+        totalCount: count.count,
+        paginationOptions: {
+          page: queries.page,
+          limit: queries.limit,
         },
-        null,
-        { companyId, ...this.filerMembers(filters) }
-      );
+        fieldSearch: { companyId, ...filters },
+      });
     }
   );
 
   countMember = warpAsync(
     async (
-      filters: MemberFiltersType,
-      companyId: string
+      queries: MemberFiltersType,
+      companyId: string,
+      filtered?: boolean
     ): Promise<ServiceResponseType> => {
+      const filters = filtered
+        ? queries
+        : generateFilters<MemberFiltersType>(queries);
       return serviceResponse({
         count: await Member.countDocuments({
           companyId,
-          ...this.filerMembers(filters),
+          ...filters,
         }),
       });
     }
@@ -164,24 +171,24 @@ class MemberService {
 
   updateMember = warpAsync(
     async (
-      MemberData: MemberUpdateDtoType,
-      memberId: string
+      data: MemberUpdateDtoType,
+      _id: string
     ): Promise<ServiceResponseType> => {
-      const validationResult = validateAndFormatData(
-        MemberData,
-        MemberUpdateDto,
-        "update"
-      );
+      const validationResult = validateAndFormatData({
+        data,
+        userDto: MemberUpdateDto,
+        actionType: "update",
+      });
       if (!validationResult.success) return validationResult;
 
       const updateMember = await Member.findOneAndUpdate(
-        { _id: memberId },
+        { _id },
         {
           $set: {
             ...validationResult.data,
           },
         }
-      ).lean();
+      );
 
       if (!updateMember) {
         return serviceResponse({
@@ -191,7 +198,7 @@ class MemberService {
       }
 
       let message;
-      if (MemberData.status !== updateMember.status) {
+      if (data.status !== updateMember.status) {
         message = `Your Join Request Status Changed to ${updateMember.status}, and send email to ${updateMember.email}`;
         const resultEmail = await sendEmail(
           updateMember.email!,
@@ -209,33 +216,12 @@ class MemberService {
   );
 
   deleteMember = warpAsync(
-    async (memberId: string): Promise<ServiceResponseType> => {
+    async (_id: string): Promise<ServiceResponseType> => {
       return serviceResponse({
-        data: (await Member.deleteOne({ _id: memberId })).deletedCount,
+        data: (await Member.deleteOne({ _id })).deletedCount,
       });
     }
   );
-
-  private filerMembers = (queries: MemberFiltersType): object => {
-    let filters: Record<string, string | object> = {};
-    const filtersOption: (keyof typeof queries)[] = [
-      "role",
-      "name",
-      "status",
-      "position",
-      "department",
-    ];
-
-    if (queries.start && queries.end) {
-      filters["createdAt"] = { $gte: queries.start, $lte: queries.end };
-    }
-
-    for (const key of filtersOption) {
-      if (queries[key] && typeof queries[key] == "string")
-        filters[key] = queries[key];
-    }
-    return filters;
-  };
 }
 
 export default MemberService;

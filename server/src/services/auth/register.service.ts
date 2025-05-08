@@ -5,11 +5,11 @@ import dotenv from "dotenv";
 dotenv.config();
 import { auth } from "../../config/firebase";
 import { redisClient } from "../../config/redisConfig";
-import User from "../../models/mongodb/profiles/user.model";
-import Otp from "../../models/mongodb/profiles/otp.model";
-import Profile from "../../models/mongodb/profiles/profile.model";
-import Security from "../../models/mongodb/profiles/security.model";
-import Interest from "../../models/mongodb/profiles/interest.model";
+import User from "../../models/mongodb/client/user.model";
+import Otp from "../../models/mongodb/client/otp.model";
+import Profile from "../../models/mongodb/client/profile.model";
+import Security from "../../models/mongodb/client/security.model";
+import Interest from "../../models/mongodb/client/interest.model";
 import Activity from "../../models/mongodb/Analytics/activity.model";
 import { RegisterDtoType, RegisterDto } from "../../dto/auth/register.dto";
 import { validateAndFormatData } from "../../utils/validateData.util";
@@ -19,8 +19,8 @@ import { warpAsync } from "../../utils/warpAsync.util";
 import { serviceResponse } from "../../utils/response.util";
 import { generateUniqueLink } from "../../utils/generateUniqueLink.util";
 import { sendVerifyEmail } from "../../utils/emailMessage.util";
-import { ServiceResponseType, ResponseType } from "../../types/response.type";
 import { CustomError } from "../../utils/customError.util";
+import { ServiceResponseType, ResponseType } from "../../types/response.type";
 
 class RegisterService {
   private static instanceService: RegisterService;
@@ -33,25 +33,27 @@ class RegisterService {
 
   // register new user
   register = warpAsync(
-    async (userData: RegisterDtoType): Promise<ServiceResponseType> => {
-      if (userData.password !== userData.confirmPassword)
+    async (data: RegisterDtoType): Promise<ServiceResponseType> => {
+      if (data.password !== data.confirmPassword)
         return serviceResponse({
           statusText: "BadRequest",
           message: "Password and Confirm Password do not match.",
         });
-
-      const validationResultSafe = validateAndFormatData(userData, RegisterDto);
-      if (!validationResultSafe.success) return validationResultSafe;
+      const validationResult = validateAndFormatData({
+        data,
+        userDto: RegisterDto,
+      });
+      if (!validationResult.success) return validationResult;
 
       const existingUser = await this.isUserExisting(
-        userData.email,
-        userData.phoneNumber
+        data.email,
+        data.phoneNumber
       );
       if (!existingUser.success) return existingUser;
 
       // Add user caching & send otp
       const resultRegister = await this.processUserRegistration(
-        validationResultSafe.data
+        validationResult.data
       );
       if (!resultRegister.success) return resultRegister;
 
@@ -86,9 +88,9 @@ class RegisterService {
 
   // Update otp model to check user if verify email or not
   private processUserRegistration = warpAsync(
-    async (userData: RegisterDtoType): Promise<ServiceResponseType> => {
+    async (data: RegisterDtoType): Promise<ServiceResponseType> => {
       const token = await this.generateUniqueToken();
-      const existingOtp = await Otp.findOne({ email: userData.email }).lean();
+      const existingOtp = await Otp.findOne({ email: data.email }).lean();
       if (existingOtp) {
         return serviceResponse({
           statusText: "Conflict",
@@ -97,7 +99,7 @@ class RegisterService {
         });
       } else {
         await Otp.create({
-          email: userData.email,
+          email: data.email,
           token,
           expiresAt: new Date(Date.now() + 20 * 60 * 1000),
         });
@@ -106,17 +108,17 @@ class RegisterService {
       // If not verify and not exist in firebase so send verification link
       const verificationLink = `${process.env.BACKEND_URL}/api/v1/auth/verify-email/${token}`;
       const resultSendEmail = await sendEmail(
-        userData.email!,
+        data.email!,
         "Verify Your Email",
         sendVerifyEmail(
           verificationLink,
-          userData.firstName + " " + userData.lastName
+          data.firstName + " " + data.lastName
         )
       );
       if (!resultSendEmail.success) return resultSendEmail;
 
       // Add user in caching
-      const resultCache = await this.saveUserInCache(userData, token);
+      const resultCache = await this.saveUserInCache(data, token);
       if (!resultCache.success) return resultCache;
 
       return serviceResponse({
@@ -138,13 +140,13 @@ class RegisterService {
   // Save user in caching
   private saveUserInCache = warpAsync(
     async (
-      userData: RegisterDtoType,
+      data: RegisterDtoType,
       token: string
     ): Promise<ServiceResponseType> => {
       const result = await redisClient.setEx(
         `token: ${token}`,
         1200,
-        JSON.stringify(userData)
+        JSON.stringify(data)
       );
 
       if (result !== "OK") {
@@ -171,7 +173,7 @@ class RegisterService {
             "Try verifying your email again ,Your request to verify your email has expired or the link has already been used",
         });
 
-      const userData = JSON.parse(getUserFromCaching);
+      const data = JSON.parse(getUserFromCaching);
       const {
         email,
         password,
@@ -180,7 +182,7 @@ class RegisterService {
         lastName,
         gender,
         terms,
-      } = userData;
+      } = data;
 
       const firebaseUser = await auth.createUser({
         email,
@@ -191,8 +193,8 @@ class RegisterService {
       const userId = firebaseUser.uid;
       const prefixS3 = uuidv4();
       const userUnique = await generateUniqueLink(
-        userData.firstName,
-        userData.lastName
+        data.firstName,
+        data.lastName
       );
       const session = await mongoose.startSession();
       try {
@@ -238,8 +240,7 @@ class RegisterService {
         await Activity.create(
           [
             {
-              actorId: userId,
-              ownerModel: "user",
+              userId,
             },
           ],
           { session }
@@ -247,8 +248,7 @@ class RegisterService {
         await Interest.create(
           [
             {
-              actorId: userId,
-              ownerModel: "user",
+              userId,
             },
           ],
           { session }
@@ -258,6 +258,7 @@ class RegisterService {
           statusText: "Created",
         });
       } catch (err: any) {
+        console.log(err);
         if (firebaseUser?.uid) {
           await auth
             .deleteUser(firebaseUser.uid)

@@ -21,27 +21,22 @@ export const swaggerOptions = (route: string): object => {
     apis: [
       `./src/routes/${route}/*.ts`,
       `./src/swaggers/components/${route}.ts`,
-      `./src/swaggers/responses/${route}.ts`,
       `./src/swaggers/tags/${route}.ts`,
+      `./src/swaggers/responses/${route}.ts`,
+      `./src/swaggers/responses/baseResponse.ts`,
       `./src/swaggers/parameters/*.ts`,
     ],
   };
 };
 
-const routes = ["profile", "post", "company", "auth", "save", "job"];
 export const swaggerDoc = (app: Application) => {
-  routes.forEach((routeName: string) => {
-    const swaggerSpecs = swaggerJSDoc(swaggerOptions(routeName));
-    app.use(
-      `/api-docs/${routeName}`,
-      swaggerUi.serve,
-      (req: Request, res: Response, next: NextFunction) => {
-        return swaggerUi.setup(swaggerSpecs, { explorer: true })(
-          req,
-          res,
-          next
-        );
-      }
-    );
-  });
+  app.use("/api-docs/:routeName", swaggerUi.serve);
+  app.use(
+    "/api-docs/:routeName",
+    (req: Request, res: Response, next: NextFunction) => {
+      const routeName = req.params.routeName as string;
+      const swaggerSpecs = swaggerJSDoc(swaggerOptions(routeName));
+      return swaggerUi.setup(swaggerSpecs, { explorer: true })(req, res, next);
+    }
+  );
 };

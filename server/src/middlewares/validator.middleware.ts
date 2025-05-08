@@ -36,7 +36,7 @@ const validQueries = [
   "salary",
   "views",
   "createdAt",
-  
+
   "resetByName",
 
   "currentAddress",
@@ -44,6 +44,16 @@ const validQueries = [
   "interviewResult",
   "interviewStatus",
   "interviewPlatform",
+
+  "blockStatus",
+  "recipientName",
+
+  "nameFollower",
+  "nameFollowing",
+  "followStatus",
+  "FollowingType",
+
+  "subject",
 ];
 
 export const expressValidator = (validators: any[]) => {
@@ -79,7 +89,7 @@ export const expressValidator = (validators: any[]) => {
   );
 };
 
-// Required params [param name => id]
+//  Validate params id & required
 export const requiredParamMiddleware = () => {
   return async (req: Request, res: Response, next: NextFunction) => {
     if (!req.params?.id || !/^[a-fA-F0-9]{24}$/.test(req.params?.id)) {
@@ -92,33 +102,20 @@ export const requiredParamMiddleware = () => {
   };
 };
 
-// If no identifier is sent such as profile ID, take it from curUserId,
-// In this case this is the current user's profile
-export const validateToggleParamMiddleware = () => {
+// Validate user id & required
+export const requiredUserIdMiddleware = () => {
   return async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.params?.id) {
-      if (req.curUser?.userId) {
-        req.body.id = { userId: req.curUser?.userId };
-        return next();
-      }
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized",
-      });
-    }
-    if (!/^[a-fA-F0-9]{24}$/.test(req.params?.id)) {
+    if (req.params.userId || !/^[a-zA-Z0-9]{28}$/.test(req.params.userId)) {
       return res.status(404).json({
         success: false,
         message: "Not found",
       });
     }
-    req.body.id = { _id: req.params?.id };
     return next();
   };
 };
 
-// Used to specify the query you defined
-// It is located in the array, and allows move to the next middleware.
+// Validate queries
 export const validateQueryMiddleware = () => {
   return async (req: Request, res: Response, next: NextFunction) => {
     for (let queryKey in req?.query) {
@@ -128,34 +125,6 @@ export const validateQueryMiddleware = () => {
           message: "Not found",
         });
       }
-    }
-    return next();
-  };
-};
-
-// If not send userId in body so take userId from curUserId
-export const validateOptionalUserIdMiddleware = () => {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    const userId = req.body.userId ? req.body.userId : req.curUser?.userId;
-    if (userId && !/^[a-zA-Z0-9]{28}$/.test(userId)) {
-      return res.status(404).json({
-        success: false,
-        message: "Not found",
-      });
-    }
-    req.curUser.userId = userId;
-    return next();
-  };
-};
-
-// Required userId
-export const validateRequiredUserIdMiddleware = () => {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    if (!/^[a-zA-Z0-9]{28}$/.test(req.body.userId)) {
-      return res.status(404).json({
-        success: false,
-        message: "Not found",
-      });
     }
     return next();
   };

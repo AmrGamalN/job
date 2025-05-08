@@ -1,6 +1,6 @@
 export type UserRoleType = "user" | "admin" | "manager";
 
-export type AdminRoleType = "user" | "admin" | "manager";
+export type AdminRoleType ="admin" | "manager";
 
 export type CompanyUserRoleType =
   | "owner"

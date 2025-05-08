@@ -4,7 +4,7 @@ import { asyncHandler } from "../../middlewares/handleError.middleware";
 import { userAuthorizationMiddlewares } from "../../utils/authorizationRole.util";
 import {
   expressValidator,
-  validateToggleParamMiddleware,
+  requiredParamMiddleware,
 } from "../../middlewares/validator.middleware";
 import {
   validatePostUpdate,
@@ -92,7 +92,7 @@ router.get(
 router.get(
   "/get/:id?",
   ...userAuthorizationMiddlewares,
-  validateToggleParamMiddleware(),
+  requiredParamMiddleware(),
   asyncHandler(controller.getPost.bind(controller))
 );
 
@@ -126,7 +126,7 @@ router.get(
 router.put(
   "/update/:id?",
   ...userAuthorizationMiddlewares,
-  validateToggleParamMiddleware(),
+  requiredParamMiddleware(),
   expressValidator(validatePostUpdate),
   asyncHandler(controller.updatePost.bind(controller))
 );
@@ -155,41 +155,7 @@ router.put(
 router.delete(
   "/delete/:id?",
   ...userAuthorizationMiddlewares,
-  validateToggleParamMiddleware(),
+  requiredParamMiddleware(),
   asyncHandler(controller.deletePost.bind(controller))
-);
-
-/**
- * @swagger
- * /post/search:
- *   get:
- *     tags: [Post]
- *     summary: Get post by hash tag
- *     description: Get post by hash tag
- *     parameters:
- *      - name: hashtag
- *        in: query
- *        description: hashtag
- *        required: true
- *        schema:
- *          type: string
- *      - $ref: '#/components/parameters/Page'
- *      - $ref: '#/components/parameters/Limit'
- *     responses:
- *       200:
- *         $ref: '#/components/schemas/BaseResponse'
- *       400:
- *         description: Failed to get post record
- *       403:
- *         description: Unauthorized
- *       404:
- *         description: Not found
- *       500:
- *         description: Internal Server Error
- */
-router.get(
-  "/search",
-  ...userAuthorizationMiddlewares,
-  asyncHandler(controller.searchWithHashtag.bind(controller))
 );
 export default router;

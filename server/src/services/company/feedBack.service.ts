@@ -2,7 +2,7 @@
 import FeedBack from "../../models/mongodb/company/feedBack.model";
 import Member from "../../models/mongodb/company/member.model";
 import CompanySecurity from "../../models/mongodb/company/security.model";
-import Security from "../../models/mongodb/profiles/security.model";
+import Security from "../../models/mongodb/client/security.model";
 import {
   FeedBackDto,
   FeedBackUpdateDto,
@@ -12,11 +12,12 @@ import { CompanyDtoType } from "../../dto/company/company.dto";
 import { warpAsync } from "../../utils/warpAsync.util";
 import { serviceResponse } from "../../utils/response.util";
 import { validateAndFormatData } from "../../utils/validateData.util";
-import { paginate } from "../../utils/pagination.util";
+import { generatePagination } from "../../utils/generatePagination.util";
 import { CustomError } from "../../utils/customError.util";
 import { ServiceResponseType, ResponseType } from "../../types/response.type";
 import { FeedbackFiltersType } from "../../types/company.type";
 import mongoose from "mongoose";
+import { generateFilters } from "../../utils/generateFilters&Sort.util";
 
 class FeedBackService {
   private static instanceService: FeedBackService;
@@ -30,21 +31,20 @@ class FeedBackService {
   updateCompanyStatus = warpAsync(
     async (
       data: FeedBackUpdateDtoType,
-      feedBackId: string,
+      _id: string,
       userId: string
     ): Promise<ServiceResponseType> => {
-      const validationResult = validateAndFormatData(
+      const validationResult = validateAndFormatData({
         data,
-        FeedBackUpdateDto,
-        "update"
-      );
+        userDto: FeedBackUpdateDto,
+      });
       if (!validationResult.success) return validationResult;
 
       const session = await mongoose.startSession();
       try {
         await session.withTransaction(async () => {
           const getFeedBack = await FeedBack.findOneAndUpdate(
-            { _id: feedBackId },
+            { _id },
             {
               $set: {
                 ...data,
@@ -52,7 +52,7 @@ class FeedBackService {
               },
             },
             { new: true, session }
-          ).lean();
+          );
 
           if (!getFeedBack)
             throw new CustomError("FeedBack not found", "NotFound", false, 404);
@@ -65,21 +65,18 @@ class FeedBackService {
               },
             },
             { new: true, session }
-          )
-            .populate<{
-              companyId: CompanyDtoType;
-            }>({
-              path: "companyId",
-              select: "_id companyEmail actorId",
-            })
-            .lean();
-
+          ).populate<{
+            companyId: CompanyDtoType;
+          }>({
+            path: "companyId",
+            select: "_id companyEmail userId",
+          });
           if (!getCompany?.companyId)
             throw new CustomError("Company not found", "NotFound", false, 404);
 
           if (data?.status === "active") {
             const getMember = await Member.exists({
-              userId: getCompany?.companyId.actorId,
+              userId: getCompany?.companyId.userId,
               companyId: getCompany?.companyId._id,
             });
             if (getMember)
@@ -95,7 +92,7 @@ class FeedBackService {
                 {
                   companyId: getCompany?.companyId._id,
                   email: getCompany?.companyId.companyEmail,
-                  userId: getCompany?.companyId.actorId,
+                  userId: getCompany?.companyId.userId,
                   status: data.status,
                   companyRole: "owner",
                 },
@@ -104,7 +101,7 @@ class FeedBackService {
             );
 
             await Security.updateOne(
-              { userId: getCompany?.companyId.actorId },
+              { userId: getCompany?.companyId.userId },
               {
                 $set: {
                   company: {
@@ -139,14 +136,14 @@ class FeedBackService {
     }
   );
 
-  getFeedBack = warpAsync(
-    async (feedBackId: string): Promise<ServiceResponseType> => {
-      const getFeedBack = await FeedBack.findOne({
-        _id: new mongoose.Types.ObjectId(feedBackId),
-      }).lean();
-      return validateAndFormatData(getFeedBack, FeedBackDto);
-    }
-  );
+  getFeedBack = warpAsync(async (_id: string): Promise<ServiceResponseType> => {
+    return validateAndFormatData({
+      data: await FeedBack.findById({
+        _id,
+      }).lean(),
+      userDto: FeedBackDto,
+    });
+  });
 
   getFeedBackByLink = warpAsync(
     async (link: string): Promise<ServiceResponseType> => {
@@ -159,54 +156,50 @@ class FeedBackService {
       const getFeedBack = await FeedBack.findOne({
         feedBackLink: link,
       }).lean();
-      return validateAndFormatData(getFeedBack, FeedBackDto);
+      return validateAndFormatData({
+        data: getFeedBack,
+        userDto: FeedBackDto,
+      });
     }
   );
 
   getAllFeedBack = warpAsync(
-    async (filters: FeedbackFiltersType): Promise<ServiceResponseType> => {
-      const count = await this.countFeedBack(filters);
-      return await paginate(
-        FeedBack,
-        FeedBackDto,
-        count.count ?? 0,
-        { page: filters.page, limit: filters.limit },
-        null,
-        this.filterFeedbacks(filters)
-      );
+    async (queries: FeedbackFiltersType): Promise<ServiceResponseType> => {
+      const filters = generateFilters<FeedbackFiltersType>(queries);
+      const count = await this.countFeedBack(filters, true);
+      return await generatePagination({
+        model: FeedBack,
+        userDto: FeedBackDto,
+        totalCount: count.count,
+        paginationOptions: {
+          page: queries.page,
+          limit: queries.limit,
+        },
+        fieldSearch: filters,
+      });
     }
   );
 
   countFeedBack = warpAsync(
-    async (filters: FeedbackFiltersType): Promise<ServiceResponseType> => {
+    async (
+      queries: FeedbackFiltersType,
+      filtered?: boolean
+    ): Promise<ServiceResponseType> => {
+      const filters = filtered
+        ? queries
+        : generateFilters<FeedbackFiltersType>(queries);
       return serviceResponse({
-        count: await FeedBack.countDocuments(this.filterFeedbacks(filters)),
+        count: await FeedBack.countDocuments(filters),
       });
     }
   );
 
   deleteFeedBack = warpAsync(
-    async (feedBackId: string): Promise<ServiceResponseType> => {
+    async (_id: string): Promise<ServiceResponseType> => {
       return serviceResponse({
-        deletedCount: (await FeedBack.deleteOne({ _id: feedBackId }))
-          .deletedCount,
+        deletedCount: (await FeedBack.deleteOne({ _id })).deletedCount,
       });
     }
   );
-
-  private filterFeedbacks = (queries: FeedbackFiltersType) => {
-    const filtersOption: (keyof typeof queries)[] = ["status", "companyName"];
-    let filters: Record<string, string | object> = {};
-
-    if (queries.start && queries.end) {
-      filters["createdAt"] = { $gte: queries.start, $lte: queries.end };
-    }
-
-    for (const key of filtersOption) {
-      if (queries[key] && typeof queries[key] == "string")
-        filters[key] = queries[key];
-    }
-    return filters;
-  };
 }
 export default FeedBackService;

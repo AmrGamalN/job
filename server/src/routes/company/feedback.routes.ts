@@ -6,7 +6,7 @@ import {
   validateQueryMiddleware,
   requiredParamMiddleware,
 } from "../../middlewares/validator.middleware";
-import { feedBackValidate } from "../../validation/company/feedBack.validator";
+import { feedBackValidator } from "../../validation/company/feedBack.validator";
 import {
   companyAdminRoleMiddlewares,
   companyViewerRoleMiddlewares,
@@ -26,7 +26,7 @@ const router = express.Router();
  *     summary: Update feedBack record
  *     description: Update specific feedBack information by id
  *     parameters:
- *      - $ref: '#/components/parameters/RequiredId'
+ *      - $ref: '#/components/parameters/Id'
  *     requestBody:
  *       required: true
  *       content:
@@ -49,7 +49,7 @@ router.put(
   "/update/:id",
   ...companyAdminRoleMiddlewares,
   requiredParamMiddleware(),
-  expressValidator(feedBackValidate()),
+  expressValidator(feedBackValidator),
   asyncHandler(controller.updateFeedBackStatus.bind(controller))
 );
 
@@ -91,7 +91,7 @@ router.get(
  *     summary: Get feedBack data by id
  *     description: Retrieve feedBack record by its id
  *     parameters:
- *      - $ref: '#/components/parameters/RequiredId'
+ *      - $ref: '#/components/parameters/Id'
  *     responses:
  *       200:
  *         $ref: '#/components/responses/FeedBackResponse'
@@ -119,7 +119,7 @@ router.get(
  *     summary: Get feedBack data by link
  *     description: Retrieve feedBack record by link
  *     parameters:
- *      - $ref: '#/components/parameters/RequiredId'
+ *      - $ref: '#/components/parameters/Id'
  *     responses:
  *       200:
  *         $ref: '#/components/responses/FeedBackResponse'
@@ -180,7 +180,7 @@ router.get(
  *     summary: Delete feedBack record
  *     description: Delete specific feedBack record by id
  *     parameters:
- *      - $ref: '#/components/parameters/RequiredId'
+ *      - $ref: '#/components/parameters/Id'
  *     responses:
  *       200:
  *         $ref: '#/components/schemas/BaseResponse'

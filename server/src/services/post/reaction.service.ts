@@ -1,20 +1,21 @@
 import { Model } from "mongoose";
 import { GraphQLResolveInfo } from "graphql";
-import {
-  PostReaction,
-  CommentReaction,
-} from "../../models/mongodb/post/reaction.model";
+import Reaction from "../../models/mongodb/post/reaction.model";
 import Post from "../../models/mongodb/post/post.model";
 import Comment from "../../models/mongodb/post/comment.model";
 import {
   ReactionDto,
   ReactionAddDto,
   ReactionUpdateDto,
+  ReactionAddDtoType,
+  ReactionUpdateDtoType,
+  ReactionDtoType,
 } from "../../dto/post/reaction.dto";
 import { warpAsync } from "../../utils/warpAsync.util";
-import { paginate } from "../../utils/pagination.util";
 import { serviceResponse } from "../../utils/response.util";
 import { validateAndFormatData } from "../../utils/validateData.util";
+import { generatePagination } from "../../utils/generatePagination.util";
+import { ReactionType } from "../../types/post.types";
 import { ServiceResponseType } from "../../types/response.type";
 
 class ReactionService {
@@ -28,18 +29,16 @@ class ReactionService {
 
   addReaction = warpAsync(
     async (
-      query: any,
-      id: string,
+      newReaction: ReactionAddDtoType,
       userId: string
     ): Promise<ServiceResponseType> => {
-      const reactionContext = this.resolveReactionModel(query);
-      const validationResult = validateAndFormatData(
-        { reactionType: reactionContext.reactionType },
-        ReactionAddDto
-      );
+      const validationResult = validateAndFormatData({
+        data: newReaction,
+        userDto: ReactionAddDto,
+      });
       if (!validationResult.success) return validationResult;
 
-      const isExistReaction = await reactionContext.modelReaction.findOne({
+      const isExistReaction = await Reaction.findOne({
         userId,
       });
       if (isExistReaction)
@@ -47,12 +46,15 @@ class ReactionService {
           statusText: "Conflict",
         });
 
-      const reaction = await reactionContext.modelReaction.create({
+      const addReaction = await Reaction.create({
         ...validationResult.data,
         userId,
-        [reactionContext.id]: id,
+        targetId: newReaction.targetId,
       });
-      await this.updatePostReaction(reactionContext, reaction, "add");
+
+      if (addReaction)
+        await this.reactionMapping("add", addReaction, newReaction);
+
       return serviceResponse({
         statusText: "Created",
       });
@@ -60,119 +62,106 @@ class ReactionService {
   );
 
   getReaction = warpAsync(
-    async (query: any, id: string): Promise<ServiceResponseType> => {
-      const reactionContext = this.resolveReactionModel(query);
-      const getReaction = await reactionContext.modelReaction
-        .findOne({ _id: id })
-        .lean();
-      return validateAndFormatData(getReaction, ReactionDto);
+    async (targetType: string, _id: string): Promise<ServiceResponseType> => {
+      return validateAndFormatData({
+        data: await Reaction.findById({ _id, targetType }).lean(),
+        userDto: ReactionDto,
+      });
     }
   );
 
   getAllReactions = warpAsync(
     async (
-      args: {
-        page: number;
-        limit: number;
-      },
-      info: GraphQLResolveInfo
+      queries: ReactionType,
+      info: GraphQLResolveInfo,
+      targetId: string
     ): Promise<ServiceResponseType> => {
-      const reactionContext = this.resolveReactionModel(info.fieldName);
-      const count = await this.countReaction();
-      return await paginate(
-        reactionContext.modelReaction,
-        ReactionDto,
-        count.count ?? 0,
-        args,
-        info
-      );
+      return await generatePagination({
+        model: Reaction,
+        userDto: ReactionDto,
+        totalCount: (await this.countReaction(queries, targetId)).count,
+        paginationOptions: {
+          page: queries.page,
+          limit: queries.limit,
+        },
+        fieldSearch: targetId,
+        graphqlInfo: info,
+      });
     }
   );
 
   updateReaction = warpAsync(
-    async (query: any, id: string): Promise<ServiceResponseType> => {
-      const reactionContext = this.resolveReactionModel(query);
-      const validationResult = validateAndFormatData(
-        { reactionType: reactionContext.reactionType },
-        ReactionUpdateDto,
-        "update"
-      );
+    async (
+      newReaction: ReactionUpdateDtoType,
+      _id: string
+    ): Promise<ServiceResponseType> => {
+      const validationResult = validateAndFormatData({
+        data: newReaction,
+        userDto: ReactionUpdateDto,
+        actionType: "update",
+      });
       if (!validationResult.success) return validationResult;
 
-      const updateReaction = await reactionContext.modelReaction
-        .findOneAndUpdate(
-          { _id: id },
-          {
-            $set: {
-              ...validationResult.data,
-            },
-          }
-        )
-        .lean();
-      if (!updateReaction)
-        return serviceResponse({
-          statusText: "NotFound",
-        });
+      const updateReaction = await Reaction.findOneAndUpdate(
+        { _id, targetType: newReaction.targetType },
+        {
+          $set: {
+            ...validationResult.data,
+          },
+        }
+      );
+      if (updateReaction)
+        await this.reactionMapping("update", updateReaction, newReaction);
 
-      await this.updatePostReaction(reactionContext, updateReaction, "update");
       return serviceResponse({
         statusText: "OK",
-        message: "Update",
-        data: validationResult.data,
+        data: updateReaction,
       });
     }
   );
 
   countReaction = warpAsync(
-    async (query: string, id: string): Promise<ServiceResponseType> => {
-      const reactionContext = this.resolveReactionModel(query);
-      const countReactions = await reactionContext.modelReaction.countDocuments(
-        { [reactionContext.id]: id }
-      );
-      if (!countReactions)
-        return serviceResponse({
-          statusText: "NotFound",
-        });
+    async (
+      queries: ReactionUpdateDtoType,
+      targetId: string
+    ): Promise<ServiceResponseType> => {
       return serviceResponse({
-        statusText: "OK",
-        message: "Delete",
-        count: countReactions,
+        count: await Reaction.countDocuments({ ...queries, targetId }),
       });
     }
   );
 
   deleteReaction = warpAsync(
-    async (query: string, id: string): Promise<ServiceResponseType> => {
-      const reactionContext = this.resolveReactionModel(query);
-      const validationResult = validateAndFormatData(
-        { reactionType: reactionContext.reactionType },
-        ReactionUpdateDto
-      );
+    async (
+      newReaction: ReactionUpdateDtoType,
+      _id: string
+    ): Promise<ServiceResponseType> => {
+      const validationResult = validateAndFormatData({
+        data: newReaction,
+        userDto: ReactionUpdateDto,
+        actionType: "delete",
+      });
       if (!validationResult.success) return validationResult;
 
-      const deleteReaction = await reactionContext.modelReaction
-        .findOneAndDelete({
-          _id: id,
-        })
-        .lean();
-      if (!deleteReaction)
-        return serviceResponse({
-          statusText: "NotFound",
-        });
+      const deleteReaction = await Reaction.findOneAndDelete({
+        _id,
+        targetType: newReaction.targetType,
+      }).lean();
 
-      await this.updatePostReaction(reactionContext, deleteReaction, "delete");
+      if (deleteReaction)
+        await this.reactionMapping("delete", deleteReaction, newReaction);
       return serviceResponse({
-        statusText: "OK",
-        message: "Delete",
+        deletedCount: deleteReaction ? 1 : 0,
       });
     }
   );
 
-  private async updatePostReaction(
-    newReaction: any,
-    oldReaction: any,
-    action: "add" | "delete" | "update"
+  private async reactionMapping(
+    key: string,
+    oldReaction: ReactionDtoType,
+    newReaction: ReactionUpdateDtoType
   ) {
+    const update: any = { $inc: {} };
     const reactionMap: Record<string, number> = {
       like: 0,
       love: 1,
@@ -182,45 +171,32 @@ class ReactionService {
       angry: 5,
     };
 
-    const idValue = newReaction.id === "id" ? oldReaction.id : oldReaction.id;
-    const newIndex = reactionMap[newReaction.reactionType];
     const oldIndex = reactionMap[oldReaction.reactionType];
-    const update: any = { $inc: {} };
+    const newIndex = reactionMap[newReaction.reactionType];
+    if (newIndex === oldIndex && key !== "add") return;
 
-    if (newIndex === oldIndex && action !== "add") return;
-    if (action === "update" && newIndex !== oldIndex) {
-      update.$inc[`reactionCount.${oldIndex}`] = -1;
-      update.$inc[`reactionCount.${newIndex}`] = 1;
-    } else if (action === "add") {
-      update.$inc[`reactionCount.${newIndex}`] = 1;
-      update.$addToSet = { id: oldReaction._id };
-    } else if (action === "delete") {
-      update.$inc[`reactionCount.${oldIndex}`] = -1;
-      update.$pull = { id: oldReaction._id };
-    }
-    await newReaction.model.updateOne({ _id: idValue }, update);
-  }
-
-  private resolveReactionModel(query: any): {
-    modelReaction: Model<any>;
-    model: Model<any>;
-    id: "id" | "id";
-    reactionType: string;
-  } {
-    return Object.keys(query)[0] === "post" ||
-      Object.values(query)[0] === "post"
-      ? {
-          modelReaction: PostReaction,
-          id: "id",
-          model: Post,
-          reactionType: query.post,
+    const reactionStatusMapping: Record<string, any> = {
+      add: () => {
+        update.$inc[`reactionCount.${newIndex}`] = 1;
+        update.$addToSet = { id: oldReaction._id };
+      },
+      update: () => {
+        if (oldIndex != newIndex) {
+          update.$inc[`reactionCount.${oldIndex}`] = -1;
+          update.$inc[`reactionCount.${newIndex}`] = 1;
         }
-      : {
-          modelReaction: CommentReaction,
-          id: "id",
-          model: Comment,
-          reactionType: query.comment,
-        };
+      },
+      delete: () => {
+        update.$inc[`reactionCount.${oldIndex}`] = -1;
+        update.$pull = { id: oldReaction._id };
+      },
+    };
+
+    const model = oldReaction.targetType === "post" ? Post : Comment;
+    await (model as Model<any>).updateOne(
+      { _id: oldReaction.targetId },
+      reactionStatusMapping[key]
+    );
   }
 }
 

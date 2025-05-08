@@ -1,34 +1,32 @@
-import { query } from "express-validator";
 import {
   validatorCreatedAt,
   validatorPagination,
 } from "../pagination.validator";
-export const validateQueryInterviewGetAll = () => {
-  return [
-    ...validatorPagination(),
-    ...validatorCreatedAt(),
-    ...validatorCustomQuery(),
-    query("createdAt").isIn([1, -1]).withMessage("salary must be 1 or -1"),
-  ];
-};
-
-export const validateQueryInterviewCount = () => {
-  return [...validatorCustomQuery()];
-};
-
-const validatorFields = (fields: string[]) => {
-  return fields.map((field) =>
-    query(field)
-      .optional({ checkFalsy: true })
-      .isString()
-      .withMessage(`${field} must be a string`)
-  );
-};
-
+import { validateNumber, validateString } from "../../helperFunction.validator";
+export const validateQueryInterviewGetAll = () => [
+  ...validatorPagination(),
+  ...validatorCreatedAt(),
+  ...validatorCustomQuery(),
+  validateNumber("createdAt", true, {
+    location: "query",
+    isIn: [1, -1],
+  }),
+];
+export const validateQueryInterviewCount = () => [...validatorCustomQuery()];
 const validatorCustomQuery = () => [
-  ...validatorFields([
-    "interviewStatus",
-    "interviewPlatform",
-    "interviewResult",
-  ]),
+  validateString("interviewStatus", true, {
+    location: "query",
+    min: 1,
+    max: 100,
+  }),
+  validateString("interviewPlatform", true, {
+    location: "query",
+    min: 1,
+    max: 100,
+  }),
+  validateString("interviewResult", true, {
+    location: "query",
+    min: 1,
+    max: 100,
+  }),
 ];
