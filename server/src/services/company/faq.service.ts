@@ -5,15 +5,15 @@ import {
   FaqUpdateDto,
   FaqAddDtoType,
   FaqUpdateDtoType,
-  FaqDtoType,
 } from "../../dto/company/faq.dto";
-import { paginate } from "../../utils/pagination.util";
 import { warpAsync } from "../../utils/warpAsync.util";
 import { serviceResponse } from "../../utils/response.util";
 import { validateAndFormatData } from "../../utils/validateData.util";
-import { ServiceResponseType } from "../../types/response.type";
+import { generateFilters } from "../../utils/generateFilters&Sort.util";
+import { generatePagination } from "../../utils/generatePagination.util";
 import { FaqFiltersType } from "../../types/company.type";
 import { UserRequestType } from "../../types/request.type";
+import { ServiceResponseType } from "../../types/response.type";
 
 class FaqService {
   private static instanceService: FaqService;
@@ -26,14 +26,17 @@ class FaqService {
 
   addFaq = warpAsync(
     async (
-      faqData: FaqAddDtoType,
+      data: FaqAddDtoType,
       userId: string
     ): Promise<ServiceResponseType> => {
-      const validationResult = validateAndFormatData(faqData, FaqAddDto);
+      const validationResult = validateAndFormatData({
+        data,
+        userDto: FaqAddDto,
+      });
       if (!validationResult.success) return validationResult;
 
       const existingFaq = await Faq.findOne({
-        companyId: faqData.companyId,
+        companyId: data.companyId,
         status: "pending",
       }).lean();
 
@@ -46,7 +49,7 @@ class FaqService {
       }
 
       await Faq.create({
-        ...faqData,
+        ...data,
         userId,
       });
 
@@ -56,64 +59,67 @@ class FaqService {
     }
   );
 
-  getFaq = warpAsync(async (faqId: string): Promise<ServiceResponseType> => {
-    const getFaq = await Faq.findOne({ _id: faqId }).lean();
-    return validateAndFormatData(getFaq, FaqDto);
+  getFaq = warpAsync(async (_id: string): Promise<ServiceResponseType> => {
+    return validateAndFormatData({
+      data: await Faq.findById({ _id }).lean(),
+      userDto: FaqDto,
+    });
   });
 
   getAllFaqs = warpAsync(
     async (
-      filters: FaqFiltersType,
+      queries: FaqFiltersType,
       user: UserRequestType
     ): Promise<ServiceResponseType> => {
-      const count = await this.countFaq(filters, user);
-      return await paginate(
-        Faq,
-        FaqDto,
-        count.count ?? 0,
-        {
-          page: filters.page,
-          limit: filters.limit,
+      const filters = generateFilters<FaqFiltersType>(queries);
+      const count = await this.countFaq(filters, user, true);
+      return await generatePagination({
+        model: Faq,
+        userDto: FaqDto,
+        totalCount: count.count,
+        paginationOptions: {
+          page: queries.page,
+          limit: queries.limit,
         },
-        null,
-        this.filterFaqs(filters, user)
-      );
+        fieldSearch: filters,
+      });
     }
   );
 
   countFaq = warpAsync(
     async (
-      filters: FaqFiltersType,
-      user: UserRequestType
+      queries: FaqFiltersType,
+      user: UserRequestType,
+      filtered?: boolean
     ): Promise<ServiceResponseType> => {
+      const filters = filtered
+        ? queries
+        : generateFilters<FaqFiltersType>(queries, undefined, user);
       return serviceResponse({
-        count: await Faq.countDocuments(this.filterFaqs(filters, user)),
+        count: await Faq.countDocuments(filters),
       });
     }
   );
 
   updateFaq = warpAsync(
     async (
-      FaqData: FaqUpdateDtoType,
+      data: FaqUpdateDtoType,
       user: UserRequestType,
-      faqId: string
+      _id: string
     ): Promise<ServiceResponseType> => {
-      const validationResult = validateAndFormatData(
-        FaqData,
-        FaqUpdateDto,
-        "update"
-      );
+      const validationResult = validateAndFormatData({
+        data,
+        userDto: FaqUpdateDto,
+        actionType: "update",
+      });
       if (!validationResult.success) return validationResult;
 
-      const { userId, companyId, ...queries } = this.helperUpdate(
-        FaqData,
-        user
-      );
+      const { userId, companyId, ...queries } = this.updateFaqBasedRole(data, user);
       const updateFaq = await Faq.updateOne(
         {
           $or: [
-            { _id: faqId, userId },
-            { _id: faqId, companyId },
+            { _id, userId },
+            { _id, companyId },
           ],
         },
         {
@@ -121,67 +127,35 @@ class FaqService {
             ...queries,
           },
         }
-      ).lean();
+      );
       return serviceResponse({
         data: updateFaq.modifiedCount,
       });
     }
   );
 
-  deleteFaq = warpAsync(async (faqId: string): Promise<ServiceResponseType> => {
+  deleteFaq = warpAsync(async (_id: string): Promise<ServiceResponseType> => {
     return serviceResponse({
-      data: (await Faq.deleteOne({ _id: faqId })).deletedCount,
+      data: (await Faq.deleteOne({ _id })).deletedCount,
     });
   });
 
-  private helperUpdate = (
-    FaqData: FaqUpdateDtoType,
+  private updateFaqBasedRole = (
+    data: FaqUpdateDtoType,
     user: UserRequestType
   ): Record<string, any> => {
     let queries: Record<string, any> = {};
     if (["owner", "founder", "admin"].includes(user.company.companyRole)) {
-      queries = FaqData;
+      queries = data;
       queries["companyId"] = user.company.companyId;
     } else {
-      queries["department"] = FaqData.department;
-      queries["question"] = FaqData.question;
-      queries["questionType"] = FaqData.questionType;
-      queries["userType"] = FaqData.userType;
+      queries["department"] = data.department;
+      queries["question"] = data.question;
+      queries["questionType"] = data.questionType;
+      queries["userType"] = data.userType;
       queries["userId"] = user.userId;
     }
     return queries;
-  };
-
-  private filterFaqs = (queries: FaqFiltersType, user: UserRequestType) => {
-    const filtersOption: (keyof typeof queries)[] = [
-      "questionType",
-      "department",
-      "status",
-    ];
-    let filters: Record<string, string | object> = {};
-
-    if (queries.start && queries.end) {
-      filters["createdAt"] = { $gte: queries.start, $lte: queries.end };
-    }
-
-    const isViewerOrMember =
-      user.role === "user" &&
-      (user.company.companyRole === "viewer" ||
-        user.company.companyRole === "member");
-    if (isViewerOrMember) {
-      filters["userId"] = user.userId;
-    } else {
-      filters["companyId"] = user.company.companyId;
-      if (queries.userType) {
-        filters["userType"] = queries.userType;
-      }
-    }
-
-    for (const key of filtersOption) {
-      if (queries[key] && typeof queries[key] == "string")
-        filters[key] = queries[key];
-    }
-    return filters;
   };
 }
 

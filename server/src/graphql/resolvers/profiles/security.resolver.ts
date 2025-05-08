@@ -1,8 +1,8 @@
 import { IResolvers } from "@graphql-tools/utils";
-import UserController from "../../../controllers/profiles/security.controller";
-import { applyMiddleware } from "../../../middlewares/apply.middleware";
+import UserController from "../../../controllers/client/security.controller";
+import { applyMiddleware } from "../../../middlewares/apply.graphql.middleware";
 import { asyncHandler } from "../../../middlewares/handleError.middleware";
-import { validateOptionalUserIdMiddleware } from "../../../middlewares/validator.middleware";
+import { validateQueryMiddleware } from "../../../middlewares/validator.middleware";
 import { adminAuthorizationMiddlewares } from "../../../utils/authorizationRole.util";
 const controller = UserController.getInstance();
 
@@ -12,7 +12,7 @@ export const SecurityResolver: IResolvers = {
       asyncHandler(controller.getSecurity.bind(controller)),
       [
         ...adminAuthorizationMiddlewares,
-        asyncHandler(validateOptionalUserIdMiddleware()),
+        asyncHandler(validateQueryMiddleware()),
       ]
     ),
     getAllSecurities: applyMiddleware(

@@ -1,7 +1,11 @@
 import { z } from "zod";
 import { ObjectId } from "mongodb";
-import { ApplicantTypes, JobTypes, WorkplaceTypes } from "../../types/job.type";
-
+import {
+  ApplicantEnum,
+  JobEnum,
+  JobExperiencesEnum,
+  WorkplaceEnum,
+} from "../../types/job.type";
 export const JobAppDto = z.object({
   _id: z.union([z.string(), z.instanceof(ObjectId)]),
   userId: z.string(),
@@ -12,9 +16,10 @@ export const JobAppDto = z.object({
   phone: z.string(),
   jobTitle: z.string(),
   currentAddress: z.string(),
-  applicantTypes: z.enum(ApplicantTypes),
-  jobType: z.enum(JobTypes),
-  workplaceType: z.enum(WorkplaceTypes),
+  applicantTypes: z.enum(ApplicantEnum),
+  jobType: z.enum(JobEnum),
+  workplaceType: z.enum(WorkplaceEnum),
+  jobExperiences: z.enum(JobExperiencesEnum),
   cv: z.union([
     z.string(),
     z

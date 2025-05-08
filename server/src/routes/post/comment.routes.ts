@@ -4,7 +4,7 @@ import { asyncHandler } from "../../middlewares/handleError.middleware";
 import { userAuthorizationMiddlewares } from "../../utils/authorizationRole.util";
 import {
   expressValidator,
-  validateToggleParamMiddleware,
+  requiredParamMiddleware,
 } from "../../middlewares/validator.middleware";
 import {
   validateCommentUpdate,
@@ -44,7 +44,7 @@ const router = express.Router();
 router.post(
   "/add/:id?",
   ...userAuthorizationMiddlewares,
-  validateToggleParamMiddleware(),
+  requiredParamMiddleware(),
   expressValidator(validateCommentAdd),
   asyncHandler(controller.addComment.bind(controller))
 );
@@ -100,7 +100,7 @@ router.get(
 router.get(
   "/get/:id?",
   ...userAuthorizationMiddlewares,
-  validateToggleParamMiddleware(),
+  requiredParamMiddleware(),
   asyncHandler(controller.getComment.bind(controller))
 );
 
@@ -134,7 +134,7 @@ router.get(
 router.put(
   "/update/:id?",
   ...userAuthorizationMiddlewares,
-  validateToggleParamMiddleware(),
+  requiredParamMiddleware(),
   expressValidator(validateCommentUpdate),
   asyncHandler(controller.updateComment.bind(controller))
 );
@@ -163,7 +163,7 @@ router.put(
 router.delete(
   "/delete/:id?",
   ...userAuthorizationMiddlewares,
-  validateToggleParamMiddleware(),
+  requiredParamMiddleware(),
   asyncHandler(controller.deleteComment.bind(controller))
 );
 export default router;

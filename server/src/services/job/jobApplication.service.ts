@@ -6,7 +6,7 @@ import {
   JobAppAddDtoType,
   JobAppUpdateDtoType,
 } from "../../dto/job/jobApplication.dto";
-import { paginate } from "../../utils/pagination.util";
+import { generatePagination } from "../../utils/generatePagination.util";
 import { warpAsync } from "../../utils/warpAsync.util";
 import { serviceResponse } from "../../utils/response.util";
 import { validateAndFormatData } from "../../utils/validateData.util";
@@ -14,6 +14,10 @@ import { ServiceResponseType } from "../../types/response.type";
 import JobAnalyticsService from "./companyJobAnalytics.service";
 import { UserRequestType } from "../../types/request.type";
 import { JobAppFiltersType, SortType } from "../../types/job.type";
+import {
+  generateFilters,
+  generateSort,
+} from "../../utils/generateFilters&Sort.util";
 
 class JobAppService {
   private static instanceService: JobAppService;
@@ -30,15 +34,18 @@ class JobAppService {
 
   addJobApp = warpAsync(
     async (
-      jobData: JobAppAddDtoType,
+      data: JobAppAddDtoType,
       user: UserRequestType
     ): Promise<ServiceResponseType> => {
-      const validationResult = validateAndFormatData(jobData, JobAppAddDto);
+      const validationResult = validateAndFormatData({
+        data,
+        userDto: JobAppAddDto,
+      });
       if (!validationResult.success) return validationResult;
 
       const getJobApplication = await JobApplication.findOne({
         userId: user.userId,
-        jobId: jobData.jobId,
+        jobId: data.jobId,
       });
       if (getJobApplication)
         return serviceResponse({
@@ -48,15 +55,15 @@ class JobAppService {
 
       await Promise.all([
         JobApplication.create({
-          ...jobData,
+          ...data,
           userId: user.userId,
           applicantName: user.name,
           profileLink: user.profileLink,
         }),
-        this.analyticsService.updateAnalytics(jobData.jobId, [
-          jobData.applicantTypes,
-          jobData.workplaceType,
-          jobData.jobType,
+        this.analyticsService.updateAnalytics(data.jobId, [
+          data.applicantTypes,
+          data.workplaceType,
+          data.jobType,
           "created",
         ]),
       ]);
@@ -67,44 +74,48 @@ class JobAppService {
     }
   );
 
-  getJobApp = warpAsync(
-    async (jobAppId: string): Promise<ServiceResponseType> => {
-      const getJobApp = await JobApplication.findOne({ _id: jobAppId }).lean();
-      return validateAndFormatData(getJobApp, JobAppDto);
-    }
-  );
+  getJobApp = warpAsync(async (_id: string): Promise<ServiceResponseType> => {
+    return validateAndFormatData({
+      data: await JobApplication.findOne({ _id }).lean(),
+      userDto: JobAppUpdateDto,
+    });
+  });
 
   getAllJobApps = warpAsync(
     async (
-      filters: JobAppFiltersType,
+      queries: JobAppFiltersType,
       sort: SortType,
       jobId: string
     ): Promise<ServiceResponseType> => {
-      const count = await this.countJobApp(filters, jobId);
-      return await paginate(
-        JobApplication,
-        JobAppDto,
-        count.count ?? 0,
-        {
-          sort: this.sortJobApps(sort),
-          page: filters.page,
-          limit: filters.limit,
+      const filters = generateFilters<JobAppFiltersType>(queries);
+      const count = await this.countJobApp(jobId, filters, true);
+      return await generatePagination({
+        model: JobApplication,
+        userDto: JobAppDto,
+        totalCount: count.count,
+        paginationOptions: {
+          sort: generateSort<SortType>(sort),
+          page: queries.page,
+          limit: queries.limit,
         },
-        null,
-        { jobId, ...this.filterJobApp(filters) }
-      );
+        fieldSearch: { jobId, ...filters },
+      });
     }
   );
 
   countJobApp = warpAsync(
     async (
-      filters: JobAppFiltersType,
-      jobId: string
+      jobId: string,
+      queries: JobAppFiltersType,
+      filtered: boolean
     ): Promise<ServiceResponseType> => {
+      const filterResult = filtered
+        ? queries
+        : generateFilters<JobAppFiltersType>(queries);
       return serviceResponse({
         count: await JobApplication.countDocuments({
           jobId,
-          ...this.filterJobApp(filters),
+          ...filterResult,
         }),
       });
     }
@@ -112,14 +123,14 @@ class JobAppService {
 
   updateJobApp = warpAsync(
     async (
-      jobAppData: JobAppUpdateDtoType,
+      data: JobAppUpdateDtoType,
       jobAppId: string
     ): Promise<ServiceResponseType> => {
-      const validationResult = validateAndFormatData(
-        jobAppData,
-        JobAppUpdateDto,
-        "update"
-      );
+      const validationResult = validateAndFormatData({
+        data,
+        userDto: JobAppUpdateDto,
+        actionType: "update",
+      });
       if (!validationResult.success) return validationResult;
 
       const updateJobApplication = await JobApplication.findOneAndUpdate(
@@ -131,10 +142,10 @@ class JobAppService {
             ...validationResult.data,
           },
         }
-      ).lean();
+      );
 
       if (updateJobApplication) {
-        const fieldsToTrack: (keyof typeof jobAppData)[] = [
+        const fieldsToTrack: (keyof typeof data)[] = [
           "applicantTypes",
           "workplaceType",
           "jobType",
@@ -142,7 +153,7 @@ class JobAppService {
 
         const { oldValues, newValues } = this.extractChangedValues(
           updateJobApplication,
-          jobAppData,
+          data,
           fieldsToTrack
         );
 
@@ -204,34 +215,6 @@ class JobAppService {
     }
     return { oldValues, newValues };
   }
-
-  private filterJobApp = (queries: JobAppFiltersType) => {
-    const filtersOption: (keyof typeof queries)[] = [
-      "currentAddress",
-      "jobExperience",
-      "applicantTypes",
-      "workplaceType",
-      "jobTitle",
-      "jobType",
-    ];
-    let filters: Record<string, string | object> = {};
-
-    if (queries.start && queries.end) {
-      filters["createdAt"] = { $gte: queries.start, $lte: queries.end };
-    }
-
-    for (const key of filtersOption) {
-      if (queries[key] && typeof queries[key] == "string")
-        filters[key] = queries[key];
-    }
-    return filters;
-  };
-
-  private sortJobApps = (queries: SortType) => {
-    const sort: Record<string, number> = {};
-    if (queries.createdAt) sort["createdAt"] = Number(queries.createdAt);
-    return sort;
-  };
 }
 
 export default JobAppService;

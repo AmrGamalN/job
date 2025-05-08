@@ -1,24 +1,11 @@
-import { body } from "express-validator";
-
-const certificateValidate = (isUpdate: boolean) => {
-  const Field = (field: string) => {
-    const validator = body(field)
-      .trim()
-      .isString()
-      .withMessage(`${field} must be string`);
-
-    return !isUpdate
-      ? validator.notEmpty().withMessage(`${field} is required`)
-      : validator.optional({ checkFalsy: true });
-  };
-  return [
-    Field("title").optional({ checkFalsy: true }),
-    Field("description").optional({ checkFalsy: true }),
-    Field("issuer").optional({ checkFalsy: true }),
-    Field("issuedAt").optional({ checkFalsy: true }).isDate().toDate(),
-    Field("certificateUrl").optional({ checkFalsy: true }).isURL(),
-  ];
-};
-
+import { validateDate, validateString } from "../helperFunction.validator";
+const stringLength = { min: 1, max: 30 };
+const certificateValidate = (isOptional: boolean) => [
+  validateString("title", isOptional, stringLength),
+  validateString("issuer", isOptional, stringLength),
+  validateString("certificateUrl", isOptional, { isUrl: true }),
+  validateString("description", isOptional, { min: 5, max: 100 }),
+  validateDate("issuedAt", isOptional),
+];
 export const validateCertificateAdd = certificateValidate(false);
 export const validateCertificateUpdate = certificateValidate(true);

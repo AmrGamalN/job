@@ -6,8 +6,8 @@ export type CompanyStatusType =
   | "banned";
 
 type CompanyMainType = {
-  page: number;
-  limit: number;
+  page?: number;
+  limit?: number;
   start?: Date;
   end?: Date;
 };
@@ -16,6 +16,7 @@ export type CompanyFiltersType = CompanyMainType & {
   companyName?: string;
   status?: CompanyStatusType;
   tags?: string[];
+  createdAt: Date;
 };
 
 export type DocumentFiltersType = CompanyMainType & {
@@ -41,4 +42,8 @@ export type MemberFiltersType = CompanyMainType & {
   status?: CompanyStatusType;
   position?: string;
   department?: string;
+};
+
+export type CertificateFiltersType = CompanyMainType & {
+  title?: string;
 };

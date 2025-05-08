@@ -36,8 +36,14 @@ app.use("/api/v1", router);
 const startApolloServer = async () => {
   const server = new ApolloServer({
     schema,
-    context: async ({ req, res }: { req: Request; res: Response }) => {
-      return { req, res };
+    context: async ({
+      req,
+      res,
+    }: {
+      req: Request;
+      res: Response;
+    }) => {
+      return { req, res, next: (req as any).contextNext };
     },
     formatError: (err) => ({
       message: err.message,

@@ -3,7 +3,7 @@ import { ObjectId } from "mongodb";
 
 const basicInfoDto = z.object({
   _id: z.union([z.string(), z.instanceof(ObjectId)]),
-  actorId: z.string(),
+  userId: z.string(),
   actorType: z.string().default("company"),
   companyName: z.string(),
   companyType: z.string(),

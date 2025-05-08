@@ -2,10 +2,10 @@ import { warpAsync } from "../../utils/warpAsync.util";
 import { serviceResponse } from "../../utils/response.util";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import { UserSecurityDtoType } from "../../dto/profiles/security.dto";
-import User from "../../models/mongodb/profiles/user.model";
-import Profile from "../../models/mongodb/profiles/profile.model";
-import Security from "../../models/mongodb/profiles/security.model";
+import { SecurityDtoType } from "../../dto/client/security.dto";
+import User from "../../models/mongodb/client/user.model";
+import Profile from "../../models/mongodb/client/profile.model";
+import Security from "../../models/mongodb/client/security.model";
 import { ServiceResponseType } from "../../types/response.type";
 dotenv.config();
 
@@ -44,7 +44,7 @@ class TokenService {
 
   // Generate temporarily token when login with two factor authentication
   generateTokens = warpAsync(
-    async (userSecurity: UserSecurityDtoType): Promise<ServiceResponseType> => {
+    async (userSecurity: SecurityDtoType): Promise<ServiceResponseType> => {
       const [user, profile, security] = await Promise.all([
         User.findOne({ userId: userSecurity.userId }).lean().select({
           firstName: 1,
@@ -78,6 +78,7 @@ class TokenService {
         lastSeen: new Date().toISOString(),
         sign_with: userSecurity.sign_in_provider,
         emailVerified: userSecurity.isEmailVerified,
+        visibility: user.visibility,
         company: security?.company,
       };
       const accessToken = jwt.sign(

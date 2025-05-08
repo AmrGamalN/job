@@ -12,7 +12,7 @@ import {
   validateCompanyAdd,
   validateCompanyUpdate,
 } from "../../validation/company/company.validator";
-import { companyUploadImage } from "../../middlewares/uploadFile.middleware";
+import { uploadImageProfile } from "../../middlewares/uploadFile.middleware";
 import {
   checkFilesMiddleware,
   parseFieldsMiddleware,
@@ -64,7 +64,7 @@ router.post(
     "admin",
     "viewer",
   ]),
-  companyUploadImage,
+  uploadImageProfile,
   checkFilesMiddleware(["companyLogo"]),
   parseFieldsMiddleware(),
   parserImagesMiddleware(),
@@ -199,7 +199,7 @@ router.put(
   "/update/:id",
   ...companyAdminRoleMiddlewares,
   requiredParamMiddleware(),
-  companyUploadImage,
+  uploadImageProfile,
   parseFieldsMiddleware(),
   parserImagesMiddleware(),
   expressValidator(validateCompanyUpdate),

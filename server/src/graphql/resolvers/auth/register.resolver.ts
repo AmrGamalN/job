@@ -1,5 +1,5 @@
 import { IResolvers } from "@graphql-tools/utils";
-import { applyMiddleware } from "../../../middlewares/apply.middleware";
+import { applyMiddleware } from "../../../middlewares/apply.graphql.middleware";
 import RegisterController from "../../../controllers/auth/register.controller";
 import { expressValidator } from "../../../middlewares/validator.middleware";
 import { registerValidator } from "../../../validation/auth/register.validator";

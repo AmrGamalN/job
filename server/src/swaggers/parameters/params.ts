@@ -5,7 +5,7 @@
  *     Id:
  *      name: id
  *      in: path
- *      required: false
+ *      required: true
  *      description: Enter id
  *      schema:
  *        type: string
@@ -15,11 +15,11 @@
  * @swagger
  * components:
  *   parameters:
- *     RequiredId:
- *      name: id
+ *     UserId:
+ *      name: userId
  *      in: path
  *      required: true
- *      description: Enter id
+ *      description: Enter user id
  *      schema:
  *        type: string
  */

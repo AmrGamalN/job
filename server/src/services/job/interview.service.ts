@@ -6,7 +6,7 @@ import {
   InterviewAddDtoType,
   InterviewUpdateDtoType,
 } from "../../dto/job/interview.dto";
-import { paginate } from "../../utils/pagination.util";
+import { generatePagination } from "../../utils/generatePagination.util";
 import { warpAsync } from "../../utils/warpAsync.util";
 import { serviceResponse } from "../../utils/response.util";
 import { validateAndFormatData } from "../../utils/validateData.util";
@@ -20,6 +20,10 @@ import JobApplication from "../../models/mongodb/jobs/JobApplication.model";
 import { CustomError } from "../../utils/customError.util";
 import mongoose from "mongoose";
 import { UserRequestType } from "../../types/request.type";
+import {
+  generateFilters,
+  generateSort,
+} from "../../utils/generateFilters&Sort.util";
 
 class InterviewService {
   private static instanceService: InterviewService;
@@ -36,21 +40,21 @@ class InterviewService {
 
   addInterview = warpAsync(
     async (
-      interviewData: InterviewAddDtoType,
+      data: InterviewAddDtoType,
       user: UserRequestType
     ): Promise<ServiceResponseType> => {
-      const validationResult = validateAndFormatData(
-        interviewData,
-        InterviewAddDto
-      );
+      const validationResult = validateAndFormatData({
+        data,
+        userDto: InterviewAddDto,
+      });
       if (!validationResult.success) return validationResult;
 
       const session = await mongoose.startSession();
       session.startTransaction();
       try {
         const isExistingInterview = await Interview.findOne({
-          jobApplicationId: interviewData.jobApplicationId,
-          userId: interviewData.userId,
+          jobApplicationId: data.jobApplicationId,
+          userId: data.userId,
         }).session(session);
         if (isExistingInterview)
           throw new CustomError(
@@ -61,7 +65,7 @@ class InterviewService {
           );
 
         const jobApplication = await JobApplication.findById(
-          interviewData.jobApplicationId
+          data.jobApplicationId
         ).session(session);
         if (!jobApplication)
           throw new CustomError(
@@ -83,7 +87,7 @@ class InterviewService {
         const [createInterview] = await Interview.create(
           [
             {
-              ...interviewData,
+              ...data,
               companyId: jobApplication.companyId,
               jobId: jobApplication.jobId,
               interviewLink: interviewLink.link,
@@ -104,8 +108,8 @@ class InterviewService {
               )
             ),
             this.analyticsService.updateAnalytics(jobApplication.jobId, [
-              interviewData.interviewResult,
-              interviewData.interviewStatus,
+              data.interviewResult,
+              data.interviewStatus,
               "Interviewed",
             ]),
           ]);
@@ -143,33 +147,51 @@ class InterviewService {
   );
 
   getInterview = warpAsync(
-    async (interviewId: string): Promise<ServiceResponseType> => {
-      const getInterview = await Interview.findById({
-        _id: interviewId,
-      }).lean();
-      return validateAndFormatData(getInterview, InterviewDto);
+    async (_id: string): Promise<ServiceResponseType> => {
+      return validateAndFormatData({
+        data: await Interview.findById({ _id }).lean(),
+        userDto: InterviewDto,
+      });
     }
   );
 
   getAllInterviews = warpAsync(
     async (
-      filters: InterviewFiltersType,
+      queries: InterviewFiltersType,
       sort: SortType,
       jobId: string
     ): Promise<ServiceResponseType> => {
-      const count = await this.countInterview(filters, jobId);
-      return await paginate(
-        Interview,
-        InterviewDto,
-        count.count ?? 0,
-        {
-          sort: this.sortInterviews(sort),
-          page: filters.page,
-          limit: filters.limit,
+      const filters = generateFilters<InterviewFiltersType>(queries);
+      const count = await this.countInterview(jobId, filters, true);
+      return await generatePagination({
+        model: Interview,
+        userDto: InterviewDto,
+        totalCount: count.count,
+        paginationOptions: {
+          sort: generateSort<SortType>(sort),
+          page: queries.page,
+          limit: queries.limit,
         },
-        null,
-        { jobId, ...this.filterInterviews(filters) }
-      );
+        fieldSearch: { jobId, ...filters },
+      });
+    }
+  );
+
+  countInterview = warpAsync(
+    async (
+      jobId,
+      queries: InterviewFiltersType,
+      filtered?: boolean
+    ): Promise<ServiceResponseType> => {
+      const filters = filtered
+        ? queries
+        : generateFilters<InterviewFiltersType>(queries);
+      return serviceResponse({
+        count: await Interview.countDocuments({
+          jobId,
+          ...filters,
+        }),
+      });
     }
   );
 
@@ -183,35 +205,24 @@ class InterviewService {
       const getInterview = await Interview.findOne({
         interviewLink: link,
       }).lean();
-      return validateAndFormatData(getInterview, InterviewDto);
-    }
-  );
-
-  countInterview = warpAsync(
-    async (
-      filters: InterviewFiltersType,
-      jobId
-    ): Promise<ServiceResponseType> => {
-      return serviceResponse({
-        count: await Interview.countDocuments({
-          ...this.filterInterviews(filters),
-          jobId,
-        }),
+      return validateAndFormatData({
+        data: getInterview,
+        userDto: InterviewDto,
       });
     }
   );
 
   updateInterview = warpAsync(
     async (
-      InterviewData: InterviewUpdateDtoType,
+      data: InterviewUpdateDtoType,
       interviewId: string,
       userId: string
     ): Promise<ServiceResponseType> => {
-      const validationResult = validateAndFormatData(
-        InterviewData,
-        InterviewUpdateDto,
-        "update"
-      );
+      const validationResult = validateAndFormatData({
+        data,
+        userDto: InterviewUpdateDto,
+        actionType: "update",
+      });
       if (!validationResult.success) return validationResult;
 
       const updateInterview = await Interview.findOneAndUpdate(
@@ -224,16 +235,16 @@ class InterviewService {
             updatedBy: userId,
           },
         }
-      ).lean();
+      );
       if (updateInterview) {
-        const fieldsToTrack: (keyof typeof InterviewData)[] = [
+        const fieldsToTrack: (keyof typeof data)[] = [
           "interviewResult",
           "interviewStatus",
         ];
 
         const { oldValues, newValues } = this.extractChangedValues(
           updateInterview,
-          InterviewData,
+          data,
           fieldsToTrack
         );
         if (newValues.length || oldValues.length) {
@@ -291,32 +302,6 @@ class InterviewService {
     }
     return { oldValues, newValues };
   }
-
-  private filterInterviews = (queries: InterviewFiltersType) => {
-    const filtersOption: (keyof typeof queries)[] = [
-      "interviewStatus",
-      "interviewResult",
-      "interviewPlatform",
-    ];
-    let filters: Record<string, string | object> = {};
-
-    if (queries.start && queries.end) {
-      filters["createdAt"] = { $gte: queries.start, $lte: queries.end };
-    }
-
-    for (const key of filtersOption) {
-      if (queries[key] && typeof queries[key] == "string")
-        filters[key] = queries[key];
-    }
-    console.log(filters);
-    return filters;
-  };
-
-  private sortInterviews = (queries: SortType) => {
-    const sort: Record<string, number> = {};
-    if (queries.createdAt) sort["createdAt"] = Number(queries.createdAt);
-    return sort;
-  };
 }
 
 export default InterviewService;

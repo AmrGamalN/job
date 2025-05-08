@@ -1,9 +1,10 @@
 import { Schema, model } from "mongoose";
 import { JobAppDtoType } from "../../../dto/job/jobApplication.dto";
 import {
-  ApplicantTypes,
-  JobTypes,
-  WorkplaceTypes,
+  ApplicantEnum,
+  JobEnum,
+  JobExperiencesEnum,
+  WorkplaceEnum,
 } from "../../../types/job.type";
 
 const JobApplicationSchema = new Schema(
@@ -19,19 +20,20 @@ const JobApplicationSchema = new Schema(
     profileLink: { type: String, required: true },
     applicantTypes: {
       type: String,
-      enum: ApplicantTypes,
+      enum: ApplicantEnum,
       required: true,
     },
     jobType: {
       type: String,
-      enum: JobTypes,
+      enum: JobEnum,
       required: true,
     },
     workplaceType: {
       type: String,
-      enum: WorkplaceTypes,
+      enum: WorkplaceEnum,
       required: true,
     },
+    jobExperiences: { type: String, enum: JobExperiencesEnum, required: true },
     cv: {
       url: { type: String, default: "" },
       key: { type: String, required: true },

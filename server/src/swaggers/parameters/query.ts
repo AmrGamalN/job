@@ -1,3 +1,4 @@
+// company query
 /**
  * @swagger
  * components:
@@ -132,6 +133,7 @@
  *         enum: ["user", "company", "school", "group", "post", "job"]
  */
 
+// Job Query
 /**
  * @swagger
  * components:
@@ -229,9 +231,9 @@
  *       name: currentAddress
  *       in: query
  *       description: The current address
- *       schema:
  */
 
+// Interview query
 /**
  * @swagger
  * components:
@@ -243,7 +245,6 @@
  *       schema:
  *         type: string
  *         enum: ["pending", "rejected","shortlisted", "passed"]
-
  *     InterviewPlatform:
  *       name: interviewPlatform
  *       in: query
@@ -251,7 +252,6 @@
  *       schema:
  *         type: string
  *         enum: ["zoom", "google_meet", "on_site", "microsoftTeams"]
-
  *     InterviewResult:
  *       name: interviewResult
  *       in: query
@@ -261,3 +261,116 @@
  *         enum: ["passed", "failed", "on_hold", "hired"]
  */
 
+// Connection query
+/**
+ * @swagger
+ * components:
+ *   parameters:
+ *     ConnectionStatus:
+ *       name: status
+ *       in: query
+ *       description: The connection status
+ *       schema:
+ *         type: string
+ *         enum: ["accepted","pending"]
+ *     BlockStatus:
+ *       name: blockStatus
+ *       in: query
+ *       description: The blocked status
+ *       schema:
+ *         type: string
+ *         enum: ["blocked", "unBlocked"]
+ *     RecipientName:
+ *       name: recipientName
+ *       in: query
+ *       description: The recipient name
+ *       schema:
+ *         type: string
+ */
+
+// Post query
+/**
+ * @swagger
+ * components:
+ *   parameters:
+ *     Hashtag:
+ *      - name: hashtag
+ *        in: query
+ *        description: hashtag
+ *        required: false
+ *        schema:
+ *          type: string
+ */
+
+// Follow query
+/**
+ * @swagger
+ * components:
+ *   parameters:
+ *     NameFollowing:
+ *        name: nameFollowing
+ *        in: query
+ *        description: The following name
+ *        required: false
+ *        schema:
+ *          type: string
+ *     NameFollower:
+ *        name: nameFollower
+ *        in: query
+ *        description: The follower Name
+ *        required: false
+ *        schema:
+ *          type: string
+ *     FollowingType:
+ *        name: followingType
+ *        in: query
+ *        description: The following type
+ *        required: false
+ *        schema:
+ *          type: string
+ *          enum: ["user", "company", "school"]
+ */
+
+// Report query
+/**
+ * @swagger
+ * components:
+ *   parameters:
+ *     ReportTargetType:
+ *        name: targetType
+ *        in: query
+ *        description: The target type of report
+ *        schema:
+ *          type: string
+ *          enum: ["user", "company", "school", "group", "post", "job","school","other"]
+ *     ReportStatus:
+ *        name: status
+ *        in: query
+ *        description: The report status
+ *        required: false
+ *        schema:
+ *          type: string
+ *          enum: ["pending", "reviewed", "dismissed"]
+ *     Subject:
+ *        name: subject
+ *        in: query
+ *        description: The report subject
+ *        required: false
+ *        schema:
+ *          type: string
+ */
+
+// Help query
+/**
+ * @swagger
+ * components:
+ *   parameters:
+ *     HelpStatus:
+ *        name: status
+ *        in: query
+ *        description: The help status
+ *        required: false
+ *        schema:
+ *          type: string
+ *          enum: ["pending", "reviewed", "dismissed"]
+ */

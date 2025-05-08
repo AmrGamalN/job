@@ -9,9 +9,10 @@ import {
 import { warpAsync } from "../../utils/warpAsync.util";
 import { serviceResponse } from "../../utils/response.util";
 import { validateAndFormatData } from "../../utils/validateData.util";
-import { paginate } from "../../utils/pagination.util";
+import { generatePagination } from "../../utils/generatePagination.util";
 import { ServiceResponseType } from "../../types/response.type";
 import { DocumentFiltersType } from "../../types/company.type";
+import { generateFilters } from "../../utils/generateFilters&Sort.util";
 
 class DocumentService {
   private static instanceService: DocumentService;
@@ -24,65 +25,66 @@ class DocumentService {
 
   addDocument = warpAsync(
     async (
-      documentData: DocumentAddDtoType,
+      data: DocumentAddDtoType,
       userId: string,
       companyId: string
     ): Promise<ServiceResponseType> => {
-      const validationResult = validateAndFormatData(
-        documentData,
-        DocumentAddDto
-      );
+      const validationResult = validateAndFormatData({
+        data,
+        userDto: DocumentAddDto,
+      });
       if (!validationResult.success) return validationResult;
 
       await Document.create({
-        ...documentData,
+        ...data,
         companyId,
         uploadBy: userId,
       });
       return serviceResponse({
         statusText: "Created",
-        message: "Document created successfully",
       });
     }
   );
 
-  getDocument = warpAsync(
-    async (documentId: string): Promise<ServiceResponseType> => {
-      const getDocument = await Document.findOne({
-        _id: documentId,
-      }).lean();
-      return validateAndFormatData(getDocument, DocumentDto);
-    }
-  );
+  getDocument = warpAsync(async (_id: string): Promise<ServiceResponseType> => {
+    return validateAndFormatData({
+      data: await Document.findById({ _id }).lean(),
+      userDto: DocumentDto,
+    });
+  });
 
   getAllDocuments = warpAsync(
     async (
-      filters: DocumentFiltersType,
+      queries: DocumentFiltersType,
       companyId: string
     ): Promise<ServiceResponseType> => {
-      const count = await this.countDocument(filters, companyId);
-      return await paginate(
-        Document,
-        DocumentDto,
-        count.count ?? 0,
-        {
-          page: filters?.page,
-          limit: filters?.limit,
+      const filters = generateFilters<DocumentFiltersType>(queries);
+      const count = await this.countDocument(companyId, filters, true);
+      return await generatePagination({
+        model: Document,
+        userDto: DocumentDto,
+        totalCount: count.count,
+        paginationOptions: {
+          page: queries.page,
+          limit: queries.limit,
         },
-        null,
-        { companyId, ...this.filterDocuments(filters) }
-      );
+        fieldSearch: { companyId, ...filters },
+      });
     }
   );
 
   countDocument = warpAsync(
     async (
-      filters: DocumentFiltersType,
-      companyId: string
+      companyId: string,
+      queries: DocumentFiltersType,
+      filtered?: boolean
     ): Promise<ServiceResponseType> => {
+      const filters = filtered
+        ? queries
+        : generateFilters<DocumentFiltersType>(queries);
       return serviceResponse({
         count: await Document.countDocuments({
-          ...this.filterDocuments(filters),
+          ...filters,
           companyId,
         }),
       });
@@ -91,24 +93,23 @@ class DocumentService {
 
   updateDocument = warpAsync(
     async (
-      DocumentData: DocumentUpdateDtoType,
-      documentId: string,
-      userId: string,
-      companyId: string
+      data: DocumentUpdateDtoType,
+      _id: string,
+      userId: string
     ): Promise<ServiceResponseType> => {
-      const validationResult = validateAndFormatData(
-        DocumentData,
-        DocumentUpdateDto,
-        "update"
-      );
+      const validationResult = validateAndFormatData({
+        data,
+        userDto: DocumentUpdateDto,
+        actionType: "update",
+      });
       if (!validationResult.success) return validationResult;
 
       const updateDocument = await Document.updateOne(
-        { _id: documentId, companyId },
+        { _id },
         {
           $set: { ...validationResult.data, updatedBy: userId },
         }
-      ).lean();
+      );
       return serviceResponse({
         data: updateDocument.modifiedCount,
       });
@@ -116,35 +117,12 @@ class DocumentService {
   );
 
   deleteDocument = warpAsync(
-    async (
-      documentId: string,
-      companyId: string
-    ): Promise<ServiceResponseType> => {
+    async (_id: string): Promise<ServiceResponseType> => {
       return serviceResponse({
-        data: (await Document.deleteOne({ _id: documentId, companyId }))
-          .deletedCount,
+        data: (await Document.deleteOne({ _id })).deletedCount,
       });
     }
   );
-
-  private filterDocuments = (queries: DocumentFiltersType) => {
-    const filtersOption: (keyof typeof queries)[] = ["name"];
-    let filters: Record<string, string | object> = {};
-
-    if (queries.start && queries.end) {
-      filters["createdAt"] = { $gte: queries.start, $lte: queries.end };
-    }
-
-    if (queries.type) {
-      filters["documentFile.type"] = queries.type;
-    }
-
-    for (const key of filtersOption) {
-      if (queries[key] && typeof queries[key] == "string")
-        filters[key] = queries[key];
-    }
-    return filters;
-  };
 }
 
 export default DocumentService;

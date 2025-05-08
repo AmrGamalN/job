@@ -1,8 +1,8 @@
 import Company from "../../models/mongodb/company/company.model";
 import FeedBack from "../../models/mongodb/company/feedBack.model";
-import Security from "../../models/mongodb/profiles/security.model";
+import Security from "../../models/mongodb/client/security.model";
 import Activity from "../../models/mongodb/Analytics/activity.model";
-import Interest from "../../models/mongodb/profiles/interest.model";
+import Interest from "../../models/mongodb/client/interest.model";
 import CompanySecurity from "../../models/mongodb/company/security.model";
 import {
   CompanyBaseDto,
@@ -12,21 +12,23 @@ import {
   CompanyUpdateDtoType,
 } from "../../dto/company/security.dto";
 import { CompanyDtoType } from "../../dto/company/company.dto";
-import { warpAsync } from "../../utils/warpAsync.util";
-import { paginate } from "../../utils/pagination.util";
 import { sendEmail } from "../../utils/sendEmail.util";
+import { warpAsync } from "../../utils/warpAsync.util";
+import { CustomError } from "../../utils/customError.util";
 import { serviceResponse } from "../../utils/response.util";
 import { generateLink } from "../../utils/generateUniqueLink.util";
 import { validateAndFormatData } from "../../utils/validateData.util";
-import { CustomError } from "../../utils/customError.util";
+import { generatePagination } from "../../utils/generatePagination.util";
+import { generateFilters } from "../../utils/generateFilters&Sort.util";
 import {
   sendCompanyEmail,
   sendCompanyStatusMessage,
 } from "../../utils/emailMessage.util";
 import { ServiceResponseType, ResponseType } from "../../types/response.type";
 import { CompanyFiltersType } from "../../types/company.type";
-import { v4 as uuidv4 } from "uuid";
+import { UserRoleType } from "../../types/role.type";
 import mongoose from "mongoose";
+import { v4 as uuidv4 } from "uuid";
 
 class CompanyService {
   private static instanceService: CompanyService;
@@ -40,20 +42,19 @@ class CompanyService {
 
   addCompany = warpAsync(
     async (
-      CompanyData: CompanyAddDtoType,
+      data: CompanyAddDtoType,
       userId: string
     ): Promise<ServiceResponseType> => {
-      const validationResult = validateAndFormatData(
-        CompanyData,
-        CompanyAddDto
-      );
+      const validationResult = validateAndFormatData({
+        data,
+        userDto: CompanyAddDto,
+      });
       if (!validationResult.success) return validationResult;
 
       const session = await mongoose.startSession();
       try {
-        const prefixS3 = uuidv4();
         await session.withTransaction(async () => {
-          const getCompany = await Company.findOne({ actorId: userId }, null, {
+          const getCompany = await Company.findOne({ userId: userId }, null, {
             session,
           });
           if (getCompany)
@@ -67,8 +68,8 @@ class CompanyService {
           const [newCompany] = await Company.create(
             [
               {
-                ...CompanyData,
-                actorId: userId,
+                ...data,
+                userId: userId,
               },
             ],
             { session }
@@ -77,19 +78,12 @@ class CompanyService {
           await Activity.create(
             [
               {
-                actorId: newCompany._id,
+                userId: newCompany._id,
                 ownerModel: "company",
-                prefixS3,
+                prefixS3: uuidv4(),
               },
             ],
             { session }
-          );
-
-          await Interest.create(
-            [{ actorId: newCompany._id, ownerModel: "company" }],
-            {
-              session,
-            }
           );
 
           await Security.updateOne(
@@ -110,7 +104,7 @@ class CompanyService {
             [
               {
                 companyId: newCompany._id,
-                legalInfo: CompanyData.legalInfo,
+                legalInfo: data.legalInfo,
               },
             ],
             { session }
@@ -164,9 +158,9 @@ class CompanyService {
         .populate<{ companyId: CompanyDtoType }>({ path: "companyId" })
         .lean();
 
-      let mergedCompanyData;
+      let data;
       if (companySecurityDoc) {
-        mergedCompanyData = {
+        data = {
           ...companySecurityDoc?.companyId,
           companyId: companySecurityDoc?.companyId?._id,
           prefixS3: companySecurityDoc?.prefixS3,
@@ -176,63 +170,34 @@ class CompanyService {
           updatedAt: companySecurityDoc?.updatedAt,
         };
       }
-      return validateAndFormatData(mergedCompanyData, CompanyBaseDto);
+      return validateAndFormatData({
+        data,
+        userDto: CompanyBaseDto,
+      });
     }
   );
 
   getAllCompanies = warpAsync(
     async (
       queries: CompanyFiltersType,
-      role: "admin" | "manager" | "user"
+      role: UserRoleType
     ): Promise<ServiceResponseType> => {
-      const count = await this.countCompany(queries, role);
-      const { status, ...filters } = this.filterCompanies(queries, role);
-      return await paginate(
-        CompanySecurity,
-        CompanyBaseDto,
-        count.count ?? 0,
-        { page: queries.page, limit: queries.limit },
-        null,
-        status,
-        "companyId",
-        filters
+      const { status, ...filters } = generateFilters<CompanyFiltersType>(
+        queries,
+        role
       );
-    }
-  );
-
-  updateCompany = warpAsync(
-    async (
-      companyData: CompanyUpdateDtoType,
-      companyId: string
-    ): Promise<ServiceResponseType> => {
-      const validationResult = validateAndFormatData(
-        companyData,
-        CompanyUpdateDto,
-        "update"
-      );
-      if (!validationResult.success) return validationResult;
-
-      const [updateCompany] = await Promise.all([
-        Company.updateOne(
-          { _id: companyId },
-          {
-            $set: {
-              ...companyData,
-            },
-          }
-        ),
-        CompanySecurity.updateOne(
-          { companyId },
-          {
-            $set: {
-              ...companyData,
-            },
-          }
-        ),
-      ]);
-
-      return serviceResponse({
-        data: updateCompany.modifiedCount,
+      const count = await this.countCompany(filters, role);
+      return await generatePagination({
+        model: CompanySecurity,
+        userDto: CompanyBaseDto,
+        totalCount: count.count,
+        paginationOptions: {
+          page: queries.page,
+          limit: queries.limit,
+        },
+        fieldSearch: { status },
+        populatePath: "companyId",
+        populateFilter: filters,
       });
     }
   );
@@ -240,43 +205,85 @@ class CompanyService {
   countCompany = warpAsync(
     async (
       queries: CompanyFiltersType,
-      role: "admin" | "manager" | "user"
+      role: "admin" | "manager" | "user",
+      filtered?: boolean
     ): Promise<ServiceResponseType> => {
-      const filters = this.filterCompanies(queries, role);
-      const pipeline = [
-        {
-          $match: {
-            ...(filters.status && { status: filters.status }),
+      if (filtered) {
+        const filters = generateFilters<CompanyFiltersType>(queries, role);
+        const pipeline = [
+          {
+            $match: {
+              ...(filters.status && { status: filters.status }),
+            },
           },
-        },
-        {
-          $lookup: {
-            from: "company_companies",
-            localField: "companyId",
-            foreignField: "_id",
-            as: "company",
+          {
+            $lookup: {
+              from: "company_companies",
+              localField: "companyId",
+              foreignField: "_id",
+              as: "company",
+            },
           },
-        },
-        { $unwind: "$company" },
-        {
-          $match: {
-            ...(filters.createdAt && {
-              "company.createdAt": filters.createdAt,
-            }),
-            ...(filters.tags && {
-              "company.tags": [filters.tags],
-            }),
-            ...(filters.companyName && {
-              "company.companyName": filters.companyName,
-            }),
+          { $unwind: "$company" },
+          {
+            $match: {
+              ...(filters.createdAt && {
+                "company.createdAt": filters.createdAt,
+              }),
+              ...(filters.tags && {
+                "company.tags": [filters.tags],
+              }),
+              ...(filters.companyName && {
+                "company.companyName": filters.companyName,
+              }),
+            },
           },
-        },
-        { $count: "count" },
-      ];
-
-      const result = await CompanySecurity.aggregate(pipeline);
+          { $count: "count" },
+        ];
+        const result = await CompanySecurity.aggregate(pipeline);
+        return serviceResponse({
+          count: result[0]?.count || 0,
+        });
+      }
       return serviceResponse({
-        count: result[0]?.count || 0,
+        count: await CompanySecurity.countDocuments(queries),
+      });
+    }
+  );
+
+  updateCompany = warpAsync(
+    async (
+      data: CompanyUpdateDtoType,
+      companyId: string
+    ): Promise<ServiceResponseType> => {
+      const validationResult = validateAndFormatData({
+        data,
+        userDto: CompanyUpdateDto,
+        actionType: "update",
+      });
+      if (!validationResult.success) return validationResult;
+
+      const [updateCompany] = await Promise.all([
+        Company.updateOne(
+          { _id: companyId },
+          {
+            $set: {
+              ...data,
+            },
+          }
+        ),
+        CompanySecurity.updateOne(
+          { companyId },
+          {
+            $set: {
+              ...data,
+            },
+          }
+        ),
+      ]);
+
+      return serviceResponse({
+        data: updateCompany.modifiedCount,
       });
     }
   );
@@ -292,34 +299,5 @@ class CompanyService {
       });
     }
   );
-
-  private filterCompanies = (
-    queries: CompanyFiltersType,
-    role: "admin" | "manager" | "user"
-  ): any => {
-    let filtersOption: (keyof typeof queries)[] = ["companyName"];
-    let filters: Record<string, string | object> = {};
-
-    if (role === "admin" || role === "manager") {
-      if (queries.status) filters["status"] = queries.status;
-      if (queries.start && queries.end) {
-        filters["createdAt"] = { $gte: queries.start, $lte: queries.end };
-      }
-    }
-
-    if (role == "user") {
-      filters["status"] = { status: "active" };
-    }
-
-    if (queries.tags) {
-      filters["tags"] = { $in: [queries.tags] };
-    }
-
-    for (const key of filtersOption) {
-      if (queries[key] && typeof queries[key] == "string")
-        filters[key] = queries[key];
-    }
-    return filters;
-  };
 }
 export default CompanyService;

@@ -4,7 +4,7 @@ import {
   FuncExpressType,
   FuncGraphqlType,
   GraphqlArrayType,
-} from "../types/function.type";
+} from "../types/middleware.type";
 
 // It wraps functions that handle requests, whether Express or GraphQL.
 export const asyncHandler = (func: FuncExpressType | FuncGraphqlType) => {

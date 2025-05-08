@@ -1,10 +1,14 @@
 import { IResolvers } from "@graphql-tools/utils";
-import UserController from "../../../controllers/profiles/interest.controller";
-import { applyMiddleware } from "../../../middlewares/apply.middleware";
+import UserController from "../../../controllers/client/interest.controller";
+import { applyMiddleware } from "../../../middlewares/apply.graphql.middleware";
 import { asyncHandler } from "../../../middlewares/handleError.middleware";
-import { validateToggleParamMiddleware } from "../../../middlewares/validator.middleware";
+import UserMiddleware from "../../../middlewares/user.middlewares";
+import { requiredParamMiddleware } from "../../../middlewares/validator.middleware";
 import { userAuthorizationMiddlewares } from "../../../utils/authorizationRole.util";
+import Interest from "../../../models/mongodb/client/interest.model";
+import { InterestDtoType } from "../../../dto/client/interest.dto";
 const controller = UserController.getInstance();
+const userMiddleware = UserMiddleware.getInstance();
 
 export const interestResolver: IResolvers = {
   Query: {
@@ -12,7 +16,13 @@ export const interestResolver: IResolvers = {
       asyncHandler(controller.getInterest.bind(controller)),
       [
         ...userAuthorizationMiddlewares,
-        asyncHandler(validateToggleParamMiddleware()),
+        asyncHandler(requiredParamMiddleware()),
+        userMiddleware.graphqlVisibilityMiddleware<InterestDtoType>({
+          model: Interest,
+          method: "findById",
+          idField: "params",
+          idKey: "id",
+        }),
       ]
     ),
   },

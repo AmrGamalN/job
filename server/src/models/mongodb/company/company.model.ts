@@ -2,7 +2,7 @@ import { Schema, model } from "mongoose";
 import { CompanyDtoType } from "../../../dto/company/company.dto";
 
 const basicInfo = {
-  actorId: { type: String, required: true },
+  userId: { type: String, required: true },
   actorType: { type: String, default: "company" },
   companyName: { type: String, required: true },
   companyType: { type: String, required: true },

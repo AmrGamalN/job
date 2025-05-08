@@ -2,7 +2,7 @@ import express from "express";
 import LoginController from "../../controllers/auth/login.controller";
 import { asyncHandler } from "../../middlewares/handleError.middleware";
 import { expressValidator } from "../../middlewares/validator.middleware";
-import { validateCode2AF } from "../../validation/profiles/security.validator";
+import { validateCode2AF } from "../../validation/client/security.validator";
 import { userAuthorizationMiddlewares } from "../../utils/authorizationRole.util";
 import {
   validateLoginByPhone,

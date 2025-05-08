@@ -1,11 +1,11 @@
 import express from "express";
 import ReactionController from "../../controllers/post/reaction.controller";
 import { asyncHandler } from "../../middlewares/handleError.middleware";
-import { validateReaction } from "../../validation/post/reaction.validator";
+import { reactionValidator } from "../../validation/post/reaction.validator";
 import { userAuthorizationMiddlewares } from "../../utils/authorizationRole.util";
 import {
   expressValidator,
-  validateToggleParamMiddleware,
+  requiredParamMiddleware,
   validateQueryMiddleware,
 } from "../../middlewares/validator.middleware";
 
@@ -14,29 +14,17 @@ const router = express.Router();
 
 /**
  * @swagger
- * /reaction/add/{id}:
+ * /reaction/add:
  *   post:
  *     tags: [Reaction]
  *     summary: Add reaction record
  *     description: Add a new reaction record for the user
- *     parameters:
- *       - $ref: '#/components/schemas/Id'
- *       - in: query
- *         name: post
- *         required: false
- *         description: The reaction type of the user to add reaction
- *         schema:
- *           type: string
- *           enum: [like, love, haha, wow, sad, angry]
- *           example: like
- *       - in: query
- *         name: comment_reaction
- *         required: false
- *         description: The reaction type of the user to add reaction
- *         schema:
- *           type: string
- *           enum: [like, love, haha, wow, sad, angry]
- *           example: like
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ReactionAddComponents'
  *     responses:
  *       200:
  *         $ref: '#/components/schemas/BaseResponse'
@@ -50,11 +38,10 @@ const router = express.Router();
  *         description: Internal Server Error
  */
 router.post(
-  "/add/:id?",
+  "/add",
   ...userAuthorizationMiddlewares,
-  validateQueryMiddleware(),
-  validateToggleParamMiddleware(),
-  expressValidator(validateReaction),
+  requiredParamMiddleware(),
+  expressValidator(reactionValidator),
   asyncHandler(controller.addReaction.bind(controller))
 );
 
@@ -88,9 +75,9 @@ router.post(
  *         description: Internal Server Error
  */
 router.get(
-  "/count/:id?",
+  "/count/:id",
   ...userAuthorizationMiddlewares,
-  validateToggleParamMiddleware(),
+  requiredParamMiddleware(),
   asyncHandler(controller.countReaction.bind(controller))
 );
 
@@ -124,10 +111,10 @@ router.get(
  *         description: Internal Server Error
  */
 router.get(
-  "/get/:id?",
+  "/get/:id",
   ...userAuthorizationMiddlewares,
   validateQueryMiddleware(),
-  validateToggleParamMiddleware(),
+  requiredParamMiddleware(),
   asyncHandler(controller.getReaction.bind(controller))
 );
 
@@ -138,24 +125,12 @@ router.get(
  *     tags: [Reaction]
  *     summary: Update reaction record
  *     description: Update specific a user's reaction information by id
- *     parameters:
- *       - $ref: '#/components/parameters/Id'
- *       - in: query
- *         name: post
- *         required: false
- *         description: The reaction type of the user to add reaction
- *         schema:
- *           type: string
- *           enum: [like, love, haha, wow, sad, angry]
- *           example: like
- *       - in: query
- *         name: comment
- *         required: false
- *         description: The reaction type of the user to add reaction
- *         schema:
- *           type: string
- *           enum: [like, love, haha, wow, sad, angry]
- *           example: like
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ReactionUpdateComponents'
  *     responses:
  *       200:
  *         $ref: '#/components/responses/ReactionResponse'
@@ -169,11 +144,10 @@ router.get(
  *         description: Internal Server Error
  */
 router.put(
-  "/update/:id?",
+  "/update/:id",
   ...userAuthorizationMiddlewares,
-  validateQueryMiddleware(),
-  validateToggleParamMiddleware(),
-  expressValidator(validateReaction),
+  requiredParamMiddleware(),
+  expressValidator(reactionValidator),
   asyncHandler(controller.updateReaction.bind(controller))
 );
 
@@ -184,16 +158,12 @@ router.put(
  *     tags: [Reaction]
  *     summary: Delete reaction record
  *     description: Delete specific a user's reaction information by id
- *     parameters:
- *       - $ref: '#/components/parameters/Id'
- *       - in: query
- *         name: reactionType
- *         required: true
- *         description: reaction type
- *         schema:
- *           type: string
- *           enum: [post, comment]
- *           example: post
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ReactionUpdateComponents'
  *     responses:
  *       200:
  *         $ref: '#/components/responses/ReactionSuccess'
@@ -207,11 +177,10 @@ router.put(
  *         description: Internal Server Error
  */
 router.delete(
-  "/delete/:id?",
+  "/delete/:id",
   ...userAuthorizationMiddlewares,
-  validateQueryMiddleware(),
-  validateToggleParamMiddleware(),
-  expressValidator(validateReaction),
+  requiredParamMiddleware(),
+  expressValidator(reactionValidator),
   asyncHandler(controller.deleteReaction.bind(controller))
 );
 export default router;

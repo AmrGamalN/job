@@ -1,37 +1,36 @@
-import { query } from "express-validator";
 import {
   validatorCreatedAt,
   validatorPagination,
 } from "../pagination.validator";
-export const validateQueryFaqGetAll = () => {
-  return [
-    ...validatorPagination(),
-    ...validatorCreatedAt(),
-    ...validatorCustomQuery(),
-  ];
-};
+import { validateString } from "../../helperFunction.validator";
+export const validateQueryFaqGetAll = () => [
+  ...validatorPagination(),
+  ...validatorCreatedAt(),
+  ...validatorCustomQuery(),
+];
 
-export const validateQueryFaqCount = () => {
-  return [...validatorCreatedAt(), ...validatorCustomQuery()];
-};
+export const validateQueryFaqCount = () => [
+  ...validatorCreatedAt(),
+  ...validatorCustomQuery(),
+];
 
 const validatorCustomQuery = () => [
-  query("questionType")
-    .optional({ checkFalsy: true })
-    .isString()
-    .withMessage("Question type must be a string"),
-  query("department")
-    .optional({ checkFalsy: true })
-    .isString()
-    .withMessage("Question type must be a string"),
-  query("userType")
-    .optional({ checkFalsy: true })
-    .isIn(["user", "member", "other"])
-    .withMessage("User type must be one of user, member, other"),
-  query("status")
-    .optional({ checkFalsy: true })
-    .isIn(["active", "inactive", "pending", "rejected", "banned"])
-    .withMessage(
-      "Status must be one of active, inactive, pending, rejected, banned"
-    ),
+  validateString("questionType", true, {
+    location: "query",
+    min: 1,
+    max: 100,
+  }),
+  validateString("department", true, {
+    location: "query",
+    min: 1,
+    max: 100,
+  }),
+  validateString("userType", true, {
+    location: "query",
+    isIn: ["user", "member", "other"],
+  }),
+  validateString("status", true, {
+    location: "query",
+    isIn: ["active", "inactive", "pending", "rejected", "banned"],
+  }),
 ];

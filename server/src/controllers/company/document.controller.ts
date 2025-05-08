@@ -51,17 +51,13 @@ export default class DocumentController {
     const result = await this.documentService.updateDocument(
       req.body,
       req.params.id,
-      req.curUser?.userId,
-      req.curUser?.company.companyId
+      req.curUser?.userId
     );
     return controllerResponse(res, result);
   };
 
   deleteDocument = async (req: Request, res: Response) => {
-    const result = await this.documentService.deleteDocument(
-      req.params.id,
-      req.curUser?.company.companyId
-    );
+    const result = await this.documentService.deleteDocument(req.params.id);
     return controllerResponse(res, result);
   };
 }

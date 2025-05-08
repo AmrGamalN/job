@@ -1,20 +1,3 @@
-/**
- * @swagger
- * components:
- *   schemas:
- *    BaseResponse:
- *      description: Successful operation
- *      type: object
- *      properties:
- *        statusText:
- *          type: string
- *        status:
- *          type: number
- *        success:
- *          type: boolean
- *        message:
- *          type: string
- */
 
 /**
  * @swagger

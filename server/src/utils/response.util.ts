@@ -50,7 +50,7 @@ const response = ({
   const defaultMessages = {
     OK: "Operation successfully",
     Created: "Resource created successfully",
-    BadRequest: "Bad request",
+    BadRequest: "Invalid data",
     NotFound: "Item not found",
     Conflict: "Item already exists",
     Unauthorized: "Unauthorized",

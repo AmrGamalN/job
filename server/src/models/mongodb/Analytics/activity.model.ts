@@ -2,18 +2,24 @@ import { Schema, model } from "mongoose";
 
 const ActivitySchema = new Schema(
   {
-    actorId: {
-      type: String,
-      refPath: "ownerModel",
-      required: true,
-    },
-    ownerModel: {
+    userId: {
       type: String,
       required: true,
-      enum: ["user", "company", "school"],
-      default: "user",
     },
-    connections: { type: Number, default: 0 },
+    connections: {
+      pending: {
+        type: Number,
+        default: 0,
+      },
+      accepted: {
+        type: Number,
+        default: 0,
+      },
+      blocked: {
+        type: Number,
+        default: 0,
+      },
+    },
     followers: { type: Number, default: 0 },
     following: { type: Number, default: 0 },
     viewers: { type: Number, default: 0 },

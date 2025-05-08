@@ -31,8 +31,8 @@ const router = express.Router();
  * /company/job/application/add:
  *   post:
  *     tags: [JobApplication]
- *     summary: Add job application 
- *     description: Add a new job application 
+ *     summary: Add job application
+ *     description: Add a new job application
  *     requestBody:
  *       required: true
  *       content:
@@ -43,7 +43,7 @@ const router = express.Router();
  *       200:
  *         $ref: '#/components/schemas/BaseResponse'
  *       400:
- *         description: Failed to add job application 
+ *         description: Failed to add job application
  *       403:
  *         description: Unauthorized
  *       500:
@@ -67,7 +67,7 @@ router.post(
  *     summary: Get the count of job application
  *     description: Returns the total count of job application
  *     parameters:
- *      - $ref: '#/components/parameters/RequiredId'
+ *      - $ref: '#/components/parameters/Id'
  *      - $ref: '#/components/parameters/CurrAddress'
  *      - $ref: '#/components/parameters/JobExperience'
  *      - $ref: '#/components/parameters/ApplicantTypes'
@@ -102,7 +102,7 @@ router.get(
  *     summary: Get job application data by id
  *     description: Retrieve job application by id
  *     parameters:
- *      - $ref: '#/components/parameters/RequiredId'
+ *      - $ref: '#/components/parameters/Id'
  *     responses:
  *       200:
  *         $ref: '#/components/schemas/JobAppResponse'
@@ -130,7 +130,7 @@ router.get(
  *     summary: Get all job application
  *     description: Retrieve job application by id
  *     parameters:
- *      - $ref: '#/components/parameters/RequiredId'
+ *      - $ref: '#/components/parameters/Id'
  *      - $ref: '#/components/parameters/Page'
  *      - $ref: '#/components/parameters/Limit'
  *      - $ref: '#/components/parameters/CurrAddress'
@@ -169,7 +169,7 @@ router.get(
  *     summary: Update job application
  *     description: Update job application by id
  *     parameters:
- *      - $ref: '#/components/parameters/RequiredId'
+ *      - $ref: '#/components/parameters/Id'
  *     requestBody:
  *       required: false
  *       content:
@@ -180,7 +180,7 @@ router.get(
  *       200:
  *         $ref: '#/components/schemas/BaseResponse'
  *       400:
- *         description: Failed to update job application 
+ *         description: Failed to update job application
  *       403:
  *         description: Unauthorized
  *       404:
@@ -203,15 +203,15 @@ router.put(
  * /company/job/application/delete/{id}:
  *   delete:
  *     tags: [JobApplication]
- *     summary: Delete job application 
+ *     summary: Delete job application
  *     description: Delete specific job application by id
  *     parameters:
- *      - $ref: '#/components/parameters/RequiredId'
+ *      - $ref: '#/components/parameters/Id'
  *     responses:
  *       200:
  *         $ref: '#/components/schemas/BaseResponse'
  *       400:
- *         description: Failed to delete job application 
+ *         description: Failed to delete job application
  *       403:
  *         description: Unauthorized
  *       404:

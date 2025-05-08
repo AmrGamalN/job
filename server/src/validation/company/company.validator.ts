@@ -1,114 +1,51 @@
-import { body } from "express-validator";
+import {
+  validateArray,
+  validateNumber,
+  validateObject,
+  validateString,
+} from "../helperFunction.validator";
+const stringLength = { min: 1, max: 30 };
 
-const companyValidate = (isUpdate: boolean) => {
-  const requiredFields = [
-    "companyName",
-    "companyType",
-    "description",
-    "website",
-    "companyIndustry",
-    "companyEmail",
-    "legalInfo",
-  ];
+const companyValidate = (isOptional: boolean) => [
+  validateString("companyName", isOptional, stringLength),
+  validateString("companyType", isOptional, stringLength),
+  validateString("companyIndustry", isOptional, stringLength),
+  validateString("companyEmail", isOptional, { isEmail: true }),
+  validateString("description", isOptional, { max: 500 }),
+  validateNumber("companySize", isOptional),
+  validateString("companyPhone", true, { isPhone: true }),
+  validateString("introVideoUrl", true),
+  validateObject("companyLogo", true),
+  validateString("companyLogo.url", true),
+  validateString("companyLogo.key", true),
+  validateString("companyLogo.type", true),
 
-  const FieldString = (field: string) => {
-    const validator = body(field)
-      .if(() => !isUpdate || requiredFields.includes(field))
-      .notEmpty()
-      .withMessage(`${field} is required`)
-      .bail()
-      .isString()
-      .withMessage(`${field} must be a string`)
-      .bail()
-      .isLength({ min: 1, max: 50 })
-      .withMessage(`${field} must be between 1 and 50 characters`);
+  validateObject("profileImage", true),
+  validateString("profileImage.url", true),
+  validateString("profileImage.key", true),
+  validateString("profileImage.type", true),
 
-    return requiredFields.includes(field) && !isUpdate
-      ? validator
-      : validator.optional({ checkFalsy: true });
-  };
+  validateObject("coverImage", true),
+  validateString("coverImage.url", true),
+  validateString("coverImage.key", true),
+  validateString("coverImage.type", true),
 
-  const FieldArray = (field: string) => {
-    const validator = body(field)
-      .isArray()
-      .withMessage(`${field} must be an array`);
-    return requiredFields.includes(field) && !isUpdate
-      ? validator
-      : validator.optional({ checkFalsy: true });
-  };
+  validateString("website", true, { isUrl: true }),
+  validateString("linkedIn", true, { isUrl: true }),
+  validateString("facebook", true, { isUrl: true }),
+  validateString("twitter", true, { isUrl: true }),
+  validateString("github", true, { isUrl: true }),
 
-  const FieldObject = (field: string) => {
-    const validator = body(field)
-      .isObject()
-      .withMessage(`${field} must be an object`);
-    return requiredFields.includes(field) && !isUpdate
-      ? validator
-      : validator.optional({ checkFalsy: true });
-  };
+  ...validateArray("department", true, { elementType: "string" }),
+  ...validateArray("tags", true, { elementType: "string" }),
+  ...validateArray("technologies", true, { elementType: "string" }),
 
-  return [
-    // Company Info
-    FieldString("companyName"),
-    FieldString("companyType"),
-    FieldString("companyIndustry"),
-    FieldString("companyEmail")
-      .isEmail()
-      .withMessage("Valid company Email is required"),
-    body("description")
-      .if(() => !isUpdate)
-      .notEmpty()
-      .withMessage("Description is required")
-      .isLength({ min: 10, max: 250 })
-      .withMessage("Description is required")
-      .optional({ checkFalsy: true }),
-    body("companySize")
-      .optional()
-      .isNumeric()
-      .withMessage("Company size must be a number")
-      .toInt(),
-    FieldString("companyPhone")
-      .customSanitizer((val) => val.replace(/[\s\-()]/g, ""))
-      .matches(/^\+[1-9]\d{10,15}$/)
-      .withMessage("Invalid format"),
-
-    // Media
-    FieldString("introVideoUrl"),
-    FieldObject("companyLogo"),
-    FieldString("companyLogo.url"),
-    FieldString("companyLogo.key"),
-    FieldString("companyLogo.type"),
-    FieldObject("profileImage"),
-    FieldString("profileImage.url"),
-    FieldString("profileImage.key"),
-    FieldString("profileImage.type"),
-    FieldObject("coverImage"),
-    FieldString("coverImage.url"),
-    FieldString("coverImage.key"),
-    FieldString("coverImage.type"),
-
-    // Social Links
-    FieldString("website").isURL(),
-    FieldString("linkedIn").isURL(),
-    FieldString("facebook").isURL(),
-    FieldString("twitter").isURL(),
-    FieldString("github").isURL(),
-
-    // Tags && Technologies && Department
-    FieldArray("department"),
-    FieldString("department.*"),
-    FieldArray("tags"),
-    FieldString("tags.*"),
-    FieldArray("technologies"),
-    FieldString("technologies.*"),
-
-    // Legal Info
-    FieldObject("legalInfo"),
-    FieldString("legalInfo.taxId"),
-    FieldString("legalInfo.registrationNumber"),
-    FieldString("legalInfo.legalName"),
-    FieldString("legalInfo.countryOfIncorporation"),
-  ];
-};
+  validateObject("legalInfo", isOptional),
+  validateString("legalInfo.taxId", true, stringLength),
+  validateString("legalInfo.registrationNumber", true, stringLength),
+  validateString("legalInfo.legalName", true, stringLength),
+  validateString("legalInfo.countryOfIncorporation", true, stringLength),
+];
 
 export const validateCompanyAdd = companyValidate(false);
 export const validateCompanyUpdate = companyValidate(true);

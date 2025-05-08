@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { ObjectId } from "mongodb";
 import {
-  ApplicantTypes,
-  JobExperiences,
-  JobTypes,
-  WorkplaceTypes,
+  ApplicantEnum,
+  JobExperiencesEnum,
+  JobEnum,
+  WorkplaceEnum,
 } from "../../types/job.type";
 
 export const JobDto = z.object({
@@ -13,10 +13,10 @@ export const JobDto = z.object({
   actorType: z.string().default("job"),
   jobTitle: z.string(),
   department: z.array(z.string()),
-  applicantTypes: z.array(z.enum(ApplicantTypes)),
-  jobType: z.array(z.enum(JobTypes)),
-  jobExperience: z.enum(JobExperiences),
-  workplaceType: z.array(z.enum(WorkplaceTypes)),
+  applicantTypes: z.array(z.enum(ApplicantEnum)),
+  jobType: z.array(z.enum(JobEnum)),
+  jobExperience: z.array(z.enum(JobExperiencesEnum)),
+  workplaceType: z.array(z.enum(WorkplaceEnum)),
   jobDescription: z.string(),
   jobRequirements: z.string(),
   skills: z.array(z.string()),
