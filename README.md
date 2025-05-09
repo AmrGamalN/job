@@ -5,72 +5,50 @@ Joblences is a powerful job platform that connects job seekers and companies. It
 ## Features
 
 - For Users
--- Account Creation & Verification
+- Account Creation & Verification
 Users can sign up using their email or phone number, with verification handled through Firebase.
 Until verification is completed, user data is temporarily stored using Redis for security and efficiency.
 
-2. Profile Management
+- Profile Management
 Each user has a customizable profile where they can:
-
 Add their work experiences, skills, and personal details
-
 Control profile visibility (Public, Friends Only, or Private)
 
-3. Job Search & Filtering
+-Job Search & Filtering
 Users can search and filter job listings in real time using GraphQL, based on:
-
 📍 Location
-
 💰 Salary
-
 🕒 Duration (Full-time / Part-time)
-
 🏢 Job Type / Industry
 
-4. Job Applications & Tracking
+- Job Applications & Tracking
 Users can apply for jobs directly and track the status of each application, including:
-
 Whether they’ve been shortlisted
-
 Interview schedules
-
 Application outcomes
-
 When shortlisted, they receive automated email invitations for interviews.
 
-5. Social Interaction
+- Social Interaction
 Users can engage with the community by:
-
 Posting articles, videos, or work updates
-
 Liking and commenting on content
-
 Viewing and interacting with others' posts
 
-6. Notifications
+- Notifications
 Real-time notifications are powered by Firebase, alerting users to:
-
 Application status updates
-
 Interview invitations
-
 Likes, comments, and replies on social content
 
-7. FAQs & Q&A
+-FAQs & Q&A
 Users can:
-
 Browse frequently asked questions
-
 Participate in Q&A discussions with companies or other users
 
-8. Application Analytics
+- Application Analytics
 Users can view insights such as:
-
 Number of views on their applications
-
 Actions taken by companies (e.g., viewed, shortlisted, rejected)
-
-
 
 ##Technologies Used
 Frontend: React.js (for the user interface and interaction)
