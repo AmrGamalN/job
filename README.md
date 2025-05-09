@@ -4,8 +4,8 @@ Joblences is a powerful job platform that connects job seekers and companies. It
 
 ## Features
 
-##For Users
-1. Account Creation & Verification
+- For Users
+-- Account Creation & Verification
 Users can sign up using their email or phone number, with verification handled through Firebase.
 Until verification is completed, user data is temporarily stored using Redis for security and efficiency.
 
