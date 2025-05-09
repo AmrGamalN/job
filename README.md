@@ -35,7 +35,7 @@ Application status updates
 Interview invitations
 Likes, comments, and replies on social content
 
--FAQs & Q&A
+- FAQs & Q&A
 Users can:
 Browse frequently asked questions
 Participate in Q&A discussions with companies or other users
@@ -50,22 +50,22 @@ Actions taken by companies (e.g., viewed, shortlisted, rejected)
 Companies have public profiles that showcase:
 Business overview, Open job positions, Team members and roles (based on access control)
 
-2. Role-Based Access Control (RBAC)
+- Role-Based Access Control (RBAC)
 Each company manages its internal access using predefined roles: Owner, Founder, Admin, Member, Viewer
 This ensures proper permission levels for editing, posting, or viewing sensitive data.
 
-3. Job Posting & Management
+- Job Posting & Management
 Companies can: Create detailed job postings with qualifications, experience, and salary ranges
 Edit or remove listings as needed
 
-4. Application Review & Filtering
+- Application Review & Filtering
 Companies can: Filter applicants by experience, qualifications, and custom parameters
 Automatically send interview invitations via email to shortlisted candidates
 
-5. Content Sharing
+- Content Sharing
 Companies can publish: Articles, industry insights, and videos to engage with users and establish credibility
 
-6. Company Analytics
+- Company Analytics
 Track performance for each job post, including: Number of views, Number of applications, Engagement rate per listing
 
 
@@ -75,7 +75,6 @@ Database: MongoDB (for storing user data, job postings, and application details)
 Caching: Redis (for temporary storage of user data during verification)
 Authentication: JWT (for secure and efficient user authentication)
 Real-Time: Firebase (for real-time notifications and updates)
-
 API: GraphQL (for precise data queries and RESTful API (for specific endpoints)) and Swagger 
 
 ## Setup and Installation
