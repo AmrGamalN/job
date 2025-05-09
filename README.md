@@ -69,7 +69,7 @@ Companies can publish: Articles, industry insights, and videos to engage with us
 Track performance for each job post, including: Number of views, Number of applications, Engagement rate per listing
 
 
-##Technologies Used
+## Technologies Used
 Backend: Node.js, Express.js (for building scalable backend services)
 Database: MongoDB (for storing user data, job postings, and application details)
 Caching: Redis (for temporary storage of user data during verification)
