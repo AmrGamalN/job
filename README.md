@@ -81,7 +81,7 @@ API: GraphQL (for precise data queries and RESTful API (for specific endpoints))
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/HallaDeals/HallaDeals-BE.git
+https://github.com/AmrGamalN/job.git
 ```
 
 ### 2. Install dependencies
@@ -90,15 +90,6 @@ In your project directory, run:
 ```bash
 npm install
 ```
-
-### 3. Setup environment variables
-Create a .env file in the root of the project directory and add the following variables:
-
-```bash
-MONGODB_URI=mongodb+srv://halladeals26:#password@cluster0.lsrg6.mongodb.net/halla?retryWrites=true&w=majority&appName=Cluster0
-PORT=8080
-```
-
 ### 4. Run the project
 To run the project locally, execute:
 
