@@ -4,67 +4,73 @@ Joblences is a powerful job platform that connects job seekers and companies. It
 
 ## Features
 
-1. User Profiles & Company Profiles
-User Profiles: Each user has a customizable profile where they can display their work experiences, skills, and personal information. The visibility of profiles can be public, friends-only, or private, depending on the user's preferences.
+###For Users
+1. Account Creation & Verification
+Users can sign up using their email or phone number, with verification handled through Firebase.
+Until verification is completed, user data is temporarily stored using Redis for security and efficiency.
 
-Company Profiles: Companies also have profiles where they can showcase their business, open job positions, and interact with potential candidates. The profile can be accessed based on the role of the user (admin, employee, etc.).
+2. Profile Management
+Each user has a customizable profile where they can:
 
-2. Job Search and Filtering
-Users can search for jobs based on various filters such as:
+Add their work experiences, skills, and personal details
 
-Location
+Control profile visibility (Public, Friends Only, or Private)
 
-Salary
+3. Job Search & Filtering
+Users can search and filter job listings in real time using GraphQL, based on:
 
-Duration (Full-time / Part-time)
+📍 Location
 
-Industry/Type of Job
+💰 Salary
 
-Real-time data: The search results are updated in real-time, thanks to the integration of GraphQL for precise querying.
+🕒 Duration (Full-time / Part-time)
 
-3. Role-Based Access Control
-The platform is built with a Role-Based Access Control (RBAC) system, which ensures that users can access different features depending on their role within the company.
+🏢 Job Type / Industry
 
-Roles include: Owner, Founder, Admin, Member, and Viewer.
+4. Job Applications & Tracking
+Users can apply for jobs directly and track the status of each application, including:
 
-4. Job Application & Company Interaction
-Job Postings: Companies can post job openings with detailed descriptions and requirements.
+Whether they’ve been shortlisted
 
-Job Applications: Users can apply for jobs, and companies can filter applications based on various parameters (e.g., qualifications, experience).
+Interview schedules
 
-Interview Invitations: Once a company filters candidates, an automated email is sent to the applicants with details about the interview schedule.
+Application outcomes
 
-5. Social Features
-Users can interact with each other via posts, comments, and likes on content like articles, videos, and updates.
+When shortlisted, they receive automated email invitations for interviews.
 
-Posts: Users can share content (e.g., work experiences, articles, videos).
+5. Social Interaction
+Users can engage with the community by:
 
-Likes: Posts can be liked by other users, allowing for greater interaction within the platform.
+Posting articles, videos, or work updates
 
-Articles: Companies or users can publish articles or videos related to their industry.
+Liking and commenting on content
 
-6. Real-Time Notifications & Firebase Integration
-Firebase is integrated to provide real-time notifications to users.
+Viewing and interacting with others' posts
 
-Notifications include job application updates, interview invitations, social media interactions, and more.
+6. Notifications
+Real-time notifications are powered by Firebase, alerting users to:
 
-7. Email and Phone Verification
-Redis is used for temporary storage of user data until email or phone verification is completed. This ensures that users have a verified email or phone number before they can fully use the platform.
+Application status updates
 
-8. FAQs & User Interaction
-Users can search for frequently asked questions (FAQs) related to companies, job applications, and the platform in general.
+Interview invitations
 
-A Q&A section is available where users can ask questions and get responses from companies or other users.
+Likes, comments, and replies on social content
 
-9. GraphQL API and RESTful Integration
-The platform uses GraphQL for fine-grained control over the data returned to users, making the API efficient and flexible.
+7. FAQs & Q&A
+Users can:
 
-It also integrates RESTful API endpoints for certain functionalities like job postings, applications, and profile management.
+Browse frequently asked questions
 
-10. Company & User Analytics
-Companies can track metrics related to their job postings, such as how many views and applications a particular job has received.
+Participate in Q&A discussions with companies or other users
 
-Users can view analytics related to their job applications, such as the status of their application and any actions taken by the company.
+8. Application Analytics
+Users can view insights such as:
+
+Number of views on their applications
+
+Actions taken by companies (e.g., viewed, shortlisted, rejected)
+
+
 
 ##Technologies Used
 Frontend: React.js (for the user interface and interaction)
