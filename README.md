@@ -2,9 +2,8 @@
 
 Joblences is a powerful job platform that connects job seekers and companies. It allows users to search and apply for jobs, while companies can manage job postings, track applicants, and filter candidates based on certain criteria. The platform also includes social features and personalized user experiences.
 
-## Features
+## Features For Users
 
-- For Users
 - Account Creation & Verification
 Users can sign up using their email or phone number, with verification handled through Firebase.
 Until verification is completed, user data is temporarily stored using Redis for security and efficiency.
@@ -14,12 +13,8 @@ Each user has a customizable profile where they can:
 Add their work experiences, skills, and personal details
 Control profile visibility (Public, Friends Only, or Private)
 
--Job Search & Filtering
-Users can search and filter job listings in real time using GraphQL, based on:
-📍 Location
-💰 Salary
-🕒 Duration (Full-time / Part-time)
-🏢 Job Type / Industry
+- Job Search & Filtering
+Users can search and filter job listings in real time using GraphQL, based on: Locationو Salaryو Duration (Full-time / Part-time), Job Type / Industry
 
 - Job Applications & Tracking
 Users can apply for jobs directly and track the status of each application, including:
@@ -50,22 +45,38 @@ Users can view insights such as:
 Number of views on their applications
 Actions taken by companies (e.g., viewed, shortlisted, rejected)
 
+## Features For Companies
+- Company Profiles
+Companies have public profiles that showcase:
+Business overview, Open job positions, Team members and roles (based on access control)
+
+2. Role-Based Access Control (RBAC)
+Each company manages its internal access using predefined roles: Owner, Founder, Admin, Member, Viewer
+This ensures proper permission levels for editing, posting, or viewing sensitive data.
+
+3. Job Posting & Management
+Companies can: Create detailed job postings with qualifications, experience, and salary ranges
+Edit or remove listings as needed
+
+4. Application Review & Filtering
+Companies can: Filter applicants by experience, qualifications, and custom parameters
+Automatically send interview invitations via email to shortlisted candidates
+
+5. Content Sharing
+Companies can publish: Articles, industry insights, and videos to engage with users and establish credibility
+
+6. Company Analytics
+Track performance for each job post, including: Number of views, Number of applications, Engagement rate per listing
+
+
 ##Technologies Used
-Frontend: React.js (for the user interface and interaction)
-
 Backend: Node.js, Express.js (for building scalable backend services)
-
 Database: MongoDB (for storing user data, job postings, and application details)
-
 Caching: Redis (for temporary storage of user data during verification)
-
 Authentication: JWT (for secure and efficient user authentication)
-
 Real-Time: Firebase (for real-time notifications and updates)
 
-API: GraphQL (for precise data queries and RESTful API (for specific endpoints))
-
-Deployment: AWS (for hosting the platform in a scalable environment)
+API: GraphQL (for precise data queries and RESTful API (for specific endpoints)) and Swagger 
 
 ## Setup and Installation
 
