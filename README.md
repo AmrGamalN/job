@@ -101,14 +101,14 @@ Track performance for each job post, including: Number of views, Number of appli
 
 ## Email messages
 - Track company details
-- 
+
 ![company](https://github.com/user-attachments/assets/e31b7349-3e80-4b45-9488-2c8d24001f28)
 
 - Send interview details
-- 
+
 ![interview](https://github.com/user-attachments/assets/ca42e1b0-4858-4e1b-b835-00d0f71286bd)
 
 - Verification Email Link
-- 
+
 ![verify](https://github.com/user-attachments/assets/56c7c81d-c52e-4e1e-99a3-c5a041ed37c8)
 
