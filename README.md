@@ -3,8 +3,8 @@
 Joblences is a powerful job platform that connects job seekers and companies. It allows users to search and apply for jobs, while companies can manage job postings, track applicants, and filter candidates based on certain criteria. The platform also includes social features and personalized user experiences.
 
 ## Api Docs For Preview
-https://joblaneces-platform.onrender.com/api-docs/ [client - auth - company - job - post - support ]
-ex =>> https://joblaneces-platform.onrender.com/api-docs/client
+- https://joblaneces-platform.onrender.com/api-docs/ [ client - auth - company - job - post - support ]
+- ex  https://joblaneces-platform.onrender.com/api-docs/client
 
 ## Features For Users
 
@@ -17,7 +17,7 @@ Each user has a customizable profile where they can:
 Add their work experiences, skills, and personal details
 Control profile visibility (Public, Friends Only, or Private)
 
-![joblaneces-platform onrender com_api-docs_client_ (1)](https://github.com/user-attachments/assets/31e315b0-4457-4b5d-bab2-93a8eec5daac)
+![joblaneces-platform onrender com_api-docs_client_](https://github.com/user-attachments/assets/eac4d1fe-8725-4479-9317-db6b8539910c)
 
 
 - Job Search & Filtering
@@ -84,6 +84,10 @@ Companies can publish: Articles, industry insights, and videos to engage with us
 - Company Analytics
 Track performance for each job post, including: Number of views, Number of applications, Engagement rate per listing
 
+## Help & Report
+
+![joblaneces-platform onrender com_api-docs_support_](https://github.com/user-attachments/assets/4461f2f8-aa81-43bb-b8d5-7ec7d2ecf7ca)
+  
 
 ## Technologies Used
  - Backend: Node.js, Express.js (for building scalable backend services)
@@ -96,12 +100,12 @@ Track performance for each job post, including: Number of views, Number of appli
  - Documentation: Swagger (for documenting the backend APIs)
 
 ## Email messages
-- Track  ompany details
+- Track company details
 ![company](https://github.com/user-attachments/assets/e31b7349-3e80-4b45-9488-2c8d24001f28)
 
-- Send interview
+- Send interview details
 ![interview](https://github.com/user-attachments/assets/ca42e1b0-4858-4e1b-b835-00d0f71286bd)
 
-- Verify email
+- Verification Email Link
 ![verify](https://github.com/user-attachments/assets/56c7c81d-c52e-4e1e-99a3-c5a041ed37c8)
 
