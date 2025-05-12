@@ -13,6 +13,9 @@ Each user has a customizable profile where they can:
 Add their work experiences, skills, and personal details
 Control profile visibility (Public, Friends Only, or Private)
 
+![joblaneces-platform onrender com_api-docs_client_](https://github.com/user-attachments/assets/365f0822-b2c0-4570-8bea-0ad810d59914)
+
+
 - Job Search & Filtering
 Users can search and filter job listings in real time using GraphQL, based on: Locationو Salaryو Duration (Full-time / Part-time), Job Type / Industry
 
