@@ -13,7 +13,7 @@ Each user has a customizable profile where they can:
 Add their work experiences, skills, and personal details
 Control profile visibility (Public, Friends Only, or Private)
 
-![joblaneces-platform onrender com_api-docs_client_](https://github.com/user-attachments/assets/365f0822-b2c0-4570-8bea-0ad810d59914)
+![joblaneces-platform onrender com_api-docs_client_ (1)](https://github.com/user-attachments/assets/31e315b0-4457-4b5d-bab2-93a8eec5daac)
 
 
 - Job Search & Filtering
