@@ -2,6 +2,10 @@
 
 Joblences is a powerful job platform that connects job seekers and companies. It allows users to search and apply for jobs, while companies can manage job postings, track applicants, and filter candidates based on certain criteria. The platform also includes social features and personalized user experiences.
 
+## Api Docs For Preview
+https://joblaneces-platform.onrender.com/api-docs/ [client - auth - company - job - post - support ]
+ex =>> https://joblaneces-platform.onrender.com/api-docs/client
+
 ## Features For Users
 
 - Account Creation & Verification
@@ -26,11 +30,18 @@ Interview schedules
 Application outcomes
 When shortlisted, they receive automated email invitations for interviews.
 
+![joblaneces-platform onrender com_api-docs_job_](https://github.com/user-attachments/assets/81c3dc4e-e69d-42ec-bc5e-a3c03f7b40e6)
+
+
 - Social Interaction
 Users can engage with the community by:
 Posting articles, videos, or work updates
 Liking and commenting on content
 Viewing and interacting with others' posts
+
+![joblaneces-platform onrender com_api-docs_post_](https://github.com/user-attachments/assets/d2967cd7-5e99-4747-895a-d5466efee346)
+
+
 
 - Notifications
 Real-time notifications are powered by Firebase, alerting users to:
@@ -53,6 +64,8 @@ Actions taken by companies (e.g., viewed, shortlisted, rejected)
 Companies have public profiles that showcase:
 Business overview, Open job positions, Team members and roles (based on access control)
 
+![joblaneces-platform onrender com_api-docs_company_](https://github.com/user-attachments/assets/d066aa38-797f-470e-bee9-79d9bb03e413)
+
 - Role-Based Access Control (RBAC)
 Each company manages its internal access using predefined roles: Owner, Founder, Admin, Member, Viewer
 This ensures proper permission levels for editing, posting, or viewing sensitive data.
@@ -73,71 +86,22 @@ Track performance for each job post, including: Number of views, Number of appli
 
 
 ## Technologies Used
-Backend: Node.js, Express.js (for building scalable backend services)
-Database: MongoDB (for storing user data, job postings, and application details)
-Caching: Redis (for temporary storage of user data during verification)
-Authentication: JWT (for secure and efficient user authentication)
-Real-Time: Firebase (for real-time notifications and updates)
-API: GraphQL (for precise data queries and RESTful API (for specific endpoints)) and Swagger 
+ - Backend: Node.js, Express.js (for building scalable backend services)
+ - Database: MongoDB (for storing user data, job postings, and application details...)
+ - Caching: Redis (for temporary storage of user data during verification)
+ - Authorization: Role-based access control (Admin roles only)
+ - Authentication: JWT (for secure and efficient user authentication)
+ - Real-Time: Firebase (for real-time notifications and updates)
+ - API: GraphQL (for precise data queries and RESTful API (for specific endpoints))
+ - Documentation: Swagger (for documenting the backend APIs)
 
-## Setup and Installation
+## Email messages
+- Track  ompany details
+![company](https://github.com/user-attachments/assets/e31b7349-3e80-4b45-9488-2c8d24001f28)
 
-### 1. Clone the repository
-```bash
-https://github.com/AmrGamalN/job.git
-```
+- Send interview
+![interview](https://github.com/user-attachments/assets/ca42e1b0-4858-4e1b-b835-00d0f71286bd)
 
-### 2. Install dependencies
-In your project directory, run:
+- Verify email
+![verify](https://github.com/user-attachments/assets/56c7c81d-c52e-4e1e-99a3-c5a041ed37c8)
 
-```bash
-npm install
-```
-### 4. Run the project
-To run the project locally, execute:
-
-```bash
-npm start
-```
-
-### 5. Access the Swagger API Documentation
-After starting the server, you can access the Swagger UI by visiting the following URL:
-
-```bash
-http://localhost:8080/api-docs/
-```
-
-## 🤝 Contribution Guidelines
-
-We welcome contributions! Here’s the step-by-step process to contribute:
-
-### **1. Create a New Branch**
-
-- **Feature branches**: `feature/hd-{ticket-number}` (e.g., `feature/hd-66`)
-- **Bugfix branches**: `bugfix/hd-{ticket-number}` (e.g., `bugfix/hd-77`)
-
-### **2. Make Your Changes**
-
-After making changes, stage them with:
-
-```bash
-git add .
-```
-
-### **3Commit Your Changes**
-
-Follow the commit message format:
-
-- **Example:**
-
-```bash
-git commit -m "hd-121: Disabled checkout button when no address is added"
-```
-
-### **4 Push Your Branch**
-
-Push the branch to the remote repository:
-
-```bash
-   git push origin {your-branch-name}
-```
