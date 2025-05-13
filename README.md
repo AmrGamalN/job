@@ -1,6 +1,6 @@
-# Joblences 
+# Joblances 
 
-Joblences is a powerful job platform that connects job seekers and companies. It allows users to search and apply for jobs, while companies can manage job postings, track applicants, and filter candidates based on certain criteria. The platform also includes social features and personalized user experiences.
+Joblances is a powerful job platform that connects job seekers and companies. It allows users to search and apply for jobs, while companies can manage job postings, track applicants, and filter candidates based on certain criteria. The platform also includes social features and personalized user experiences.
 
 ## Api Docs For Preview
 - https://joblaneces-platform.onrender.com/api-docs/auth
